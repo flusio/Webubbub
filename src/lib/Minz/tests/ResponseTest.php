@@ -19,7 +19,7 @@ class ResponseTest extends TestCase
     {
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage(
-            'tests/fixtures/views/rabbits/missing.phtml file cannot be found.'
+            'src/views/rabbits/missing.phtml file cannot be found.'
         );
 
         $response = new Response();

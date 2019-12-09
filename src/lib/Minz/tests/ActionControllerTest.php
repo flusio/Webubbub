@@ -30,7 +30,7 @@ class ActionControllerTest extends TestCase
     {
         $this->expectException(Errors\ControllerError::class);
         $this->expectExceptionMessage(
-            'tests/fixtures/controllers/missing.php file cannot be found.'
+            'src/controllers/missing.php file cannot be found.'
         );
 
         $request = new Request();

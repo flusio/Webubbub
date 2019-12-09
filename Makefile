@@ -15,6 +15,10 @@ stop: ## Stop and clean Docker server
 test: ## Run the tests suite
 	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
 
+.PHONY: test-minz
+test-minz: ## Run the tests suite for the Minz lib
+	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./src/lib/Minz/tests/bootstrap.php ./src/lib/Minz/tests
+
 .PHONY: lint
 lint: ## Run the linter on the PHP files
 	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcs --standard=PSR12 ./src ./tests
