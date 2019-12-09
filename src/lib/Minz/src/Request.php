@@ -17,6 +17,9 @@ class Request
     /** @var string */
     private $path;
 
+    /** @var mixed[] */
+    private $parameters;
+
     /**
      * Create a Request by loading from the $_SERVER variable.
      */
@@ -26,6 +29,8 @@ class Request
 
         $url_components = parse_url($_SERVER['REQUEST_URI']);
         $this->path = $url_components['path'];
+
+        $this->parameters = array_merge($_GET, $_POST);
     }
 
     /**
@@ -43,5 +48,22 @@ class Request
     public function path()
     {
         return $this->path;
+    }
+
+    /**
+     * Return a parameter value from $_GET or $_POST.
+     *
+     * @param string $name The name of the parameter to get
+     * @param mixed $default A default value to return if the parameter doesn't exist
+     *
+     * @return mixed
+     */
+    public function param($name, $default = null)
+    {
+        if (isset($this->parameters[$name])) {
+            return $this->parameters[$name];
+        } else {
+            return $default;
+        }
     }
 }
