@@ -24,63 +24,121 @@ class Response
         500, 501, 502, 503, 504, 505,
     ];
 
+    /** @var string[] */
+    public const EXTENSION_TO_CONTENT_TYPE = [
+        'html' => 'text/html',
+        'json' => 'application/json',
+        'phtml' => 'text/html',
+        'txt' => 'text/plain',
+        'xml' => 'text/xml',
+    ];
+
     /**
      * Create a successful response (HTTP 200).
      *
-     * @param string $view_filename The name of a PHTML file, under the views_path
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @see \Minz\Response::fromCode()
      *
-     * @throws \Minz\Errors\ResponseError if the view filename doesn't exist
+     * @param string $view_filename
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
     public static function ok($view_filename, $variables = [])
     {
-        $response = new Response();
-        $response->setCode(200);
-        $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename($view_filename);
-        $response->setVariables($variables);
-        return $response;
+        return Response::fromCode(200, $view_filename, $variables);
+    }
+
+    /**
+     * Create an accepted response (HTTP 202).
+     *
+     * @see \Minz\Response::fromCode()
+     *
+     * @param string $view_filename
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
+     *
+     * @return \Minz\Response
+     */
+    public static function accepted($view_filename, $variables = [])
+    {
+        return Response::fromCode(202, $view_filename, $variables);
+    }
+
+    /**
+     * Create a bad request response (HTTP 400).
+     *
+     * @see \Minz\Response::fromCode()
+     *
+     * @param string $view_filename Default is errors/bad_request.phtml
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
+     *
+     * @return \Minz\Response
+     */
+    public static function badRequest($view_filename = 'errors/bad_request.phtml', $variables = [])
+    {
+        return Response::fromCode(400, $view_filename, $variables);
     }
 
     /**
      * Create a not found response (HTTP 404).
      *
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @see \Minz\Response::fromCode()
      *
-     * @throws \Minz\Errors\ResponseError if the errors/not_found.phtml view
-     *                                    file doesn't exist
+     * @param string $view_filename Default is errors/not_found.phtml
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function notFound($variables = [])
+    public static function notFound($view_filename = 'errors/not_found.phtml', $variables = [])
     {
-        $response = new Response();
-        $response->setCode(404);
-        $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename('errors/not_found.phtml');
-        $response->setVariables($variables);
-        return $response;
+        return Response::fromCode(404, $view_filename, $variables);
     }
 
     /**
-     * Create a not found response (HTTP 500).
+     * Create an internal server error response (HTTP 500).
      *
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @see \Minz\Response::fromCode()
      *
-     * @throws \Minz\Errors\ResponseError if the errors/internal_server_error.phtml
-     *                                    view file doesn't exist
+     * @param string $view_filename Default is errors/internal_server_error.phtml
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function internalServerError($variables = [])
+    public static function internalServerError($view_filename = 'errors/internal_server_error.phtml', $variables = [])
+    {
+        return Response::fromCode(500, $view_filename, $variables);
+    }
+
+    /**
+     * Create a Response from a HTTP status code.
+     *
+     * @param integer $code The HTTP code to set for the response
+     * @param string $view_filename The name of a view file, under the views_path.
+     * @param mixed[] $variables A list of optional variables to pass to the view
+     *
+     * @throws \Minz\Errors\ResponseError if the code is not a valid HTTP status code
+     * @throws \Minz\Errors\ResponseError if the view file doesn't exist
+     * @throws \Minz\Errors\ResponseError if the view file extension is not supported
+     *
+     * @return \Minz\Response
+     */
+    public static function fromCode($code, $view_filename, $variables = [])
     {
         $response = new Response();
-        $response->setCode(500);
-        $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename('errors/internal_server_error.phtml');
+        $response->setCode($code);
+        $response->setViewFilename($view_filename);
         $response->setVariables($variables);
+        $content_type = self::contentTypeFromViewFile($view_filename);
+        $response->setHeader('Content-Type', $content_type);
         return $response;
     }
 
@@ -113,7 +171,7 @@ class Response
      */
     public function setViewFilename($view_filename)
     {
-        $view_filepath = $this->viewFilepath($view_filename);
+        $view_filepath = self::viewFilepath($view_filename);
         if (!file_exists($view_filepath)) {
             $missing_file = Configuration::$views_path . '/' . $view_filename;
             throw new Errors\ResponseError("{$missing_file} file cannot be found.");
@@ -186,7 +244,7 @@ class Response
      */
     public function render()
     {
-        $view_filepath = $this->viewFilepath($this->view_filename);
+        $view_filepath = self::viewFilepath($this->view_filename);
         $view = new View($view_filepath);
         return $view->build($this->variables);
     }
@@ -198,10 +256,30 @@ class Response
      *
      * @return string
      */
-    private function viewFilepath($view_filename)
+    private static function viewFilepath($view_filename)
     {
         $app_path = Configuration::$app_path;
         $views_path = Configuration::$views_path;
         return "{$app_path}/{$views_path}/{$view_filename}";
+    }
+
+    /**
+     * Return the content type associated to a view file extension
+     *
+     * @param string $view_filename
+     *
+     * @throws \Minz\Errors\ResponseError if the view file extension is not supported
+     *
+     * @return string
+     */
+    private static function contentTypeFromViewFile($view_filename)
+    {
+        $file_extension = pathinfo($view_filename, PATHINFO_EXTENSION);
+        if (!isset(self::EXTENSION_TO_CONTENT_TYPE[$file_extension])) {
+            throw new Errors\ResponseError(
+                "{$file_extension} is not a supported view file extension."
+            );
+        }
+        return self::EXTENSION_TO_CONTENT_TYPE[$file_extension];
     }
 }
