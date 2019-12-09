@@ -27,7 +27,7 @@ class Response
     /**
      * Create a successful response (HTTP 200).
      *
-     * @param string $view_filename The name of a PHTML file, under the views_path
+     * @param string $view_filename The name of a view file, under the views_path
      * @param mixed[] $variables A list of optional variables to pass to the view
      *
      * @throws \Minz\Errors\ResponseError if the view filename doesn't exist
@@ -47,26 +47,29 @@ class Response
     /**
      * Create a not found response (HTTP 404).
      *
+     * @param string $view_filename The name of a view file, under the views_path.
+     *                              Default value is `errors/not_found.phtml`
      * @param mixed[] $variables A list of optional variables to pass to the view
      *
-     * @throws \Minz\Errors\ResponseError if the errors/not_found.phtml view
-     *                                    file doesn't exist
+     * @throws \Minz\Errors\ResponseError if the view filename doesn't exist
      *
      * @return \Minz\Response
      */
-    public static function notFound($variables = [])
+    public static function notFound($view_filename = 'errors/not_found.phtml', $variables = [])
     {
         $response = new Response();
         $response->setCode(404);
         $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename('errors/not_found.phtml');
+        $response->setViewFilename($view_filename);
         $response->setVariables($variables);
         return $response;
     }
 
     /**
-     * Create a not found response (HTTP 500).
+     * Create an internal server error response (HTTP 500).
      *
+     * @param string $view_filename The name of a view file, under the views_path.
+     *                              Default value is `errors/internal_server_error.phtml`
      * @param mixed[] $variables A list of optional variables to pass to the view
      *
      * @throws \Minz\Errors\ResponseError if the errors/internal_server_error.phtml
@@ -74,12 +77,12 @@ class Response
      *
      * @return \Minz\Response
      */
-    public static function internalServerError($variables = [])
+    public static function internalServerError($view_filename = 'errors/internal_server_error.phtml', $variables = [])
     {
         $response = new Response();
         $response->setCode(500);
         $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename('errors/internal_server_error.phtml');
+        $response->setViewFilename($view_filename);
         $response->setVariables($variables);
         return $response;
     }
