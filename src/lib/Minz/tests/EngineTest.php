@@ -19,7 +19,7 @@ class EngineTest extends TestCase
         $response = $engine->run($request);
 
         $this->assertSame(200, $response->code());
-        $this->assertSame('rabbits/items.phtml', $response->viewFilename());
+        $this->assertSame('rabbits#items.phtml', $response->viewPointer());
     }
 
     public function testRunReturnsErrorIfRouteNotFound()
@@ -35,7 +35,7 @@ class EngineTest extends TestCase
         $response = $engine->run($request);
 
         $this->assertSame(404, $response->code());
-        $this->assertSame('errors/not_found.phtml', $response->viewFilename());
+        $this->assertSame('errors#not_found.phtml', $response->viewPointer());
     }
 
     public function testRunReturnsErrorIfControllerFileIsMissing()
@@ -52,8 +52,8 @@ class EngineTest extends TestCase
 
         $this->assertSame(500, $response->code());
         $this->assertSame(
-            'errors/internal_server_error.phtml',
-            $response->viewFilename()
+            'errors#internal_server_error.phtml',
+            $response->viewPointer()
         );
     }
 
@@ -71,8 +71,8 @@ class EngineTest extends TestCase
 
         $this->assertSame(500, $response->code());
         $this->assertSame(
-            'errors/internal_server_error.phtml',
-            $response->viewFilename()
+            'errors#internal_server_error.phtml',
+            $response->viewPointer()
         );
     }
 
@@ -90,8 +90,8 @@ class EngineTest extends TestCase
 
         $this->assertSame(500, $response->code());
         $this->assertSame(
-            'errors/internal_server_error.phtml',
-            $response->viewFilename()
+            'errors#internal_server_error.phtml',
+            $response->viewPointer()
         );
     }
 }

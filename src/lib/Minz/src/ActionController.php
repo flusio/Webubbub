@@ -63,8 +63,7 @@ class ActionController
     {
         $included = self::loadControllerCode($this->controller_name);
         if (!$included) {
-            $controllers_path = Configuration::$controllers_path;
-            $controller_filepath = "{$controllers_path}/{$this->controller_name}.php";
+            $controller_filepath = "src/{$this->controller_name}/controller.php";
             throw new Errors\ControllerError(
                 "{$controller_filepath} file cannot be loaded."
             );
@@ -92,10 +91,8 @@ class ActionController
     public static function loadControllerCode($controller_name)
     {
         $app_path = Configuration::$app_path;
-        $controllers_path = Configuration::$controllers_path;
-        $controller_filepath = "{$controllers_path}/{$controller_name}.php";
-        $controller_app_filepath = "{$app_path}/{$controller_filepath}";
+        $controller_filepath = "{$app_path}/src/{$controller_name}/controller.php";
 
-        return @include_once($controller_app_filepath);
+        return @include_once($controller_filepath);
     }
 }

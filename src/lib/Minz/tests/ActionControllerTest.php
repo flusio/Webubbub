@@ -23,14 +23,14 @@ class ActionControllerTest extends TestCase
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/html'], $response->headers());
-        $this->assertSame('rabbits/items.phtml', $response->viewFilename());
+        $this->assertSame('rabbits#items.phtml', $response->viewPointer());
     }
 
     public function testExecuteFailsIfControllerDoesntExist()
     {
         $this->expectException(Errors\ControllerError::class);
         $this->expectExceptionMessage(
-            'src/controllers/missing.php file cannot be loaded.'
+            'src/missing/controller.php file cannot be loaded.'
         );
 
         $request = new Request();
@@ -43,11 +43,11 @@ class ActionControllerTest extends TestCase
     {
         $this->expectException(Errors\ControllerError::class);
         $this->expectExceptionMessage(
-            'src/controllers/directory.php file cannot be loaded.'
+            'src/controller_as_directory/controller.php file cannot be loaded.'
         );
 
         $request = new Request();
-        $action_controller = new ActionController('directory#items');
+        $action_controller = new ActionController('controller_as_directory#items');
 
         $action_controller->execute($request);
     }

@@ -6,10 +6,10 @@ use Minz\Response;
 
 function items($request)
 {
-    return Response::ok('rabbits/items.phtml');
+    return Response::ok('rabbits#items.phtml');
 }
 
 function missingViewFile($request)
 {
-    return Response::ok('rabbits/missing.phtml');
+    return Response::ok('rabbits#missing.phtml');
 }

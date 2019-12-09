@@ -6,8 +6,12 @@ namespace Minz;
  * The Response represents the answer given to a Request, and returned to the
  * user.
  *
- * A view filename is attached to a Response. This file should contain the HTML
- * or PHP+HTML code to return to the user. It is generally a `.phtml` file.
+ * A view pointer is attached to a Response. This pointer points to a file
+ * generating the content which is returned to the user. It is generally a
+ * `.phtml` file.
+ *
+ * A view pointer is in the form of `controller_name#filename`. For instance,
+ * `rabbits#items.phtml` targets the file `src/rabbits/views/items.phtml`.
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -38,16 +42,16 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_filename
+     * @param string $view_pointer
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function ok($view_filename, $variables = [])
+    public static function ok($view_pointer, $variables = [])
     {
-        return Response::fromCode(200, $view_filename, $variables);
+        return Response::fromCode(200, $view_pointer, $variables);
     }
 
     /**
@@ -55,16 +59,16 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_filename
+     * @param string $view_pointer
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function accepted($view_filename, $variables = [])
+    public static function accepted($view_pointer, $variables = [])
     {
-        return Response::fromCode(202, $view_filename, $variables);
+        return Response::fromCode(202, $view_pointer, $variables);
     }
 
     /**
@@ -72,16 +76,16 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_filename Default is errors/bad_request.phtml
+     * @param string $view_pointer Default is errors#bad_request.phtml
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function badRequest($view_filename = 'errors/bad_request.phtml', $variables = [])
+    public static function badRequest($view_pointer = 'errors#bad_request.phtml', $variables = [])
     {
-        return Response::fromCode(400, $view_filename, $variables);
+        return Response::fromCode(400, $view_pointer, $variables);
     }
 
     /**
@@ -89,16 +93,16 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_filename Default is errors/not_found.phtml
+     * @param string $view_pointer Default is errors#not_found.phtml
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function notFound($view_filename = 'errors/not_found.phtml', $variables = [])
+    public static function notFound($view_pointer = 'errors#not_found.phtml', $variables = [])
     {
-        return Response::fromCode(404, $view_filename, $variables);
+        return Response::fromCode(404, $view_pointer, $variables);
     }
 
     /**
@@ -106,38 +110,39 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_filename Default is errors/internal_server_error.phtml
+     * @param string $view_pointer Default is errors#internal_server_error.phtml
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function internalServerError($view_filename = 'errors/internal_server_error.phtml', $variables = [])
+    public static function internalServerError($view_pointer = 'errors#internal_server_error.phtml', $variables = [])
     {
-        return Response::fromCode(500, $view_filename, $variables);
+        return Response::fromCode(500, $view_pointer, $variables);
     }
 
     /**
      * Create a Response from a HTTP status code.
      *
      * @param integer $code The HTTP code to set for the response
-     * @param string $view_filename The name of a view file, under the views_path.
+     * @param string $view_pointer The view pointer to set to the response
      * @param mixed[] $variables A list of optional variables to pass to the view
      *
      * @throws \Minz\Errors\ResponseError if the code is not a valid HTTP status code
-     * @throws \Minz\Errors\ResponseError if the view file doesn't exist
-     * @throws \Minz\Errors\ResponseError if the view file extension is not supported
+     * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
+     * @throws \Minz\Errors\ResponseError if the view pointer file extension is
+     *                                    not supported
      *
      * @return \Minz\Response
      */
-    public static function fromCode($code, $view_filename, $variables = [])
+    public static function fromCode($code, $view_pointer, $variables = [])
     {
         $response = new Response();
         $response->setCode($code);
-        $response->setViewFilename($view_filename);
+        $response->setViewPointer($view_pointer);
         $response->setVariables($variables);
-        $content_type = self::contentTypeFromViewFile($view_filename);
+        $content_type = self::contentTypeFromViewPointer($view_pointer);
         $response->setHeader('Content-Type', $content_type);
         return $response;
     }
@@ -152,32 +157,40 @@ class Response
     private $variables = [];
 
     /** @var string */
-    private $view_filename;
+    private $view_pointer;
 
     /**
-     * @return string The current view filename
+     * @return string The current view pointer
      */
-    public function viewFilename()
+    public function viewPointer()
     {
-        return $this->view_filename;
+        return $this->view_pointer;
     }
 
     /**
-     * @param string $view_filename
+     * @param string $view_pointer
      *
-     * @throws \Minz\Errors\ResponseError if the view filename doesn't exist
+     * @throws \Minz\Errors\ResponseError if the view pointer doesn't contain a hash
+     * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
      *
      * @return void
      */
-    public function setViewFilename($view_filename)
+    public function setViewPointer($view_pointer)
     {
-        $view_filepath = self::viewFilepath($view_filename);
+        if (strpos($view_pointer, '#') === false) {
+            throw new Errors\ResponseError(
+                "{$view_pointer} view pointer must contain a hash (#)."
+            );
+        }
+
+        $view_filepath = self::viewFilepath($view_pointer);
         if (!file_exists($view_filepath)) {
-            $missing_file = Configuration::$views_path . '/' . $view_filename;
+            list($controller_name, $view_filename) = explode('#', $view_pointer);
+            $missing_file = "src/{$controller_name}/views/{$view_filename}";
             throw new Errors\ResponseError("{$missing_file} file cannot be found.");
         }
 
-        $this->view_filename = $view_filename;
+        $this->view_pointer = $view_pointer;
     }
 
     /**
@@ -236,45 +249,46 @@ class Response
     }
 
     /**
-     * Generate and return the content from the view file.
+     * Generate and return the content from the view pointer file.
      *
-     * The view file is interpreted with access to the variables.
+     * The view pointer file is interpreted with access to the variables.
      *
      * @return string
      */
     public function render()
     {
-        $view_filepath = self::viewFilepath($this->view_filename);
+        $view_filepath = self::viewFilepath($this->view_pointer);
         $view = new View($view_filepath);
         return $view->build($this->variables);
     }
 
     /**
-     * Return the full path to a view file
+     * Return the full path to a view pointer file
      *
-     * @param string $view_filename
+     * @param string $view_pointer
      *
      * @return string
      */
-    private static function viewFilepath($view_filename)
+    private static function viewFilepath($view_pointer)
     {
+        list($controller_name, $view_filename) = explode('#', $view_pointer);
         $app_path = Configuration::$app_path;
-        $views_path = Configuration::$views_path;
-        return "{$app_path}/{$views_path}/{$view_filename}";
+        return "{$app_path}/src/{$controller_name}/views/{$view_filename}";
     }
 
     /**
-     * Return the content type associated to a view file extension
+     * Return the content type associated to a view pointer file extension
      *
-     * @param string $view_filename
+     * @param string $view_pointer
      *
-     * @throws \Minz\Errors\ResponseError if the view file extension is not supported
+     * @throws \Minz\Errors\ResponseError if the view pointer file extension is
+     *                                    not supported
      *
      * @return string
      */
-    private static function contentTypeFromViewFile($view_filename)
+    private static function contentTypeFromViewPointer($view_pointer)
     {
-        $file_extension = pathinfo($view_filename, PATHINFO_EXTENSION);
+        $file_extension = pathinfo($view_pointer, PATHINFO_EXTENSION);
         if (!isset(self::EXTENSION_TO_CONTENT_TYPE[$file_extension])) {
             throw new Errors\ResponseError(
                 "{$file_extension} is not a supported view file extension."
