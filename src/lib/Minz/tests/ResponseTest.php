@@ -85,7 +85,7 @@ class ResponseTest extends TestCase
         $this->assertSame('errors/internal_server_error.phtml', $response->viewFilename());
     }
 
-    public function testOutput()
+    public function testRender()
     {
         $response = Response::ok('rabbits/items.phtml');
 
