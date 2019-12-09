@@ -171,7 +171,7 @@ class Response
      */
     public function setViewFilename($view_filename)
     {
-        $view_filepath = $this->viewFilepath($view_filename);
+        $view_filepath = self::viewFilepath($view_filename);
         if (!file_exists($view_filepath)) {
             $missing_file = Configuration::$views_path . '/' . $view_filename;
             throw new Errors\ResponseError("{$missing_file} file cannot be found.");
@@ -244,7 +244,7 @@ class Response
      */
     public function render()
     {
-        $view_filepath = $this->viewFilepath($this->view_filename);
+        $view_filepath = self::viewFilepath($this->view_filename);
         $view = new View($view_filepath);
         return $view->build($this->variables);
     }
@@ -256,7 +256,7 @@ class Response
      *
      * @return string
      */
-    private function viewFilepath($view_filename)
+    private static function viewFilepath($view_filename)
     {
         $app_path = Configuration::$app_path;
         $views_path = Configuration::$views_path;
