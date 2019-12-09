@@ -24,6 +24,15 @@ class Response
         500, 501, 502, 503, 504, 505,
     ];
 
+    /** @var string[] */
+    public const EXTENSION_TO_CONTENT_TYPE = [
+        'html' => 'text/html',
+        'json' => 'application/json',
+        'phtml' => 'text/html',
+        'txt' => 'text/plain',
+        'xml' => 'text/xml',
+    ];
+
     /**
      * Create a successful response (HTTP 200).
      *
@@ -118,6 +127,7 @@ class Response
      *
      * @throws \Minz\Errors\ResponseError if the code is not a valid HTTP status code
      * @throws \Minz\Errors\ResponseError if the view file doesn't exist
+     * @throws \Minz\Errors\ResponseError if the view file extension is not supported
      *
      * @return \Minz\Response
      */
@@ -125,9 +135,10 @@ class Response
     {
         $response = new Response();
         $response->setCode($code);
-        $response->setHeader('Content-Type', 'text/html');
         $response->setViewFilename($view_filename);
         $response->setVariables($variables);
+        $content_type = self::contentTypeFromViewFile($view_filename);
+        $response->setHeader('Content-Type', $content_type);
         return $response;
     }
 
@@ -250,5 +261,25 @@ class Response
         $app_path = Configuration::$app_path;
         $views_path = Configuration::$views_path;
         return "{$app_path}/{$views_path}/{$view_filename}";
+    }
+
+    /**
+     * Return the content type associated to a view file extension
+     *
+     * @param string $view_filename
+     *
+     * @throws \Minz\Errors\ResponseError if the view file extension is not supported
+     *
+     * @return string
+     */
+    private static function contentTypeFromViewFile($view_filename)
+    {
+        $file_extension = pathinfo($view_filename, PATHINFO_EXTENSION);
+        if (!isset(self::EXTENSION_TO_CONTENT_TYPE[$file_extension])) {
+            throw new Errors\ResponseError(
+                "{$file_extension} is not a supported view file extension."
+            );
+        }
+        return self::EXTENSION_TO_CONTENT_TYPE[$file_extension];
     }
 }
