@@ -30,11 +30,24 @@ class ActionControllerTest extends TestCase
     {
         $this->expectException(Errors\ControllerError::class);
         $this->expectExceptionMessage(
-            'src/controllers/missing.php file cannot be found.'
+            'src/controllers/missing.php file cannot be loaded.'
         );
 
         $request = new Request();
         $action_controller = new ActionController('missing#items');
+
+        $action_controller->execute($request);
+    }
+
+    public function testExecuteFailsIfControllerPathIsDirectory()
+    {
+        $this->expectException(Errors\ControllerError::class);
+        $this->expectExceptionMessage(
+            'src/controllers/directory.php file cannot be loaded.'
+        );
+
+        $request = new Request();
+        $action_controller = new ActionController('directory#items');
 
         $action_controller->execute($request);
     }

@@ -54,27 +54,23 @@ class ActionController
      *
      * @param \Minz\Request $request A request against which the action must be executed
      *
-     * @throws \Minz\Errors\ControllerError if the controller's file cannot be found
+     * @throws \Minz\Errors\ControllerError if the controller's file cannot be loaded
      * @throws \Minz\Errors\ActionError if the action cannot be called
      *
      * @return \Minz\Response The response to return to the user
      */
     public function execute($request)
     {
-        $app_name = Configuration::$app_name;
-        $app_path = Configuration::$app_path;
-        $controllers_path = Configuration::$controllers_path;
-
-        $controller_filepath = "{$controllers_path}/{$this->controller_name}.php";
-        $controller_app_filepath = "{$app_path}/{$controller_filepath}";
-        if (!file_exists($controller_app_filepath)) {
+        $included = self::loadControllerCode($this->controller_name);
+        if (!$included) {
+            $controllers_path = Configuration::$controllers_path;
+            $controller_filepath = "{$controllers_path}/{$this->controller_name}.php";
             throw new Errors\ControllerError(
-                "{$controller_filepath} file cannot be found."
+                "{$controller_filepath} file cannot be loaded."
             );
         }
 
-        require_once($controller_app_filepath);
-
+        $app_name = Configuration::$app_name;
         $base_action = "\\{$app_name}\\controllers";
         $action = "{$base_action}\\{$this->controller_name}\\{$this->action_name}";
         if (!is_callable($action)) {
@@ -84,5 +80,22 @@ class ActionController
         }
 
         return $action($request);
+    }
+
+    /**
+     * Include the controller file based on the given name.
+     *
+     * @param string $controller_name
+     *
+     * @return boolean Return true if the controller has been included, false otherwise
+     */
+    public static function loadControllerCode($controller_name)
+    {
+        $app_path = Configuration::$app_path;
+        $controllers_path = Configuration::$controllers_path;
+        $controller_filepath = "{$controllers_path}/{$controller_name}.php";
+        $controller_app_filepath = "{$app_path}/{$controller_filepath}";
+
+        return @include_once($controller_app_filepath);
     }
 }
