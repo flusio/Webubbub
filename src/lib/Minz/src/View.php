@@ -31,7 +31,7 @@ class View
     public function build($variables = [])
     {
         foreach ($variables as $var_name => $var_value) {
-            $this->$var_name = $var_value;
+            $$var_name = $var_value;
         }
 
         ob_start();

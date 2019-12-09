@@ -154,10 +154,20 @@ class ResponseTest extends TestCase
 
     public function testRender()
     {
-        $response = Response::ok('rabbits#items.phtml');
+        $rabbits = [
+            'Bugs',
+            'Clémentine',
+            'Jean-Jean',
+        ];
+        $response = Response::ok('rabbits#items.phtml', [
+            'rabbits' => $rabbits,
+        ]);
 
         $output = $response->render();
 
-        $this->assertSame("<h1>The rabbits</h1>\n", $output);
+        $this->assertStringContainsString("<h1>The rabbits</h1>\n", $output);
+        $this->assertStringContainsString("Bugs", $output);
+        $this->assertStringContainsString("Clémentine", $output);
+        $this->assertStringContainsString("Jean-Jean", $output);
     }
 }

@@ -18,8 +18,12 @@ class EngineTest extends TestCase
 
         $response = $engine->run($request);
 
+        $output = $response->render();
         $this->assertSame(200, $response->code());
-        $this->assertSame('rabbits#items.phtml', $response->viewPointer());
+        $this->assertStringContainsString("<h1>The rabbits</h1>\n", $output);
+        $this->assertStringContainsString("Bugs", $output);
+        $this->assertStringContainsString("Clémentine", $output);
+        $this->assertStringContainsString("Jean-Jean", $output);
     }
 
     public function testRunReturnsErrorIfRouteNotFound()

@@ -6,7 +6,15 @@ use Minz\Response;
 
 function items($request)
 {
-    return Response::ok('rabbits#items.phtml');
+    $rabbits = [
+        'Bugs',
+        'Clémentine',
+        'Jean-Jean',
+    ];
+
+    return Response::ok('rabbits#items.phtml', [
+        'rabbits' => $rabbits,
+    ]);
 }
 
 function missingViewFile($request)
