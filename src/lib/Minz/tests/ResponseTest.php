@@ -92,6 +92,21 @@ class ResponseTest extends TestCase
         $this->assertSame(200, $response->code());
     }
 
+    public function testAccepted()
+    {
+        $response = Response::accepted('rabbits/items.phtml');
+
+        $this->assertSame(202, $response->code());
+    }
+
+    public function testBadRequest()
+    {
+        $response = Response::badRequest();
+
+        $this->assertSame(400, $response->code());
+        $this->assertSame('errors/bad_request.phtml', $response->viewFilename());
+    }
+
     public function testNotFound()
     {
         $response = Response::notFound();

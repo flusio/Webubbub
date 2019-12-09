@@ -42,6 +42,40 @@ class Response
     }
 
     /**
+     * Create an accepted response (HTTP 202).
+     *
+     * @see \Minz\Response::fromCode()
+     *
+     * @param string $view_filename
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
+     *
+     * @return \Minz\Response
+     */
+    public static function accepted($view_filename, $variables = [])
+    {
+        return Response::fromCode(202, $view_filename, $variables);
+    }
+
+    /**
+     * Create a bad request response (HTTP 400).
+     *
+     * @see \Minz\Response::fromCode()
+     *
+     * @param string $view_filename Default is errors/bad_request.phtml
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
+     *
+     * @return \Minz\Response
+     */
+    public static function badRequest($view_filename = 'errors/bad_request.phtml', $variables = [])
+    {
+        return Response::fromCode(400, $view_filename, $variables);
+    }
+
+    /**
      * Create a not found response (HTTP 404).
      *
      * @see \Minz\Response::fromCode()
