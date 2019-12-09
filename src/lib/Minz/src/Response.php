@@ -27,60 +27,70 @@ class Response
     /**
      * Create a successful response (HTTP 200).
      *
-     * @param string $view_filename The name of a view file, under the views_path
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @see \Minz\Response::fromCode()
      *
-     * @throws \Minz\Errors\ResponseError if the view filename doesn't exist
+     * @param string $view_filename
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
     public static function ok($view_filename, $variables = [])
     {
-        $response = new Response();
-        $response->setCode(200);
-        $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename($view_filename);
-        $response->setVariables($variables);
-        return $response;
+        return Response::fromCode(200, $view_filename, $variables);
     }
 
     /**
      * Create a not found response (HTTP 404).
      *
-     * @param string $view_filename The name of a view file, under the views_path.
-     *                              Default value is `errors/not_found.phtml`
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @see \Minz\Response::fromCode()
      *
-     * @throws \Minz\Errors\ResponseError if the view filename doesn't exist
+     * @param string $view_filename Default is errors/not_found.phtml
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
     public static function notFound($view_filename = 'errors/not_found.phtml', $variables = [])
     {
-        $response = new Response();
-        $response->setCode(404);
-        $response->setHeader('Content-Type', 'text/html');
-        $response->setViewFilename($view_filename);
-        $response->setVariables($variables);
-        return $response;
+        return Response::fromCode(404, $view_filename, $variables);
     }
 
     /**
      * Create an internal server error response (HTTP 500).
      *
-     * @param string $view_filename The name of a view file, under the views_path.
-     *                              Default value is `errors/internal_server_error.phtml`
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @see \Minz\Response::fromCode()
      *
-     * @throws \Minz\Errors\ResponseError if the errors/internal_server_error.phtml
-     *                                    view file doesn't exist
+     * @param string $view_filename Default is errors/internal_server_error.phtml
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
     public static function internalServerError($view_filename = 'errors/internal_server_error.phtml', $variables = [])
     {
+        return Response::fromCode(500, $view_filename, $variables);
+    }
+
+    /**
+     * Create a Response from a HTTP status code.
+     *
+     * @param integer $code The HTTP code to set for the response
+     * @param string $view_filename The name of a view file, under the views_path.
+     * @param mixed[] $variables A list of optional variables to pass to the view
+     *
+     * @throws \Minz\Errors\ResponseError if the code is not a valid HTTP status code
+     * @throws \Minz\Errors\ResponseError if the view file doesn't exist
+     *
+     * @return \Minz\Response
+     */
+    public static function fromCode($code, $view_filename, $variables = [])
+    {
         $response = new Response();
-        $response->setCode(500);
+        $response->setCode($code);
         $response->setHeader('Content-Type', 'text/html');
         $response->setViewFilename($view_filename);
         $response->setVariables($variables);
