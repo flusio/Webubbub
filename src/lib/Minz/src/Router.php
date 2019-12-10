@@ -174,7 +174,8 @@ class Router
             // replaced by a real value in the URI (e.g. /rabbits/42).
             // We can't check the equality of :id and 42 but there are
             // "equivalent" from a routing point of view.
-            if ($pattern_element[0] !== ':' && $pattern_element !== $path_element) {
+            $pattern_is_variable = $pattern_element && $pattern_element[0] === ':';
+            if (!$pattern_is_variable && $pattern_element !== $path_element) {
                 return false;
             }
         }
