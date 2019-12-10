@@ -1,1 +1,4 @@
 /bin/.phpunit.result.cache
+
+/data/*
+!/data/.keep
