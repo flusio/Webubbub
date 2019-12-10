@@ -9,6 +9,7 @@ if (!$environment) {
     $environment = 'development';
 }
 \Minz\Configuration::load($environment, $app_path);
+\Minz\Environment::initialize();
 
 // Initialize the needed objects, representing the app and the user request.
 $request = new \Minz\Request();
