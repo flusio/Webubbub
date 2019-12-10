@@ -25,10 +25,8 @@ namespace Minz;
  * - configuration_filepath: the path to the current configuration file
  *
  * Other optional keys are:
- * - controllers_path (the path to the controllers directory, useful for the tests)
- * - views_path (the path to the views directory, useful for the tests)
- * - database (an array specifying dsn, username, password and options to pass
- *   to the PDO interface, see https://www.php.net/manual/fr/pdo.construct.php)
+ * - database: an array specifying dsn, username, password and options to pass
+ *   to the PDO interface, see https://www.php.net/manual/fr/pdo.construct.php
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -55,12 +53,6 @@ class Configuration
      *             application's namespace.
      */
     public static $app_name;
-
-    /** @var string The path to the application's views (from app_path). */
-    public static $views_path;
-
-    /** @var string The path to the application's controllers (from app_path). */
-    public static $controllers_path;
 
     /** @var string[] An array containing database configuration */
     public static $database;
@@ -106,17 +98,6 @@ class Configuration
         self::$configuration_filepath = $configuration_filepath;
 
         self::$app_name = self::getRequired($raw_configuration, 'app_name');
-
-        self::$controllers_path = self::getDefault(
-            $raw_configuration,
-            'controllers_path',
-            'src/controllers'
-        );
-        self::$views_path = self::getDefault(
-            $raw_configuration,
-            'views_path',
-            'src/views'
-        );
 
         $database = self::getDefault($raw_configuration, 'database', null);
         if ($database !== null) {
