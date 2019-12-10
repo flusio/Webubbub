@@ -59,9 +59,7 @@ class DatabaseTest extends TestCase
             'An error occured during database initialization: invalid data source name.'
         );
 
-        Configuration::$database = [
-            'dsn' => 'not a dsn',
-        ];
+        Configuration::$database['dsn'] = 'not a dsn';
 
         Database::get();
     }
@@ -70,9 +68,7 @@ class DatabaseTest extends TestCase
     {
         $sqlite_file = tmpfile();
         $sqlite_filename = stream_get_meta_data($sqlite_file)['uri'];
-        Configuration::$database = [
-            'dsn' => 'sqlite:' . $sqlite_filename,
-        ];
+        Configuration::$database['dsn'] = 'sqlite:' . $sqlite_filename;
         $database = Database::get();
         $schema = <<<'SQL'
 CREATE TABLE rabbits (
@@ -99,9 +95,7 @@ SQL;
 
     public function testDropIfSqliteIsInMemory()
     {
-        Configuration::$database = [
-            'dsn' => 'sqlite::memory:',
-        ];
+        Configuration::$database['dsn'] = 'sqlite::memory:';
         $database = Database::get();
         $schema = <<<'SQL'
 CREATE TABLE rabbits (
