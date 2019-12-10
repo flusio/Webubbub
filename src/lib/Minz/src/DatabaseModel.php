@@ -11,13 +11,13 @@ class DatabaseModel
     private $database;
 
     /** @var string */
-    private $table_name;
+    protected $table_name;
 
     /** @var string */
-    private $primary_key_name;
+    protected $primary_key_name;
 
     /** @var string[] */
-    private $properties;
+    protected $properties;
 
     /**
      * @throws \Minz\DatabaseModelError if the table name, or one of the
