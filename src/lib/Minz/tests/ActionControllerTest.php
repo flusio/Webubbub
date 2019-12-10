@@ -6,6 +6,12 @@ use PHPUnit\Framework\TestCase;
 
 class ActionControllerTest extends TestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/';
+    }
+
     public function testConstruct()
     {
         $action_controller = new ActionController('rabbits#items');
