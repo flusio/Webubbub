@@ -45,7 +45,7 @@ class Engine
         $action_controller = new ActionController($to);
         try {
             return $action_controller->execute($request);
-        } catch (Errors\ControllerError | Errors\ActionError | Errors\ResponseError $e) {
+        } catch (\Exception $e) {
             return Response::internalServerError(
                 'errors#internal_server_error.phtml',
                 ['error' => $e]
