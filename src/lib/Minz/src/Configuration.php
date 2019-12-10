@@ -23,6 +23,8 @@ namespace Minz;
  * Other optional keys are:
  * - controllers_path (the path to the controllers directory, useful for the tests)
  * - views_path (the path to the views directory, useful for the tests)
+ * - database (an array specifying dsn, username, password and options to pass
+ *   to the PDO interface, see https://www.php.net/manual/fr/pdo.construct.php)
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -50,6 +52,9 @@ class Configuration
     /** @var string The path to the application's controllers (from app_path). */
     public static $controllers_path;
 
+    /** @var string[] An array containing database configuration */
+    public static $database;
+
     /**
      * Load the application's configuration, for a given environment.
      *
@@ -61,6 +66,8 @@ class Configuration
      * @throws \Minz\Errors\ConfigurationError if the corresponding environment
      *                                         configuration file doesn't exist
      * @throws \Minz\Errors\ConfigurationError if a required value is missing
+     * @throws \Minz\Errors\ConfigurationError if a value doesn't match with
+     *                                         the required format
      *
      * @return void
      */
@@ -97,6 +104,29 @@ class Configuration
             'views_path',
             'src/views'
         );
+
+        $database = self::getDefault($raw_configuration, 'database', null);
+        if ($database !== null) {
+            if (!is_array($database)) {
+                throw new Errors\ConfigurationError(
+                    'Database configuration must be an array, containing at least a dsn key.'
+                );
+            }
+
+            if (!isset($database['dsn'])) {
+                throw new Errors\ConfigurationError(
+                    'Database configuration must contain at least a dsn key.'
+                );
+            }
+
+            $additional_default_values = [
+                'username' => null,
+                'password' => null,
+                'options' => [],
+            ];
+            $database = array_merge($additional_default_values, $database);
+        }
+        self::$database = $database;
     }
 
     /**
