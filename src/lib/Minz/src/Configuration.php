@@ -20,6 +20,10 @@ namespace Minz;
  * An `environment` and an `app_path` values are automatically set from the
  * parameters of the `load` method.
  *
+ * Other automated values are:
+ * - configuration_path: the path to the configuration directory
+ * - configuration_filepath: the path to the current configuration file
+ *
  * Other optional keys are:
  * - controllers_path (the path to the controllers directory, useful for the tests)
  * - views_path (the path to the views directory, useful for the tests)
@@ -39,6 +43,12 @@ class Configuration
 
     /** @var string The base path of the application */
     public static $app_path;
+
+    /** @var string The path to the configuration directory */
+    public static $configuration_path;
+
+    /** @var string The path to the current configuration file */
+    public static $configuration_filepath;
 
     /**
      * @var string The name of the application. It must be identical to the
@@ -79,8 +89,9 @@ class Configuration
             );
         }
 
+        $configuration_path = $app_path . '/configuration';
         $configuration_filename = "environment_{$environment}.php";
-        $configuration_filepath = "{$app_path}/configuration/{$configuration_filename}";
+        $configuration_filepath = $configuration_path . '/' . $configuration_filename;
         if (!file_exists($configuration_filepath)) {
             throw new Errors\ConfigurationError(
                 "configuration/{$configuration_filename} file cannot be found."
@@ -91,6 +102,8 @@ class Configuration
 
         self::$environment = $environment;
         self::$app_path = $app_path;
+        self::$configuration_path = $configuration_path;
+        self::$configuration_filepath = $configuration_filepath;
 
         self::$app_name = self::getRequired($raw_configuration, 'app_name');
 
