@@ -56,6 +56,7 @@ class ActionController
      *
      * @throws \Minz\Errors\ControllerError if the controller's file cannot be loaded
      * @throws \Minz\Errors\ActionError if the action cannot be called
+     * @throws \Minz\Errors\ActionError if the action doesn't return a Response
      *
      * @return \Minz\Response The response to return to the user
      */
@@ -78,7 +79,14 @@ class ActionController
             );
         }
 
-        return $action($request);
+        $response = $action($request);
+        if (!($response instanceof Response)) {
+            throw new Errors\ActionError(
+                "{$action} action does not return a Response."
+            );
+        }
+
+        return $response;
     }
 
     /**

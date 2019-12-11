@@ -64,4 +64,17 @@ class ActionControllerTest extends TestCase
 
         $action_controller->execute($request);
     }
+
+    public function testExecuteFailsIfActionDoesNotReturnResponse()
+    {
+        $this->expectException(Errors\ActionError::class);
+        $this->expectExceptionMessage(
+            '\AppTest\controllers\rabbits\noResponse action does not return a Response.'
+        );
+
+        $request = new Request('GET', '/');
+        $action_controller = new ActionController('rabbits#noResponse');
+
+        $action_controller->execute($request);
+    }
 }

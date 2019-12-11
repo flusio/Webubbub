@@ -21,3 +21,8 @@ function missingViewFile($request)
 {
     return Response::ok('rabbits#missing.phtml');
 }
+
+function noResponse($request)
+{
+    return 'It’s a string, not a Response!';
+}
