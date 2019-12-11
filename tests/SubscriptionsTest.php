@@ -95,7 +95,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         $this->assertResponse(
             $response,
             400,
-            "{$invalidMode} mode is invalid.",
+            "{$invalidMode} mode is invalid.\n",
             ['Content-Type' => 'text/plain']
         );
     }
@@ -116,7 +116,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         $this->assertResponse(
             $response,
             400,
-            "{$invalid_url} callback is invalid.",
+            "{$invalid_url} callback is invalid.\n",
             ['Content-Type' => 'text/plain']
         );
     }
@@ -137,7 +137,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         $this->assertResponse(
             $response,
             400,
-            "{$invalid_url} topic is invalid.",
+            "{$invalid_url} topic is invalid.\n",
             ['Content-Type' => 'text/plain']
         );
     }
