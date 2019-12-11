@@ -11,6 +11,14 @@ if (!$environment) {
 \Minz\Configuration::load($environment, $app_path);
 \Minz\Environment::initialize();
 
+// Initialize the database. If the DB exists, the request will fail since
+// tables already exist. We don't care.
+// I'll design a better system later but for now it's good enough.
+$configuration_path = \Minz\Configuration::$configuration_path;
+$schema = file_get_contents($configuration_path . '/schema.sql');
+$database = \Minz\Database::get();
+$database->exec($schema);
+
 // Get the http information related to the current request
 $http_method = $_SERVER['REQUEST_METHOD'];
 $http_uri = $_SERVER['REQUEST_URI'];
@@ -21,6 +29,7 @@ $request = new \Minz\Request($http_method, $http_uri, $http_parameters);
 $router = new \Minz\Router();
 
 $router->addRoute('/', 'home#index', 'get');
+$router->addRoute('/', 'subscriptions#handleRequest', 'post');
 
 // Execute the request against the router and get a response from the executed
 // action.
