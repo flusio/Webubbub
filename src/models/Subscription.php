@@ -84,6 +84,9 @@ class Subscription
     /**
      * @param string $callback
      * @param string $topic
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if callback, topic or
+     *                                                   secret is invalid
      */
     public function __construct($callback, $topic, $lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
     {
