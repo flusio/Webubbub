@@ -15,6 +15,15 @@ class ResponseTest extends TestCase
         $this->assertSame('rabbits#items.phtml', $response->viewPointer());
     }
 
+    public function testSetViewPointerCanBeEmpty()
+    {
+        $response = new Response();
+
+        $response->setViewPointer('');
+
+        $this->assertSame('', $response->viewPointer());
+    }
+
     public function testSetViewPointerFailsIfDoesntContainHash()
     {
         $this->expectException(Errors\ResponseError::class);
@@ -86,6 +95,15 @@ class ResponseTest extends TestCase
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
     }
 
+    public function testFromCodeAcceptsEmptyViewPointer()
+    {
+        $response = Response::fromCode(200, '');
+
+        $this->assertSame(200, $response->code());
+        $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
+        $this->assertSame('', $response->viewPointer());
+    }
+
     public function testFromCodeFailsIfInvalidCode()
     {
         $this->expectException(Errors\ResponseError::class);
@@ -133,7 +151,6 @@ class ResponseTest extends TestCase
         $response = Response::badRequest();
 
         $this->assertSame(400, $response->code());
-        $this->assertSame('errors#bad_request.phtml', $response->viewPointer());
     }
 
     public function testNotFound()
@@ -141,7 +158,6 @@ class ResponseTest extends TestCase
         $response = Response::notFound();
 
         $this->assertSame(404, $response->code());
-        $this->assertSame('errors#not_found.phtml', $response->viewPointer());
     }
 
     public function testInternalServerError()
@@ -149,7 +165,6 @@ class ResponseTest extends TestCase
         $response = Response::internalServerError();
 
         $this->assertSame(500, $response->code());
-        $this->assertSame('errors#internal_server_error.phtml', $response->viewPointer());
     }
 
     public function testRender()
@@ -169,5 +184,14 @@ class ResponseTest extends TestCase
         $this->assertStringContainsString("Bugs", $output);
         $this->assertStringContainsString("Clémentine", $output);
         $this->assertStringContainsString("Jean-Jean", $output);
+    }
+
+    public function testRenderWithEmptyViewPointer()
+    {
+        $response = Response::ok('');
+
+        $output = $response->render();
+
+        $this->assertSame('', $output);
     }
 }

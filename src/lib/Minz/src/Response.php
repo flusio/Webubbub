@@ -49,7 +49,7 @@ class Response
      *
      * @return \Minz\Response
      */
-    public static function ok($view_pointer, $variables = [])
+    public static function ok($view_pointer = '', $variables = [])
     {
         return Response::fromCode(200, $view_pointer, $variables);
     }
@@ -66,7 +66,7 @@ class Response
      *
      * @return \Minz\Response
      */
-    public static function accepted($view_pointer, $variables = [])
+    public static function accepted($view_pointer = '', $variables = [])
     {
         return Response::fromCode(202, $view_pointer, $variables);
     }
@@ -76,14 +76,14 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_pointer Default is errors#bad_request.phtml
+     * @param string $view_pointer
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function badRequest($view_pointer = 'errors#bad_request.phtml', $variables = [])
+    public static function badRequest($view_pointer = '', $variables = [])
     {
         return Response::fromCode(400, $view_pointer, $variables);
     }
@@ -93,14 +93,14 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_pointer Default is errors#not_found.phtml
+     * @param string $view_pointer
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function notFound($view_pointer = 'errors#not_found.phtml', $variables = [])
+    public static function notFound($view_pointer = '', $variables = [])
     {
         return Response::fromCode(404, $view_pointer, $variables);
     }
@@ -110,14 +110,14 @@ class Response
      *
      * @see \Minz\Response::fromCode()
      *
-     * @param string $view_pointer Default is errors#internal_server_error.phtml
+     * @param string $view_pointer
      * @param mixed[] $variables
      *
      * @throws \Minz\Errors\ResponseError
      *
      * @return \Minz\Response
      */
-    public static function internalServerError($view_pointer = 'errors#internal_server_error.phtml', $variables = [])
+    public static function internalServerError($view_pointer = '', $variables = [])
     {
         return Response::fromCode(500, $view_pointer, $variables);
     }
@@ -142,7 +142,11 @@ class Response
         $response->setCode($code);
         $response->setViewPointer($view_pointer);
         $response->setVariables($variables);
-        $content_type = self::contentTypeFromViewPointer($view_pointer);
+        if ($view_pointer) {
+            $content_type = self::contentTypeFromViewPointer($view_pointer);
+        } else {
+            $content_type = 'text/plain';
+        }
         $response->setHeader('Content-Type', $content_type);
         return $response;
     }
@@ -168,7 +172,7 @@ class Response
     }
 
     /**
-     * @param string $view_pointer
+     * @param string $view_pointer A pointer to a view file (can be empty)
      *
      * @throws \Minz\Errors\ResponseError if the view pointer doesn't contain a hash
      * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
@@ -177,17 +181,19 @@ class Response
      */
     public function setViewPointer($view_pointer)
     {
-        if (strpos($view_pointer, '#') === false) {
-            throw new Errors\ResponseError(
-                "{$view_pointer} view pointer must contain a hash (#)."
-            );
-        }
+        if ($view_pointer !== '') {
+            if (strpos($view_pointer, '#') === false) {
+                throw new Errors\ResponseError(
+                    "{$view_pointer} view pointer must contain a hash (#)."
+                );
+            }
 
-        $view_filepath = self::viewFilepath($view_pointer);
-        if (!file_exists($view_filepath)) {
-            list($controller_name, $view_filename) = explode('#', $view_pointer);
-            $missing_file = "src/{$controller_name}/views/{$view_filename}";
-            throw new Errors\ResponseError("{$missing_file} file cannot be found.");
+            $view_filepath = self::viewFilepath($view_pointer);
+            if (!file_exists($view_filepath)) {
+                list($controller_name, $view_filename) = explode('#', $view_pointer);
+                $missing_file = "src/{$controller_name}/views/{$view_filename}";
+                throw new Errors\ResponseError("{$missing_file} file cannot be found.");
+            }
         }
 
         $this->view_pointer = $view_pointer;
@@ -257,9 +263,13 @@ class Response
      */
     public function render()
     {
-        $view_filepath = self::viewFilepath($this->view_pointer);
-        $view = new View($view_filepath);
-        return $view->build($this->variables);
+        if ($this->view_pointer) {
+            $view_filepath = self::viewFilepath($this->view_pointer);
+            $view = new View($view_filepath);
+            return $view->build($this->variables);
+        } else {
+            return '';
+        }
     }
 
     /**
