@@ -20,6 +20,8 @@ $http_parameters = array_merge($_GET, $_POST);
 $request = new \Minz\Request($http_method, $http_uri, $http_parameters);
 $router = new \Minz\Router();
 
+$router->addRoute('/', 'home#index', 'get');
+
 // Execute the request against the router and get a response from the executed
 // action.
 $engine = new \Minz\Engine($router);

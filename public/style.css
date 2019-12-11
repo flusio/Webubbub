@@ -1,0 +1,53 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    color: #2a2230;
+    font-family: serif;
+    font-size: 18px;
+    line-height: 1.4;
+
+    background-color: #f8f6ff;
+}
+
+@media(min-width: 40rem) {
+    html {
+        font-size: 24px;
+    }
+}
+
+body {
+    max-width: 50rem;
+    margin: 5rem auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+hr {
+    width: 50%;
+    margin: 2em 0;
+
+    border: none;
+    border-top: 4px solid #c02b43;
+}
+
+@media(min-width: 50rem) {
+    hr {
+        width: 33%;
+    }
+}
+
+a {
+    color: #a6253a;
+}
+
+p {
+    max-width: 30rem;
+}
