@@ -6,12 +6,6 @@ use PHPUnit\Framework\TestCase;
 
 class ActionControllerTest extends TestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/';
-    }
-
     public function testConstruct()
     {
         $action_controller = new ActionController('rabbits#items');
@@ -22,7 +16,7 @@ class ActionControllerTest extends TestCase
 
     public function testExecute()
     {
-        $request = new Request();
+        $request = new Request('GET', '/');
         $action_controller = new ActionController('rabbits#items');
 
         $response = $action_controller->execute($request);
@@ -39,7 +33,7 @@ class ActionControllerTest extends TestCase
             'src/missing/controller.php file cannot be loaded.'
         );
 
-        $request = new Request();
+        $request = new Request('GET', '/');
         $action_controller = new ActionController('missing#items');
 
         $action_controller->execute($request);
@@ -52,7 +46,7 @@ class ActionControllerTest extends TestCase
             'src/controller_as_directory/controller.php file cannot be loaded.'
         );
 
-        $request = new Request();
+        $request = new Request('GET', '/');
         $action_controller = new ActionController('controller_as_directory#items');
 
         $action_controller->execute($request);
@@ -65,7 +59,7 @@ class ActionControllerTest extends TestCase
             '\AppTest\controllers\rabbits\uncallable action cannot be called.'
         );
 
-        $request = new Request();
+        $request = new Request('GET', '/');
         $action_controller = new ActionController('rabbits#uncallable');
 
         $action_controller->execute($request);

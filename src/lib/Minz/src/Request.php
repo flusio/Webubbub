@@ -3,8 +3,8 @@
 namespace Minz;
 
 /**
- * The Request class represents the request of a user. It contains basically
- * some headers, and GET and/or POST parameters.
+ * The Request class represents the request of a user. It represents basically
+ * some headers, and GET / POST parameters.
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -21,16 +21,39 @@ class Request
     private $parameters;
 
     /**
-     * Create a Request by loading from the $_SERVER variable.
+     * Create a Request
+     *
+     * @param string $method Usually the method from $_SERVER['REQUEST_METHOD']
+     * @param string $uri Usually the method from $_SERVER['REQUEST_URI']
+     * @param mixed[] $parameters Usually a merged array of $_GET and $_POST
      */
-    public function __construct()
+    public function __construct($method, $uri, $parameters = [])
     {
-        $this->method = strtolower($_SERVER['REQUEST_METHOD']);
+        $method = strtolower($method);
+        $uri_components = parse_url($uri);
 
-        $url_components = parse_url($_SERVER['REQUEST_URI']);
-        $this->path = $url_components['path'];
+        if (!in_array($method, Router::VALID_HTTP_VERBS)) {
+            $verbs_as_string = implode(', ', Router::VALID_HTTP_VERBS);
+            throw new Errors\RequestError(
+                "{$method} method is not a valid HTTP verb ({$verbs_as_string})."
+            );
+        }
 
-        $this->parameters = array_merge($_GET, $_POST);
+        if (!$uri_components || !$uri_components['path']) {
+            throw new Errors\RequestError("{$uri} URI path cannot be parsed.");
+        }
+
+        if ($uri_components['path'][0] !== '/') {
+            throw new Errors\RequestError("{$uri} URI path must start with a slash.");
+        }
+
+        if (!is_array($parameters)) {
+            throw new Errors\RequestError('Parameters are not in an array.');
+        }
+
+        $this->method = $method;
+        $this->path = $uri_components['path'];
+        $this->parameters = $parameters;
     }
 
     /**

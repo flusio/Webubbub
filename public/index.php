@@ -11,8 +11,13 @@ if (!$environment) {
 \Minz\Configuration::load($environment, $app_path);
 \Minz\Environment::initialize();
 
+// Get the http information related to the current request
+$http_method = $_SERVER['REQUEST_METHOD'];
+$http_uri = $_SERVER['REQUEST_URI'];
+$http_parameters = array_merge($_GET, $_POST);
+
 // Initialize the needed objects, representing the app and the user request.
-$request = new \Minz\Request();
+$request = new \Minz\Request($http_method, $http_uri, $http_parameters);
 $router = new \Minz\Router();
 
 // Execute the request against the router and get a response from the executed

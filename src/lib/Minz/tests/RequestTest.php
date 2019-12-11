@@ -6,18 +6,49 @@ use PHPUnit\Framework\TestCase;
 
 class RequestTest extends TestCase
 {
-    public function setUp(): void
+    /**
+     * @dataProvider invalidMethodProvider
+     */
+    public function testConstructorFailsIfInvalidMethod($invalidMethod)
     {
-        $_SERVER['REQUEST_METHOD'] = '';
-        $_SERVER['REQUEST_URI'] = '';
-        $_GET = [];
-        $_POST = [];
+        $this->expectException(Errors\RequestError::class);
+        $this->expectExceptionMessage(
+            "{$invalidMethod} method is not a valid HTTP verb (get, post, patch, put, delete)."
+        );
+
+        new Request($invalidMethod, '/');
+    }
+
+    /**
+     * @dataProvider invalidUriProvider
+     */
+    public function testConstructorFailsIfInvalidUri($invalidUri)
+    {
+        $this->expectException(Errors\RequestError::class);
+        $this->expectExceptionMessage("{$invalidUri} URI path cannot be parsed.");
+
+        new Request('GET', $invalidUri);
+    }
+
+    public function testConstructorFailsIfUriPathDoesntStartWithSlash()
+    {
+        $this->expectException(Errors\RequestError::class);
+        $this->expectExceptionMessage('no_slash URI path must start with a slash.');
+
+        new Request('GET', 'no_slash');
+    }
+
+    public function testConstructorFailsIfParametersIsntArray()
+    {
+        $this->expectException(Errors\RequestError::class);
+        $this->expectExceptionMessage('Parameters are not in an array.');
+
+        new Request('GET', '/', 'a parameter ?');
     }
 
     public function testMethod()
     {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $request = new Request();
+        $request = new Request('GET', '/');
 
         $method = $request->method();
 
@@ -29,48 +60,27 @@ class RequestTest extends TestCase
      */
     public function testPath($requestUri, $expectedPath)
     {
-        $_SERVER['REQUEST_URI'] = $requestUri;
-        $request = new Request();
+        $request = new Request('GET', $requestUri);
 
         $path = $request->path();
 
         $this->assertSame($expectedPath, $path);
     }
 
-    public function testParamWithGET()
+    public function testParam()
     {
-        $_GET['foo'] = 'bar';
-        $request = new Request();
+        $request = new Request('GET', '/', [
+            'foo' => 'bar'
+        ]);
 
         $foo = $request->param('foo');
 
         $this->assertSame('bar', $foo);
-    }
-
-    public function testParamWithPOST()
-    {
-        $_POST['foo'] = 'bar';
-        $request = new Request();
-
-        $foo = $request->param('foo');
-
-        $this->assertSame('bar', $foo);
-    }
-
-    public function testParamWithPOSTTakingPrecedenceOnGET()
-    {
-        $_GET['foo'] = 'bar';
-        $_POST['foo'] = 'baz';
-        $request = new Request();
-
-        $foo = $request->param('foo');
-
-        $this->assertSame('baz', $foo);
     }
 
     public function testParamWithDefaultValue()
     {
-        $request = new Request();
+        $request = new Request('GET', '/');
 
         $foo = $request->param('foo', 'bar');
 
@@ -84,6 +94,26 @@ class RequestTest extends TestCase
             ['/rabbits', '/rabbits'],
             ['/rabbits/details.html', '/rabbits/details.html'],
             ['/rabbits?id=42', '/rabbits'],
+        ];
+    }
+
+    public function invalidMethodProvider()
+    {
+        return [
+            [''],
+            [null],
+            ['invalid'],
+            ['postpost'],
+            [' get'],
+        ];
+    }
+
+    public function invalidUriProvider()
+    {
+        return [
+            [''],
+            [null],
+            ['/////'],
         ];
     }
 }
