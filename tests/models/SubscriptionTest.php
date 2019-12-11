@@ -4,8 +4,32 @@ namespace Webubbub\models;
 
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Override time() in current namespace for testing. It's a bit hacky, but
+ * it'll be good enough for now.
+ *
+ * @see https://www.schmengler-se.de/en/2011/03/php-mocking-built-in-functions-like-time-in-unit-tests/
+ *
+ * @return int
+ */
+function time()
+{
+    if (SubscriptionTest::$now) {
+        return SubscriptionTest::$now;
+    } else {
+        return \time();
+    }
+}
+
 class SubscriptionTest extends TestCase
 {
+    public static $now;
+
+    public function tearDown(): void
+    {
+        self::$now = null;
+    }
+
     public function testConstructor()
     {
         $callback = 'https://subscriber.com/callback';
@@ -151,6 +175,46 @@ class SubscriptionTest extends TestCase
             0,
             $secret
         );
+    }
+
+    public function testVerify()
+    {
+        self::$now = 1000;
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::MIN_LEASE_SECONDS,
+        );
+
+        $this->assertSame('new', $subscription->status());
+        $this->assertSame('subscribe', $subscription->pendingRequest());
+        $this->assertNull($subscription->expiredAt());
+
+        $subscription->verify();
+
+        $expected_expired_at = self::$now + Subscription::MIN_LEASE_SECONDS;
+        $this->assertSame('verified', $subscription->status());
+        $this->assertNull($subscription->pendingRequest());
+        $this->assertSame(
+            $expected_expired_at,
+            $subscription->expiredAt()->getTimestamp()
+        );
+    }
+
+    public function testVerifyTwiceFailsBecausePendingRequestIsNull()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage(
+            'Subscription cannot be verified because it has no pending requests.'
+        );
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->verify();
+
+        $subscription->verify();
     }
 
     public function invalidUrlProvider()

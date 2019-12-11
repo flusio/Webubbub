@@ -124,6 +124,28 @@ class Subscription
     }
 
     /**
+     * Set the subscription as verified
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
+     */
+    public function verify()
+    {
+        if ($this->pending_request === null) {
+            throw new Errors\SubscriptionError(
+                'Subscription cannot be verified because it has no pending requests.'
+            );
+        }
+
+        $this->status = 'verified';
+        $this->pending_request = null;
+
+        $expired_at_timestamp = time() + $this->lease_seconds;
+        $expired_at = new \DateTime();
+        $expired_at->setTimestamp($expired_at_timestamp);
+        $this->expired_at = $expired_at;
+    }
+
+    /**
      * @return string
      */
     public function callback()
@@ -169,6 +191,14 @@ class Subscription
     public function pendingRequest()
     {
         return $this->pending_request;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function expiredAt()
+    {
+        return $this->expired_at;
     }
 
     /**
