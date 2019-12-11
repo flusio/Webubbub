@@ -29,6 +29,7 @@ $request = new \Minz\Request($http_method, $http_uri, $http_parameters);
 $router = new \Minz\Router();
 
 $router->addRoute('/', 'home#index', 'get');
+$router->addRoute('/', 'subscriptions#handleRequest', 'post');
 
 // Execute the request against the router and get a response from the executed
 // action.
