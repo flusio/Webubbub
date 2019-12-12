@@ -2,7 +2,7 @@
 
 $app_path = realpath(__DIR__ . '/..');
 
-include $app_path . '/src/autoload.php';
+include $app_path . '/autoload.php';
 
 $environment = getenv('APP_ENVIRONMENT');
 if (!$environment) {
