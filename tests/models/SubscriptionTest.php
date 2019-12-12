@@ -268,6 +268,24 @@ class SubscriptionTest extends TestCase
         $this->assertSame($expected_callback, $intent_callback);
     }
 
+    public function testIntentCallbackWithUnsubscribe()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS
+        );
+        $subscription->requestUnsubscription();
+        $expected_callback = 'https://subscriber.com/callback?'
+                           . 'hub.mode=unsubscribe&'
+                           . 'hub.topic=https://some.site.fr/feed.xml&'
+                           . 'hub.challenge=foobar';
+
+        $intent_callback = $subscription->intentCallback('foobar');
+
+        $this->assertSame($expected_callback, $intent_callback);
+    }
+
     public function testIntentCallbackFailsIfPendingRequestIsNull()
     {
         $this->expectException(Errors\SubscriptionError::class);

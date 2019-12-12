@@ -157,13 +157,16 @@ class Subscription
             $query_char = '?';
         }
 
-        // Note: no need to append lease_seconds in case of unsubscription.
-        // Since I'm not supporting unsubscription yet, it is not implemented.
-        return $this->callback . $query_char
-            . "hub.mode={$this->pending_request}"
-            . "&hub.topic={$this->topic}"
-            . "&hub.challenge={$challenge}"
-            . "&hub.lease_seconds={$this->lease_seconds}";
+        $intent_callback = $this->callback . $query_char
+                         . "hub.mode={$this->pending_request}"
+                         . "&hub.topic={$this->topic}"
+                         . "&hub.challenge={$challenge}";
+
+        if ($this->pending_request === 'subscribe') {
+            $intent_callback .= "&hub.lease_seconds={$this->lease_seconds}";
+        }
+
+        return $intent_callback;
     }
 
     /**
