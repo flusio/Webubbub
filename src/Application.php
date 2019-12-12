@@ -11,7 +11,7 @@ class Application
     {
         $router = new \Minz\Router();
         $router->addRoute('/', 'home#index', 'get');
-        $router->addRoute('/', 'subscriptions#handle', 'post');
+        $router->addRoute('/', 'subscriptions#handle', ['post', 'cli']);
 
         $router->addRoute('/subscriptions/subscribe', 'subscriptions#subscribe', 'cli');
         $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');

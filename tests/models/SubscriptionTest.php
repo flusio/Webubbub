@@ -217,6 +217,20 @@ class SubscriptionTest extends TestCase
         $subscription->verify();
     }
 
+    public function testRequestUnsubscription()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $this->assertSame('subscribe', $subscription->pendingRequest());
+
+        $subscription->requestUnsubscription();
+
+        $this->assertSame('unsubscribe', $subscription->pendingRequest());
+    }
+
     public function testIntentCallback()
     {
         $subscription = new Subscription(

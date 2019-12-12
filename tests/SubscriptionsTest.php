@@ -138,6 +138,47 @@ class SubscriptionsTest extends ActionControllerTestCase
         );
     }
 
+    public function testUnsubscribe()
+    {
+        $callback = 'https://subscriber.com/callback';
+        $topic = 'https://some.site.fr/feed.xml';
+        $dao = new models\dao\Subscription();
+        $id = $dao->create([
+            'callback' => $callback,
+            'topic' => $topic,
+            'created_at' => time(),
+            'status' => 'new',
+            'lease_seconds' => 432000,
+            'pending_request' => null,
+        ]);
+
+        $request = new \Minz\Request('CLI', '/subscriptions/unsubscribe', [
+            'hub_callback' => $callback,
+            'hub_topic' => $topic,
+        ]);
+
+        $response = unsubscribe($request);
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 202);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('unsubscribe', $subscription['pending_request']);
+    }
+
+    public function testUnsubscribeWithUnknownSubscription()
+    {
+        $request = new \Minz\Request('CLI', '/subscriptions/unsubscribe', [
+            'hub_callback' => 'https://subscriber.com/callback',
+            'hub_topic' => 'https://some.site.fr/feed.xml',
+        ]);
+
+        $response = unsubscribe($request);
+
+        $dao = new models\dao\Subscription();
+        $this->assertResponse($response, 400, "Unknown subscription.\n");
+        $this->assertSame(0, $dao->count());
+    }
+
     public function testItems()
     {
         $dao = new models\dao\Subscription();

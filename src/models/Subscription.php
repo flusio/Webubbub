@@ -189,6 +189,14 @@ class Subscription
     }
 
     /**
+     * Set the pending request to "unsubscribe"
+     */
+    public function requestUnsubscription()
+    {
+        $this->pending_request = 'unsubscribe';
+    }
+
+    /**
      * @return integer|null
      */
     public function id()
