@@ -217,6 +217,76 @@ class SubscriptionTest extends TestCase
         $subscription->verify();
     }
 
+    public function testIntentCallback()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS
+        );
+        $expected_callback = 'https://subscriber.com/callback?'
+                           . 'hub.mode=subscribe&'
+                           . 'hub.topic=https://some.site.fr/feed.xml&'
+                           . 'hub.challenge=foobar&'
+                           . 'hub.lease_seconds=' . Subscription::DEFAULT_LEASE_SECONDS;
+
+        $intent_callback = $subscription->intentCallback('foobar');
+
+        $this->assertSame($expected_callback, $intent_callback);
+    }
+
+    public function testIntentCallbackWithExistingParams()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback?baz=qux',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS
+        );
+        $expected_callback = 'https://subscriber.com/callback?'
+                           . 'baz=qux&'
+                           . 'hub.mode=subscribe&'
+                           . 'hub.topic=https://some.site.fr/feed.xml&'
+                           . 'hub.challenge=foobar&'
+                           . 'hub.lease_seconds=' . Subscription::DEFAULT_LEASE_SECONDS;
+
+        $intent_callback = $subscription->intentCallback('foobar');
+
+        $this->assertSame($expected_callback, $intent_callback);
+    }
+
+    public function testIntentCallbackFailsIfPendingRequestIsNull()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage(
+            'intentCallback cannot be called when pending request is null.'
+        );
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback?baz=qux',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS
+        );
+        $subscription->verify();
+
+        $subscription->intentCallback('foobar');
+    }
+
+    public function testIntentCallbackFailsIfChallengeIsEmpty()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage(
+            'intentCallback cannot be called with an empty challenge.'
+        );
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback?baz=qux',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS
+        );
+
+        $subscription->intentCallback('');
+    }
+
     public function invalidUrlProvider()
     {
         return [

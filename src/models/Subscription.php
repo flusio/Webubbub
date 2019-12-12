@@ -124,6 +124,45 @@ class Subscription
     }
 
     /**
+     * Return the callback to use to verify subscriber intent.
+     *
+     * @param string $challenge The challenge string to be verified with the subscriber
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
+     * @throws \Webubbub\models\Errors\SubscriptionError if the challenge is empty
+     *
+     * @return string The callback with additional parameters appended
+     */
+    public function intentCallback($challenge)
+    {
+        if ($this->pending_request === null) {
+            throw new Errors\SubscriptionError(
+                'intentCallback cannot be called when pending request is null.'
+            );
+        }
+
+        if (!$challenge) {
+            throw new Errors\SubscriptionError(
+                'intentCallback cannot be called with an empty challenge.'
+            );
+        }
+
+        if (strpos($this->callback, "?")) {
+            $query_char = '&';
+        } else {
+            $query_char = '?';
+        }
+
+        // Note: no need to append lease_seconds in case of unsubscription.
+        // Since I'm not supporting unsubscription yet, it is not implemented.
+        return $this->callback . $query_char
+            . "hub.mode={$this->pending_request}"
+            . "&hub.topic={$this->topic}"
+            . "&hub.challenge={$challenge}"
+            . "&hub.lease_seconds={$this->lease_seconds}";
+    }
+
+    /**
      * Set the subscription as verified
      *
      * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
