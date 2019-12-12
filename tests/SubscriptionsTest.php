@@ -28,17 +28,37 @@ class SubscriptionsTest extends ActionControllerTestCase
         \Minz\Database::drop();
     }
 
-    public function testCreateWithSubscribe()
+    /**
+     * @dataProvider invalidModeProvider
+     */
+    public function testHandleFailsIfModeIsInvalid($invalidMode)
     {
         $request = new \Minz\Request('POST', '/', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => 'https://some.site.fr/feed.xml',
-            'hub_lease_seconds' => 432000,
-            'hub_secret' => 'a cryptographically random unique secret string',
-            'hub_mode' => 'subscribe',
+            'hub_mode' => $invalidMode,
         ]);
 
-        $response = create($request);
+        $response = handle($request);
+
+        $this->assertResponse(
+            $response,
+            400,
+            "{$invalidMode} mode is invalid.\n",
+            ['Content-Type' => 'text/plain']
+        );
+    }
+
+    public function testSubscribe()
+    {
+        $request = new \Minz\Request('CLI', '/subscriptions/subscribe', [
+            'hub_callback' => 'https://subscriber.com/callback',
+            'hub_topic' => 'https://some.site.fr/feed.xml',
+            'hub_lease_seconds' => 432000,
+            'hub_secret' => 'a cryptographically random unique secret string',
+        ]);
+
+        $response = subscribe($request);
 
         $dao = new models\dao\Subscription();
         $this->assertSame(1, $dao->count());
@@ -55,7 +75,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         $this->assertSame('new', $subscription['status']);
     }
 
-    public function testCreateWithSubscribeWithExistingSubscription()
+    public function testSubscribeWithExistingSubscription()
     {
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
@@ -67,51 +87,28 @@ class SubscriptionsTest extends ActionControllerTestCase
             'status' => 'new',
             'lease_seconds' => 432000,
         ]);
-        $request = new \Minz\Request('POST', '/', [
+        $request = new \Minz\Request('CLI', '/subscriptions/subscribe', [
             'hub_callback' => $callback,
             'hub_topic' => $topic,
-            'hub_mode' => 'subscribe',
         ]);
 
-        $response = create($request);
+        $response = subscribe($request);
 
         $this->assertSame(1, $dao->count());
         $this->assertResponse($response, 202);
     }
 
     /**
-     * @dataProvider invalidModeProvider
-     */
-    public function testCreateFailsIfModeIsInvalid($invalidMode)
-    {
-        $request = new \Minz\Request('POST', '/', [
-            'hub_callback' => 'https://subscriber.com/callback',
-            'hub_topic' => 'https://some.site.fr/feed.xml',
-            'hub_mode' => $invalidMode,
-        ]);
-
-        $response = create($request);
-
-        $this->assertResponse(
-            $response,
-            400,
-            "{$invalidMode} mode is invalid.\n",
-            ['Content-Type' => 'text/plain']
-        );
-    }
-
-    /**
      * @dataProvider invalidUrlProvider
      */
-    public function testCreateFailsIfCallbackIsInvalid($invalid_url)
+    public function testSubscribeFailsIfCallbackIsInvalid($invalid_url)
     {
-        $request = new \Minz\Request('POST', '/', [
+        $request = new \Minz\Request('CLI', '/subscriptions/subscribe', [
             'hub_callback' => $invalid_url,
             'hub_topic' => 'https://some.site.fr/feed.xml',
-            'hub_mode' => 'subscribe',
         ]);
 
-        $response = create($request);
+        $response = subscribe($request);
 
         $this->assertResponse(
             $response,
@@ -124,15 +121,14 @@ class SubscriptionsTest extends ActionControllerTestCase
     /**
      * @dataProvider invalidUrlProvider
      */
-    public function testCreateFailsIfTopicIsInvalid($invalid_url)
+    public function testSubscribeFailsIfTopicIsInvalid($invalid_url)
     {
-        $request = new \Minz\Request('POST', '/', [
+        $request = new \Minz\Request('CLI', '/subscriptions/subscribe', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => $invalid_url,
-            'hub_mode' => 'subscribe',
         ]);
 
-        $response = create($request);
+        $response = subscribe($request);
 
         $this->assertResponse(
             $response,

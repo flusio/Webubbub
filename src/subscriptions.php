@@ -12,7 +12,7 @@ use Webubbub\models;
  *
  * @return \Minz\Response
  */
-function create($request)
+function handle($request)
 {
     // We expect to receive hub.* parameters here (with dots). For some
     // reasons, PHP replaces those dots by underscores. Meh!
@@ -24,30 +24,17 @@ function create($request)
         ]);
     }
 
-    try {
-        return handleSubscribe($request);
-    } catch (models\Errors\SubscriptionError $e) {
-        return Response::badRequest('subscriptions/error.txt', [
-            'error' => $e->getMessage(),
-        ]);
-    } catch (\Exception $e) {
-        return Response::internalServerError('subscriptions/error.txt', [
-            'error' => (
-                'An unexpected error occured, it’s not your fault.'
-                . ' Please retry later or contact an administrator.'
-            )
-        ]);
-    }
+    return subscribe($request);
 }
 
 /**
- * @param \Minz\Request $request
+ * Handle the "subscribe" requests to the hub.
  *
- * @throws \Webubbub\models\Errors\SubscriptionError if the data aren't valid
+ * @param \Minz\Request $request
  *
  * @return \Minz\Response
  */
-function handleSubscribe($request)
+function subscribe($request)
 {
     $callback = $request->param('hub_callback', '');
     $topic = $request->param('hub_topic', '');
@@ -61,12 +48,19 @@ function handleSubscribe($request)
     ]);
 
     if (!$subscription_values) {
-        $subscription = new models\Subscription(
-            $callback,
-            $topic,
-            $lease_seconds,
-            $secret
-        );
+        try {
+            $subscription = new models\Subscription(
+                $callback,
+                $topic,
+                $lease_seconds,
+                $secret
+            );
+        } catch (models\Errors\SubscriptionError $e) {
+            return Response::badRequest('subscriptions/error.txt', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         $values = $subscription->toValues();
         $values['created_at'] = time();
         $dao->create($values);
