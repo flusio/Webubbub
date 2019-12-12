@@ -8,7 +8,7 @@ class ResponseTest extends TestCase
 {
     public function testSetViewPointer()
     {
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setViewPointer('rabbits#items.phtml');
 
@@ -17,7 +17,7 @@ class ResponseTest extends TestCase
 
     public function testSetViewPointerCanBeEmpty()
     {
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setViewPointer('');
 
@@ -31,7 +31,7 @@ class ResponseTest extends TestCase
             'rabbits/items.phtml view pointer must contain a hash (#).'
         );
 
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setViewPointer('rabbits/items.phtml');
     }
@@ -43,14 +43,14 @@ class ResponseTest extends TestCase
             'src/rabbits/views/missing.phtml file cannot be found.'
         );
 
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setViewPointer('rabbits#missing.phtml');
     }
 
     public function testSetCode()
     {
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setCode(404);
 
@@ -62,14 +62,14 @@ class ResponseTest extends TestCase
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage('666 is not a valid HTTP code.');
 
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setCode(666);
     }
 
     public function testSetHeader()
     {
-        $response = new Response();
+        $response = new Response(200, '');
 
         $response->setHeader('Content-Type', 'application/xml');
 
@@ -79,57 +79,57 @@ class ResponseTest extends TestCase
         ], $headers);
     }
 
-    public function testFromCode()
+    public function testConstructor()
     {
-        $response = Response::fromCode(200, 'rabbits#items.phtml');
+        $response = new Response(200, 'rabbits#items.phtml');
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/html'], $response->headers());
         $this->assertSame('rabbits#items.phtml', $response->viewPointer());
     }
 
-    public function testFromCodeAdaptsTheContentTypeFromFileType()
+    public function testConstructorAdaptsTheContentTypeFromFileType()
     {
-        $response = Response::fromCode(200, 'rabbits#items.txt');
+        $response = new Response(200, 'rabbits#items.txt');
 
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
     }
 
-    public function testFromCodeAcceptsEmptyViewPointer()
+    public function testConstructorAcceptsEmptyViewPointer()
     {
-        $response = Response::fromCode(200, '');
+        $response = new Response(200, '');
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
         $this->assertSame('', $response->viewPointer());
     }
 
-    public function testFromCodeFailsIfInvalidCode()
+    public function testConstructorFailsIfInvalidCode()
     {
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage('666 is not a valid HTTP code.');
 
-        $response = Response::fromCode(666, 'rabbits#items.phtml');
+        $response = new Response(666, 'rabbits#items.phtml');
     }
 
-    public function testFromCodeFailsIfViewFileDoesntExist()
+    public function testConstructorFailsIfViewFileDoesntExist()
     {
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage(
             'src/rabbits/views/missing.phtml file cannot be found.'
         );
 
-        $response = Response::fromCode(200, 'rabbits#missing.phtml');
+        $response = new Response(200, 'rabbits#missing.phtml');
     }
 
-    public function testFromCodeFailsIfViewFileExtensionIsntSupported()
+    public function testConstructorFailsIfViewFileExtensionIsntSupported()
     {
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage(
             'nope is not a supported view file extension.'
         );
 
-        $response = Response::fromCode(200, 'rabbits#items.nope');
+        $response = new Response(200, 'rabbits#items.nope');
     }
 
     public function testOk()

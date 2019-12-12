@@ -40,8 +40,6 @@ class Response
     /**
      * Create a successful response (HTTP 200).
      *
-     * @see \Minz\Response::fromCode()
-     *
      * @param string $view_pointer
      * @param mixed[] $variables
      *
@@ -51,13 +49,11 @@ class Response
      */
     public static function ok($view_pointer = '', $variables = [])
     {
-        return Response::fromCode(200, $view_pointer, $variables);
+        return new Response(200, $view_pointer, $variables);
     }
 
     /**
      * Create an accepted response (HTTP 202).
-     *
-     * @see \Minz\Response::fromCode()
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -68,13 +64,11 @@ class Response
      */
     public static function accepted($view_pointer = '', $variables = [])
     {
-        return Response::fromCode(202, $view_pointer, $variables);
+        return new Response(202, $view_pointer, $variables);
     }
 
     /**
      * Create a bad request response (HTTP 400).
-     *
-     * @see \Minz\Response::fromCode()
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -85,13 +79,11 @@ class Response
      */
     public static function badRequest($view_pointer = '', $variables = [])
     {
-        return Response::fromCode(400, $view_pointer, $variables);
+        return new Response(400, $view_pointer, $variables);
     }
 
     /**
      * Create a not found response (HTTP 404).
-     *
-     * @see \Minz\Response::fromCode()
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -102,13 +94,11 @@ class Response
      */
     public static function notFound($view_pointer = '', $variables = [])
     {
-        return Response::fromCode(404, $view_pointer, $variables);
+        return new Response(404, $view_pointer, $variables);
     }
 
     /**
      * Create an internal server error response (HTTP 500).
-     *
-     * @see \Minz\Response::fromCode()
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -119,7 +109,7 @@ class Response
      */
     public static function internalServerError($view_pointer = '', $variables = [])
     {
-        return Response::fromCode(500, $view_pointer, $variables);
+        return new Response(500, $view_pointer, $variables);
     }
 
     /**
@@ -133,22 +123,18 @@ class Response
      * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
      * @throws \Minz\Errors\ResponseError if the view pointer file extension is
      *                                    not supported
-     *
-     * @return \Minz\Response
      */
-    public static function fromCode($code, $view_pointer, $variables = [])
+    public function __construct($code, $view_pointer, $variables = [])
     {
-        $response = new Response();
-        $response->setCode($code);
-        $response->setViewPointer($view_pointer);
-        $response->setVariables($variables);
+        $this->setCode($code);
+        $this->setViewPointer($view_pointer);
+        $this->setVariables($variables);
         if ($view_pointer) {
             $content_type = self::contentTypeFromViewPointer($view_pointer);
         } else {
             $content_type = 'text/plain';
         }
-        $response->setHeader('Content-Type', $content_type);
-        return $response;
+        $this->setHeader('Content-Type', $content_type);
     }
 
     /** @var integer */
