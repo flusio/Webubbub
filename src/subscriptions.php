@@ -12,7 +12,7 @@ use Webubbub\models;
  *
  * @return \Minz\Response
  */
-function handleRequest($request)
+function create($request)
 {
     // We expect to receive hub.* parameters here (with dots). For some
     // reasons, PHP replaces those dots by underscores. Meh!

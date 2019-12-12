@@ -28,7 +28,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         \Minz\Database::drop();
     }
 
-    public function testHandleRequestWithSubscribe()
+    public function testCreateWithSubscribe()
     {
         $request = new \Minz\Request('POST', '/', [
             'hub_callback' => 'https://subscriber.com/callback',
@@ -38,7 +38,7 @@ class SubscriptionsTest extends ActionControllerTestCase
             'hub_mode' => 'subscribe',
         ]);
 
-        $response = handleRequest($request);
+        $response = create($request);
 
         $dao = new models\dao\Subscription();
         $this->assertSame(1, $dao->count());
@@ -55,7 +55,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         $this->assertSame('new', $subscription['status']);
     }
 
-    public function testHandleRequestWithSubscribeWithExistingSubscription()
+    public function testCreateWithSubscribeWithExistingSubscription()
     {
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
@@ -73,7 +73,7 @@ class SubscriptionsTest extends ActionControllerTestCase
             'hub_mode' => 'subscribe',
         ]);
 
-        $response = handleRequest($request);
+        $response = create($request);
 
         $this->assertSame(1, $dao->count());
         $this->assertResponse($response, 202);
@@ -82,7 +82,7 @@ class SubscriptionsTest extends ActionControllerTestCase
     /**
      * @dataProvider invalidModeProvider
      */
-    public function testHandleRequestFailsIfModeIsInvalid($invalidMode)
+    public function testCreateFailsIfModeIsInvalid($invalidMode)
     {
         $request = new \Minz\Request('POST', '/', [
             'hub_callback' => 'https://subscriber.com/callback',
@@ -90,7 +90,7 @@ class SubscriptionsTest extends ActionControllerTestCase
             'hub_mode' => $invalidMode,
         ]);
 
-        $response = handleRequest($request);
+        $response = create($request);
 
         $this->assertResponse(
             $response,
@@ -103,7 +103,7 @@ class SubscriptionsTest extends ActionControllerTestCase
     /**
      * @dataProvider invalidUrlProvider
      */
-    public function testHandleRequestFailsIfCallbackIsInvalid($invalid_url)
+    public function testCreateFailsIfCallbackIsInvalid($invalid_url)
     {
         $request = new \Minz\Request('POST', '/', [
             'hub_callback' => $invalid_url,
@@ -111,7 +111,7 @@ class SubscriptionsTest extends ActionControllerTestCase
             'hub_mode' => 'subscribe',
         ]);
 
-        $response = handleRequest($request);
+        $response = create($request);
 
         $this->assertResponse(
             $response,
@@ -124,7 +124,7 @@ class SubscriptionsTest extends ActionControllerTestCase
     /**
      * @dataProvider invalidUrlProvider
      */
-    public function testHandleRequestFailsIfTopicIsInvalid($invalid_url)
+    public function testCreateFailsIfTopicIsInvalid($invalid_url)
     {
         $request = new \Minz\Request('POST', '/', [
             'hub_callback' => 'https://subscriber.com/callback',
@@ -132,7 +132,7 @@ class SubscriptionsTest extends ActionControllerTestCase
             'hub_mode' => 'subscribe',
         ]);
 
-        $response = handleRequest($request);
+        $response = create($request);
 
         $this->assertResponse(
             $response,
