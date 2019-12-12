@@ -12,42 +12,33 @@ use Webubbub\models;
  *
  * @return \Minz\Response
  */
-function create($request)
+function handle($request)
 {
     // We expect to receive hub.* parameters here (with dots). For some
     // reasons, PHP replaces those dots by underscores. Meh!
     // See https://www.php.net/variables.external#language.variables.external.dot-in-names
     $mode = $request->param('hub_mode', '');
-    if ($mode !== 'subscribe') {
+    if ($mode !== 'subscribe' && $mode !== 'unsubscribe') {
         return Response::badRequest('subscriptions/error.txt', [
             'error' => "{$mode} mode is invalid.",
         ]);
     }
 
-    try {
-        return handleSubscribe($request);
-    } catch (models\Errors\SubscriptionError $e) {
-        return Response::badRequest('subscriptions/error.txt', [
-            'error' => $e->getMessage(),
-        ]);
-    } catch (\Exception $e) {
-        return Response::internalServerError('subscriptions/error.txt', [
-            'error' => (
-                'An unexpected error occured, it’s not your fault.'
-                . ' Please retry later or contact an administrator.'
-            )
-        ]);
+    if ($mode === 'subscribe') {
+        return subscribe($request);
+    } elseif ($mode === 'unsubscribe') {
+        return unsubscribe($request);
     }
 }
 
 /**
- * @param \Minz\Request $request
+ * Handle the "subscribe" requests to the hub.
  *
- * @throws \Webubbub\models\Errors\SubscriptionError if the data aren't valid
+ * @param \Minz\Request $request
  *
  * @return \Minz\Response
  */
-function handleSubscribe($request)
+function subscribe($request)
 {
     $callback = $request->param('hub_callback', '');
     $topic = $request->param('hub_topic', '');
@@ -61,17 +52,65 @@ function handleSubscribe($request)
     ]);
 
     if (!$subscription_values) {
-        $subscription = new models\Subscription(
-            $callback,
-            $topic,
-            $lease_seconds,
-            $secret
-        );
+        try {
+            $subscription = new models\Subscription(
+                $callback,
+                $topic,
+                $lease_seconds,
+                $secret
+            );
+        } catch (models\Errors\SubscriptionError $e) {
+            return Response::badRequest('subscriptions/error.txt', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         $values = $subscription->toValues();
         $values['created_at'] = time();
         $dao->create($values);
     } else {
         // Subscriptions renewal will be implemented later
+    }
+
+    return Response::accepted();
+}
+
+/**
+ * Handle the "unsubscribe" requests to the hub.
+ *
+ * @param \Minz\Request $request
+ *
+ * @return \Minz\Response
+ */
+function unsubscribe($request)
+{
+    $callback = $request->param('hub_callback', '');
+    $topic = $request->param('hub_topic', '');
+
+    $dao = new models\dao\Subscription();
+    $subscription_values = $dao->findBy([
+        'callback' => $callback,
+        'topic' => $topic,
+    ]);
+
+    if ($subscription_values) {
+        try {
+            $subscription = models\Subscription::fromValues($subscription_values);
+        } catch (models\Errors\SubscriptionError $e) {
+            return Response::badRequest('subscriptions/error.txt', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $subscription->requestUnsubscription();
+
+        $dao->update($subscription->id(), $subscription->toValues());
+    } else {
+        // We received an unsubscription for an unknown subscription. We return
+        // an error message to indicate we'll not process any verification.
+        return Response::badRequest('subscriptions/error.txt', [
+            'error' => 'Unknown subscription.',
+        ]);
     }
 
     return Response::accepted();

@@ -33,6 +33,8 @@ function verify($request)
             if ($pending_request === 'subscribe') {
                 $subscription->verify();
                 $dao->update($subscription->id(), $subscription->toValues());
+            } elseif ($pending_request === 'unsubscribe') {
+                $dao->delete($subscription->id());
             }
         } else {
             \Minz\Log::notice(
@@ -41,6 +43,9 @@ function verify($request)
 
             if ($pending_request === 'subscribe') {
                 $dao->delete($subscription->id());
+            } elseif ($pending_request === 'unsubscribe') {
+                $subscription->cancelUnsubscription();
+                $dao->update($subscription->id(), $subscription->toValues());
             }
         }
     }

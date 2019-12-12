@@ -11,9 +11,9 @@ class Application
     {
         $router = new \Minz\Router();
         $router->addRoute('/', 'home#index', 'get');
-        $router->addRoute('/', 'subscriptions#create', 'post');
+        $router->addRoute('/', 'subscriptions#handle', ['post', 'cli']);
 
-        $router->addRoute('/subscriptions/create', 'subscriptions#create', 'cli');
+        $router->addRoute('/subscriptions/subscribe', 'subscriptions#subscribe', 'cli');
         $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
 

@@ -217,6 +217,52 @@ class SubscriptionTest extends TestCase
         $subscription->verify();
     }
 
+    public function testRequestUnsubscription()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $this->assertSame('subscribe', $subscription->pendingRequest());
+
+        $subscription->requestUnsubscription();
+
+        $this->assertSame('unsubscribe', $subscription->pendingRequest());
+    }
+
+    public function testCancelUnsubscriptionRequest()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->requestUnsubscription();
+
+        $this->assertSame('unsubscribe', $subscription->pendingRequest());
+
+        $subscription->cancelUnsubscription();
+
+        $this->assertNull($subscription->pendingRequest());
+    }
+
+    public function testCancelUnsubscriptionRequestFailsIfPendingIsSubscribe()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage(
+            'Cannot cancel unsubscription because pending request is subscribe.'
+        );
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $this->assertSame('subscribe', $subscription->pendingRequest());
+
+        $subscription->cancelUnsubscription();
+    }
+
     public function testIntentCallback()
     {
         $subscription = new Subscription(
@@ -248,6 +294,24 @@ class SubscriptionTest extends TestCase
                            . 'hub.topic=https://some.site.fr/feed.xml&'
                            . 'hub.challenge=foobar&'
                            . 'hub.lease_seconds=' . Subscription::DEFAULT_LEASE_SECONDS;
+
+        $intent_callback = $subscription->intentCallback('foobar');
+
+        $this->assertSame($expected_callback, $intent_callback);
+    }
+
+    public function testIntentCallbackWithUnsubscribe()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS
+        );
+        $subscription->requestUnsubscription();
+        $expected_callback = 'https://subscriber.com/callback?'
+                           . 'hub.mode=unsubscribe&'
+                           . 'hub.topic=https://some.site.fr/feed.xml&'
+                           . 'hub.challenge=foobar';
 
         $intent_callback = $subscription->intentCallback('foobar');
 

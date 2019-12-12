@@ -157,13 +157,16 @@ class Subscription
             $query_char = '?';
         }
 
-        // Note: no need to append lease_seconds in case of unsubscription.
-        // Since I'm not supporting unsubscription yet, it is not implemented.
-        return $this->callback . $query_char
-            . "hub.mode={$this->pending_request}"
-            . "&hub.topic={$this->topic}"
-            . "&hub.challenge={$challenge}"
-            . "&hub.lease_seconds={$this->lease_seconds}";
+        $intent_callback = $this->callback . $query_char
+                         . "hub.mode={$this->pending_request}"
+                         . "&hub.topic={$this->topic}"
+                         . "&hub.challenge={$challenge}";
+
+        if ($this->pending_request === 'subscribe') {
+            $intent_callback .= "&hub.lease_seconds={$this->lease_seconds}";
+        }
+
+        return $intent_callback;
     }
 
     /**
@@ -186,6 +189,30 @@ class Subscription
         $expired_at = new \DateTime();
         $expired_at->setTimestamp($expired_at_timestamp);
         $this->expired_at = $expired_at;
+    }
+
+    /**
+     * Set the pending request to "unsubscribe"
+     */
+    public function requestUnsubscription()
+    {
+        $this->pending_request = 'unsubscribe';
+    }
+
+    /**
+     * Set the pending request to null
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is subscribe
+     */
+    public function cancelUnsubscription()
+    {
+        if ($this->pending_request === 'subscribe') {
+            throw new Errors\SubscriptionError(
+                'Cannot cancel unsubscription because pending request is subscribe.'
+            );
+        }
+
+        $this->pending_request = null;
     }
 
     /**

@@ -75,9 +75,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        // TODO here, the subscription should be null... but we don't support
-        // unsubscription yet!
-        $this->assertSame('new', $subscription['status']);
+        $this->assertNull($subscription);
     }
 
     public function testVerifyWithoutPendingRequest()
@@ -123,10 +121,33 @@ class IntentsTest extends ActionControllerTestCase
         $this->assertNull($subscription);
     }
 
+    public function testVerifyWithUnsubscribeAndUnmatchingChallenge()
+    {
+        $dao = new models\dao\Subscription();
+        $id = $dao->create([
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'created_at' => time(),
+            'status' => 'new',
+            'lease_seconds' => 432000,
+            'pending_request' => 'unsubscribe',
+        ]);
+        self::$subscriber_challenge = 'not the correct challenge';
+
+        $request = new \Minz\Request('CLI', '/intents/verify');
+
+        $response = verify($request);
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertNull($subscription['pending_request']);
+    }
+
     /**
      * @dataProvider failingHttpCodeProvider
      */
-    public function testVerifyWithNonSuccessHttpCode($http_code)
+    public function testVerifyWithSubscribeAndNonSuccessHttpCode($http_code)
     {
         $dao = new models\dao\Subscription();
         $id = $dao->create([
@@ -146,6 +167,32 @@ class IntentsTest extends ActionControllerTestCase
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
         $this->assertNull($subscription);
+    }
+
+    /**
+     * @dataProvider failingHttpCodeProvider
+     */
+    public function testVerifyWithUnsubscribeAndNonSuccessHttpCode($http_code)
+    {
+        $dao = new models\dao\Subscription();
+        $id = $dao->create([
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'created_at' => time(),
+            'status' => 'new',
+            'lease_seconds' => 432000,
+            'pending_request' => 'unsubscribe',
+        ]);
+        self::$subscriber_http_code = $http_code;
+
+        $request = new \Minz\Request('CLI', '/intents/verify');
+
+        $response = verify($request);
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertNull($subscription['pending_request']);
     }
 
     public function failingHttpCodeProvider()
