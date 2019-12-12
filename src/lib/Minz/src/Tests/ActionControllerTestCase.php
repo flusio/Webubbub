@@ -22,7 +22,9 @@ class ActionControllerTestCase extends TestCase
         $class_without_test = strtolower(substr($class, 0, -4));
         $included = \Minz\ActionController::loadControllerCode($class_without_test);
         if (!$included) {
-            throw new \LogicException("{$controller_name} file cannot be loaded.");
+            throw new \LogicException(
+                "{$class_without_test} controller file cannot be loaded."
+            );
         }
     }
 
