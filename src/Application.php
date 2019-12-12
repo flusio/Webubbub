@@ -13,6 +13,9 @@ class Application
         $router->addRoute('/', 'home#index', 'get');
         $router->addRoute('/', 'subscriptions#handleRequest', 'post');
 
+        $router->addRoute('/subscriptions/create', 'subscriptions#handleRequest', 'cli');
+        $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');
+
         $this->engine = new \Minz\Engine($router);
 
         // Initialize the database. If the DB exists, the request will fail since
