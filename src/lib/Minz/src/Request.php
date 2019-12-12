@@ -32,10 +32,10 @@ class Request
         $method = strtolower($method);
         $uri_components = parse_url($uri);
 
-        if (!in_array($method, Router::VALID_HTTP_VERBS)) {
-            $verbs_as_string = implode(', ', Router::VALID_HTTP_VERBS);
+        if (!in_array($method, Router::VALID_VIAS)) {
+            $vias_as_string = implode(', ', Router::VALID_VIAS);
             throw new Errors\RequestError(
-                "{$method} method is not a valid HTTP verb ({$verbs_as_string})."
+                "{$method} method is invalid ({$vias_as_string})."
             );
         }
 

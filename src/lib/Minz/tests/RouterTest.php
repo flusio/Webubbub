@@ -123,11 +123,25 @@ class RouterTest extends TestCase
     public function testAddRouteFailsIfViaIsInvalid($invalidVia)
     {
         $this->expectException(Errors\RoutingError::class);
-        $this->expectExceptionMessage('Route "via" must be a valid HTTP verb (get, post, patch, put, delete).');
+        $this->expectExceptionMessage(
+            "{$invalidVia} via is invalid (get, post, patch, put, delete)."
+        );
 
         $router = new Router();
 
         $router->addRoute('/rabbits', 'rabbits#list', $invalidVia);
+    }
+
+    public function testAddRouteFailsIfContainsInvalidVia()
+    {
+        $this->expectException(Errors\RoutingError::class);
+        $this->expectExceptionMessage(
+            "invalid via is invalid (get, post, patch, put, delete)."
+        );
+
+        $router = new Router();
+
+        $router->addRoute('/rabbits', 'rabbits#list', ['get', 'invalid']);
     }
 
     public function testMatch()
@@ -150,7 +164,7 @@ class RouterTest extends TestCase
         $this->assertSame('rabbits#get', $action_pointer);
     }
 
-    public function testMatchFailsIfIncorrectHttpVerb()
+    public function testMatchFailsIfNotMatchingVia()
     {
         $this->expectException(Errors\RouteNotFoundError::class);
         $this->expectExceptionMessage('Path "post /rabbits" doesn’t match any route.');
@@ -189,7 +203,9 @@ class RouterTest extends TestCase
     public function testMatchFailsIfViaIsInvalid($invalidVia)
     {
         $this->expectException(Errors\RoutingError::class);
-        $this->expectExceptionMessage('HTTP verb must be valid (get, post, patch, put, delete).');
+        $this->expectExceptionMessage(
+            "{$invalidVia} via is invalid (get, post, patch, put, delete)."
+        );
 
         $router = new Router();
         $router->addRoute('/rabbits', 'rabbits#list', 'get');
@@ -213,7 +229,6 @@ class RouterTest extends TestCase
             ['invalid'],
             ['postpost'],
             [' get'],
-            [['get', 'invalid']],
         ];
     }
 }

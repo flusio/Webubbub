@@ -12,20 +12,20 @@ namespace Minz;
 class Router
 {
     /** @var string[] */
-    public const VALID_HTTP_VERBS = ['get', 'post', 'patch', 'put', 'delete'];
+    public const VALID_VIAS = ['get', 'post', 'patch', 'put', 'delete'];
 
     /**
      * @var string[][] Contains the routes of the application. First level is
-     *                 indexed by http verbs (it is initialized in
-     *                 constructor), second level is indexed by the paths and
-     *                 values are the routes destinations.
+     *                 indexed by "vias" (it is initialized in constructor),
+     *                 second level is indexed by the paths and values are the
+     *                 routes destinations.
      */
     private $routes = [];
 
     public function __construct()
     {
-        foreach (self::VALID_HTTP_VERBS as $http_verb) {
-            $this->routes[$http_verb] = [];
+        foreach (self::VALID_VIAS as $via) {
+            $this->routes[$via] = [];
         }
     }
 
@@ -41,13 +41,13 @@ class Router
      * action name, separated by a hash. For instance, `rabbits#items` points
      * to the `items` action of the `rabbits` controller.
      *
-     * Via can be a single value or an array of HTTP verbs. You are responsible
+     * Via can be a single value or an array of valid "vias". You are responsible
      * to make the distinction in the action, but note it's highly recommended
-     * to point an action to a single HTTP verb.
+     * to point an action to a single via.
      *
      * @param string $pattern The path pattern of the new route
      * @param string $action_pointer The destination of the route
-     * @param string|string[] $via The http verb(s) of the route
+     * @param string|string[] $via The valid via(s) of the route
      *
      * @throws \Minz\Errors\RoutingError if pattern is empty
      * @throws \Minz\Errors\RoutingError if pattern doesn't start by a slash
@@ -55,12 +55,11 @@ class Router
      * @throws \Minz\Errors\RoutingError if action_pointer contains no hash
      * @throws \Minz\Errors\RoutingError if action_pointer contains more than one hash
      * @throws \Minz\Errors\RoutingError if via is empty
-     * @throws \Minz\Errors\RoutingError if via is not a valid http verb (or
-     *                                   contains an invalid one)
+     * @throws \Minz\Errors\RoutingError if via is invalid (or contains an invalid one)
      *
      * @return void
      */
-    public function addRoute($pattern, $action_pointer, $via)
+    public function addRoute($pattern, $action_pointer, $vias)
     {
         if (!$pattern) {
             throw new Errors\RoutingError('Route "pattern" cannot be empty.');
@@ -86,57 +85,57 @@ class Router
             );
         }
 
-        if (!is_array($via)) {
-            $via = [$via];
+        if (!is_array($vias)) {
+            $vias = [$vias];
         }
 
-        $via = array_filter($via);
+        $vias = array_filter($vias);
 
-        if (empty($via)) {
+        if (empty($vias)) {
             throw new Errors\RoutingError('Route "via" cannot be empty.');
         }
 
-        foreach ($via as $http_verb) {
-            if (!in_array($http_verb, self::VALID_HTTP_VERBS)) {
-                $verbs_as_string = implode(', ', self::VALID_HTTP_VERBS);
+        foreach ($vias as $via) {
+            if (!in_array($via, self::VALID_VIAS)) {
+                $vias_as_string = implode(', ', self::VALID_VIAS);
                 throw new Errors\RoutingError(
-                    "Route \"via\" must be a valid HTTP verb ({$verbs_as_string})."
+                    "{$via} via is invalid ({$vias_as_string})."
                 );
             }
 
-            $this->routes[$http_verb][$pattern] = $action_pointer;
+            $this->routes[$via][$pattern] = $action_pointer;
         }
     }
 
     /**
-     * Return the matching action pointer for given request http verb and path.
+     * Return the matching action pointer for given request via and path.
      *
-     * @param string $http_verb
+     * @param string $via
      * @param string $path
      *
-     * @throws \Minz\Errors\RoutingError if http verb is no a valid http verb
+     * @throws \Minz\Errors\RoutingError if via is invalid
      * @throws \Minz\Errors\RouteNotFoundError if no patterns match with the path
      *
      * @return string The corresponding action pointer if any.
      */
-    public function match($http_verb, $path)
+    public function match($via, $path)
     {
-        if (!in_array($http_verb, self::VALID_HTTP_VERBS)) {
-            $verbs_as_string = implode(', ', self::VALID_HTTP_VERBS);
+        if (!in_array($via, self::VALID_VIAS)) {
+            $vias_as_string = implode(', ', self::VALID_VIAS);
             throw new Errors\RoutingError(
-                "HTTP verb must be valid ({$verbs_as_string})."
+                "{$via} via is invalid ({$vias_as_string})."
             );
         }
 
-        $http_verb_routes = $this->routes[$http_verb];
-        foreach ($http_verb_routes as $pattern => $action_pointer) {
+        $via_routes = $this->routes[$via];
+        foreach ($via_routes as $pattern => $action_pointer) {
             if ($this->pathMatchesPattern($path, $pattern)) {
                 return $action_pointer;
             }
         }
 
         throw new Errors\RouteNotFoundError(
-            "Path \"{$http_verb} {$path}\" doesn’t match any route."
+            "Path \"{$via} {$path}\" doesn’t match any route."
         );
     }
 
