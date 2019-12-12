@@ -13,7 +13,7 @@ class RequestTest extends TestCase
     {
         $this->expectException(Errors\RequestError::class);
         $this->expectExceptionMessage(
-            "{$invalidMethod} method is not a valid HTTP verb (get, post, patch, put, delete)."
+            "{$invalidMethod} method is invalid (get, post, patch, put, delete, cli)."
         );
 
         new Request($invalidMethod, '/');

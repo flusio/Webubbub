@@ -142,6 +142,26 @@ class SubscriptionsTest extends ActionControllerTestCase
         );
     }
 
+    public function testItems()
+    {
+        $dao = new models\dao\Subscription();
+        $dao->create([
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'created_at' => time(),
+            'status' => 'new',
+            'lease_seconds' => 432000,
+        ]);
+        $request = new \Minz\Request('CLI', '/subscriptions/items');
+
+        $response = items($request);
+
+        $output = $response->render();
+        $this->assertResponse($response, 200);
+        $this->assertStringContainsString('https://subscriber.com/callback', $output);
+        $this->assertStringContainsString('https://some.site.fr/feed.xml', $output);
+    }
+
     public function invalidUrlProvider()
     {
         return [
