@@ -20,7 +20,7 @@ class SubscriptionTest extends TestCase
             $subscription->leaseSeconds()
         );
         $this->assertSame('new', $subscription->status());
-        $this->assertSame('subscription', $subscription->pendingRequest());
+        $this->assertSame('subscribe', $subscription->pendingRequest());
     }
 
     public function testConstructorDecodesUrls()

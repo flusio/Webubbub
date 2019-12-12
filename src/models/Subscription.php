@@ -120,7 +120,7 @@ class Subscription
         $this->secret = $secret;
 
         $this->status = 'new';
-        $this->pending_request = 'subscription';
+        $this->pending_request = 'subscribe';
     }
 
     /**
