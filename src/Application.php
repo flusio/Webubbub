@@ -15,6 +15,7 @@ class Application
 
         $router->addRoute('/subscriptions/create', 'subscriptions#create', 'cli');
         $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');
+        $router->addRoute('/intents/verify', 'intents#verify', 'cli');
 
         $this->engine = new \Minz\Engine($router);
 

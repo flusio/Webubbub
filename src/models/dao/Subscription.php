@@ -76,4 +76,24 @@ class Subscription extends \Minz\DatabaseModel
             return null;
         }
     }
+
+    /**
+     * Return rows where pending_request is not null.
+     *
+     * @throws \Minz\Errors\DatabaseModelError if an error occured in the SQL syntax
+     *
+     * @return array
+     */
+    public function listWherePendingRequests()
+    {
+        $sql = "SELECT * FROM {$this->table_name} WHERE pending_request IS NOT NULL";
+
+        $statement = $this->query($sql);
+        $result = $statement->fetchAll();
+        if ($result !== false) {
+            return $result;
+        } else {
+            throw self::sqlStatementError($statement);
+        }
+    }
 }

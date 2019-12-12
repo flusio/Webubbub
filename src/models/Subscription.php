@@ -54,6 +54,10 @@ class Subscription
 
     public const MAX_SECRET_LENGTH = 200;
 
+    public const VALID_STATUSES = ['new', 'validated', 'verified', 'expired'];
+
+    public const VALID_REQUESTS = ['subscribe', 'unsubscribe'];
+
     /** @var integer|null */
     private $id;
 
@@ -124,6 +128,75 @@ class Subscription
     }
 
     /**
+     * Return the callback to use to verify subscriber intent.
+     *
+     * @param string $challenge The challenge string to be verified with the subscriber
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
+     * @throws \Webubbub\models\Errors\SubscriptionError if the challenge is empty
+     *
+     * @return string The callback with additional parameters appended
+     */
+    public function intentCallback($challenge)
+    {
+        if ($this->pending_request === null) {
+            throw new Errors\SubscriptionError(
+                'intentCallback cannot be called when pending request is null.'
+            );
+        }
+
+        if (!$challenge) {
+            throw new Errors\SubscriptionError(
+                'intentCallback cannot be called with an empty challenge.'
+            );
+        }
+
+        if (strpos($this->callback, "?")) {
+            $query_char = '&';
+        } else {
+            $query_char = '?';
+        }
+
+        // Note: no need to append lease_seconds in case of unsubscription.
+        // Since I'm not supporting unsubscription yet, it is not implemented.
+        return $this->callback . $query_char
+            . "hub.mode={$this->pending_request}"
+            . "&hub.topic={$this->topic}"
+            . "&hub.challenge={$challenge}"
+            . "&hub.lease_seconds={$this->lease_seconds}";
+    }
+
+    /**
+     * Set the subscription as verified
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
+     */
+    public function verify()
+    {
+        if ($this->pending_request === null) {
+            throw new Errors\SubscriptionError(
+                'Subscription cannot be verified because it has no pending requests.'
+            );
+        }
+
+        $this->status = 'verified';
+        $this->pending_request = null;
+
+        $expired_at_timestamp = time() + $this->lease_seconds;
+        $expired_at = new \DateTime();
+        $expired_at->setTimestamp($expired_at_timestamp);
+        $this->expired_at = $expired_at;
+    }
+
+    /**
+     * @return integer|null
+     */
+    public function id()
+    {
+        return $this->id;
+    }
+
+    /**
      * @return string
      */
     public function callback()
@@ -172,6 +245,22 @@ class Subscription
     }
 
     /**
+     * @return \DateTime|null
+     */
+    public function createdAt()
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function expiredAt()
+    {
+        return $this->expired_at;
+    }
+
+    /**
      * Return the model values, in order to be passed to the DAO model. Note
      * that additional process might be needed (e.g. setting the required
      * `created_at` for a creation).
@@ -182,8 +271,8 @@ class Subscription
     {
         return [
             'id' => $this->id,
-            'created_at' => $this->created_at,
-            'expired_at' => $this->expired_at,
+            'created_at' => $this->created_at ? $this->created_at->getTimestamp() : null,
+            'expired_at' => $this->expired_at ? $this->expired_at->getTimestamp() : null,
             'status' => $this->status,
             'pending_request' => $this->pending_request,
 
@@ -192,6 +281,96 @@ class Subscription
             'lease_seconds' => $this->lease_seconds,
             'secret' => $this->secret,
         ];
+    }
+
+    /**
+     * Create a Subscription object from given values.
+     *
+     * It should be used with values coming from the database.
+     *
+     * @param mixed[] $values
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if a required value is missing
+     *                                                   or is not valid
+     *
+     * @return \Webubbub\models\Subscription
+     */
+    public static function fromValues($values)
+    {
+        $required_values = [
+            'id',
+            'callback',
+            'topic',
+            'lease_seconds',
+            'status',
+            'created_at'
+        ];
+        foreach ($required_values as $value_name) {
+            if (!isset($values[$value_name])) {
+                throw new Errors\SubscriptionError(
+                    "{$value_name} value is required."
+                );
+            }
+        }
+
+        $integer_values = ['id', 'lease_seconds', 'created_at', 'expired_at'];
+        foreach ($integer_values as $value_name) {
+            if (
+                isset($values[$value_name]) &&
+                !filter_var($values[$value_name], FILTER_VALIDATE_INT)
+            ) {
+                throw new Errors\SubscriptionError(
+                    "{$value_name} value must be an integer."
+                );
+            }
+        }
+
+        if (!in_array($values['status'], self::VALID_STATUSES)) {
+            throw new Errors\SubscriptionError(
+                "{$values['status']} is not a valid status."
+            );
+        }
+
+        if (
+            isset($values['pending_request']) &&
+            !in_array($values['pending_request'], self::VALID_REQUESTS)
+        ) {
+            throw new Errors\SubscriptionError(
+                "{$values['pending_request']} is not a valid pending request."
+            );
+        }
+
+        if (isset($values['secret'])) {
+            $secret = $values['secret'];
+        } else {
+            $secret = null;
+        }
+
+        $subscription = new self(
+            $values['callback'],
+            $values['topic'],
+            intval($values['lease_seconds']),
+            $secret
+        );
+
+        $subscription->id = intval($values['id']);
+        $subscription->status = $values['status'];
+
+        $created_at = new \DateTime();
+        $created_at->setTimestamp(intval($values['created_at']));
+        $subscription->created_at = $created_at;
+
+        if (isset($values['pending_request'])) {
+            $subscription->pending_request = $values['pending_request'];
+        }
+
+        if (isset($values['expired_at'])) {
+            $expired_at = new \DateTime();
+            $expired_at->setTimestamp(intval($values['expired_at']));
+            $subscription->expired_at = $expired_at;
+        }
+
+        return $subscription;
     }
 
     /**
