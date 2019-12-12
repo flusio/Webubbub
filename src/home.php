@@ -6,5 +6,5 @@ use Minz\Response;
 
 function index($request)
 {
-    return Response::ok('home#index.phtml');
+    return Response::ok('home/index.phtml');
 }
