@@ -39,17 +39,25 @@ class Engine
         try {
             $to = $this->router->match($request->method(), $request->path());
         } catch (Errors\RouteNotFoundError $e) {
-            return Response::notFound('not_found.phtml', ['error' => $e]);
+            try {
+                return Response::notFound('not_found.phtml', ['error' => $e]);
+            } catch (Errors\ResponseError $e) {
+                return Response::notFound();
+            }
         }
 
         $action_controller = new ActionController($to);
         try {
             return $action_controller->execute($request);
         } catch (\Exception $e) {
-            return Response::internalServerError(
-                'internal_server_error.phtml',
-                ['error' => $e]
-            );
+            try {
+                return Response::internalServerError(
+                    'internal_server_error.phtml',
+                    ['error' => $e]
+                );
+            } catch (Errors\ResponseError $e) {
+                return Response::internalServerError();
+            }
         }
     }
 }
