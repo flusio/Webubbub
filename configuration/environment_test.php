@@ -5,4 +5,5 @@ return [
     'database' => [
         'dsn' => 'sqlite::memory:',
     ],
+    'no_syslog' => !getenv('APP_SYSLOG_ENABLED'),
 ];

@@ -27,6 +27,8 @@ namespace Minz;
  * Other optional keys are:
  * - database: an array specifying dsn, username, password and options to pass
  *   to the PDO interface, see https://www.php.net/manual/fr/pdo.construct.php
+ * - no_syslog: `true` to silent calls to \Minz\Log (wrapper aroung syslog function),
+ *   default to `false`
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -56,6 +58,9 @@ class Configuration
 
     /** @var string[] An array containing database configuration */
     public static $database;
+
+    /** @var boolean Indicate if syslog must be called via \Minz\Log calls */
+    public static $no_syslog;
 
     /**
      * Load the application's configuration, for a given environment.
@@ -121,6 +126,8 @@ class Configuration
             $database = array_merge($additional_default_values, $database);
         }
         self::$database = $database;
+
+        self::$no_syslog = self::getDefault($raw_configuration, 'no_syslog', false);
     }
 
     /**

@@ -17,6 +17,11 @@ class Environment
      */
     public static function initialize()
     {
+        // Configure system logger
+        $app_name = Configuration::$app_name;
+        openlog($app_name, LOG_PERROR | LOG_PID, LOG_USER);
+
+        // Configure error reporting
         $environment = Configuration::$environment;
         switch ($environment) {
             case 'development':
