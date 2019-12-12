@@ -12,7 +12,7 @@ namespace Minz;
 class Router
 {
     /** @var string[] */
-    public const VALID_VIAS = ['get', 'post', 'patch', 'put', 'delete'];
+    public const VALID_VIAS = ['get', 'post', 'patch', 'put', 'delete', 'cli'];
 
     /**
      * @var string[][] Contains the routes of the application. First level is

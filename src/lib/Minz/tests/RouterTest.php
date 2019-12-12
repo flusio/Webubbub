@@ -46,6 +46,20 @@ class RouterTest extends TestCase
         ], $routes);
     }
 
+    public function testAddRouteAcceptsCliVia()
+    {
+        $router = new Router();
+
+        $router->addRoute('/rabbits', 'rabbits#list', 'cli');
+
+        $routes = $router->routes();
+        $this->assertSame([
+            'cli' => [
+                '/rabbits' => 'rabbits#list',
+            ],
+        ], $routes);
+    }
+
     /**
      * @dataProvider emptyValuesProvider
      */
@@ -124,7 +138,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(Errors\RoutingError::class);
         $this->expectExceptionMessage(
-            "{$invalidVia} via is invalid (get, post, patch, put, delete)."
+            "{$invalidVia} via is invalid (get, post, patch, put, delete, cli)."
         );
 
         $router = new Router();
@@ -136,7 +150,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(Errors\RoutingError::class);
         $this->expectExceptionMessage(
-            "invalid via is invalid (get, post, patch, put, delete)."
+            "invalid via is invalid (get, post, patch, put, delete, cli)."
         );
 
         $router = new Router();
@@ -204,7 +218,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(Errors\RoutingError::class);
         $this->expectExceptionMessage(
-            "{$invalidVia} via is invalid (get, post, patch, put, delete)."
+            "{$invalidVia} via is invalid (get, post, patch, put, delete, cli)."
         );
 
         $router = new Router();
