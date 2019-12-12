@@ -1,5 +1,11 @@
+<?php $this->template('base.phtml', ['title' => 'Page not found!']); ?>
+
 <h1>Page not found!</h1>
 
 <p>
     <?= $error->getMessage() ?>
+</p>
+
+<p>
+    <a href="/">Go home</a>
 </p>
