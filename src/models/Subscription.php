@@ -200,6 +200,22 @@ class Subscription
     }
 
     /**
+     * Set the pending request to null
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is subscribe
+     */
+    public function cancelUnsubscription()
+    {
+        if ($this->pending_request === 'subscribe') {
+            throw new Errors\SubscriptionError(
+                'Cannot cancel unsubscription because pending request is subscribe.'
+            );
+        }
+
+        $this->pending_request = null;
+    }
+
+    /**
      * @return integer|null
      */
     public function id()

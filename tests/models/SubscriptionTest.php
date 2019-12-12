@@ -231,6 +231,38 @@ class SubscriptionTest extends TestCase
         $this->assertSame('unsubscribe', $subscription->pendingRequest());
     }
 
+    public function testCancelUnsubscriptionRequest()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->requestUnsubscription();
+
+        $this->assertSame('unsubscribe', $subscription->pendingRequest());
+
+        $subscription->cancelUnsubscription();
+
+        $this->assertNull($subscription->pendingRequest());
+    }
+
+    public function testCancelUnsubscriptionRequestFailsIfPendingIsSubscribe()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage(
+            'Cannot cancel unsubscription because pending request is subscribe.'
+        );
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $this->assertSame('subscribe', $subscription->pendingRequest());
+
+        $subscription->cancelUnsubscription();
+    }
+
     public function testIntentCallback()
     {
         $subscription = new Subscription(
