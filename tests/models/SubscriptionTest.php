@@ -287,6 +287,88 @@ class SubscriptionTest extends TestCase
         $subscription->intentCallback('');
     }
 
+    public function testFromValues()
+    {
+        $subscription = Subscription::fromValues([
+            'id' => '1',
+            'created_at' => '10000',
+            'status' => 'new',
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
+        ]);
+
+        $this->assertSame(1, $subscription->id());
+        $this->assertSame(10000, $subscription->createdAt()->getTimestamp());
+        $this->assertSame('new', $subscription->status());
+        $this->assertSame('https://subscriber.com/callback', $subscription->callback());
+        $this->assertSame('https://some.site.fr/feed.xml', $subscription->topic());
+        $this->assertSame(Subscription::DEFAULT_LEASE_SECONDS, $subscription->leaseSeconds());
+    }
+
+    /**
+     * @dataProvider missingValuesProvider
+     */
+    public function testFromValuesFailsIfRequiredValueIsMissing($values, $missing_value_name)
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage("{$missing_value_name} value is required.");
+
+        $subscription = Subscription::fromValues($values);
+    }
+
+    /**
+     * @dataProvider integerValuesNamesProvider
+     */
+    public function testFromValuesFailsIfIntegerValueCannotBeParsed($value_name)
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage("{$value_name} value must be an integer.");
+
+        $values = [
+            'id' => '1',
+            'created_at' => '10000',
+            'status' => 'new',
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
+        ];
+        $values[$value_name] = 'not an integer';
+
+        $subscription = Subscription::fromValues($values);
+    }
+
+    public function testFromValuesFailsIfStatusIsInvalid()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage('invalid is not a valid status.');
+
+        $subscription = Subscription::fromValues([
+            'id' => '1',
+            'created_at' => '10000',
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
+            'status' => 'invalid',
+        ]);
+    }
+
+    public function testFromValuesFailsIfPendingRequestIsInvalid()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage('invalid is not a valid pending request.');
+
+        $subscription = Subscription::fromValues([
+            'id' => '1',
+            'created_at' => '10000',
+            'status' => 'new',
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
+            'pending_request' => 'invalid',
+        ]);
+    }
+
     public function invalidUrlProvider()
     {
         return [
@@ -295,5 +377,36 @@ class SubscriptionTest extends TestCase
             ['ftp://some.site.fr'],
             ['http://'],
         ];
+    }
+
+    public function integerValuesNamesProvider()
+    {
+        return [
+            ['id'],
+            ['lease_seconds'],
+            ['created_at'],
+            ['expired_at'],
+        ];
+    }
+
+    public function missingValuesProvider()
+    {
+        $default_values = [
+            'id' => '1',
+            'created_at' => '10000',
+            'status' => 'new',
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
+        ];
+
+        $dataset = [];
+        foreach (array_keys($default_values) as $missing_value_name) {
+            $values = $default_values;
+            unset($values[$missing_value_name]);
+            $dataset[] = [$values, $missing_value_name];
+        }
+
+        return $dataset;
     }
 }
