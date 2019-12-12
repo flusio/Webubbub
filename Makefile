@@ -17,15 +17,15 @@ test: ## Run the tests suite
 
 .PHONY: test-minz
 test-minz: ## Run the tests suite for the Minz lib
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./src/lib/Minz/tests/bootstrap.php ./src/lib/Minz/tests
+	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./lib/Minz/tests/bootstrap.php ./lib/Minz/tests
 
 .PHONY: lint
 lint: ## Run the linter on the PHP files
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcs --standard=PSR12 ./src ./tests
+	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcs --standard=PSR12 ./src ./tests ./lib/Minz
 
 .PHONY: lint-fix
 lint-fix: ## Fix the errors raised by the linter
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcbf --standard=PSR12 ./src ./tests
+	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcbf --standard=PSR12 ./src ./tests ./lib/Minz
 
 .PHONY: help
 help:
