@@ -24,16 +24,13 @@ class ResponseTest extends TestCase
         $this->assertSame('', $response->viewPointer());
     }
 
-    public function testSetViewPointerFailsIfDoesntContainHash()
+    public function testSetViewPointerCanPointToNoController()
     {
-        $this->expectException(Errors\ResponseError::class);
-        $this->expectExceptionMessage(
-            'rabbits/items.phtml view pointer must contain a hash (#).'
-        );
-
         $response = new Response(200, '');
 
-        $response->setViewPointer('rabbits/items.phtml');
+        $response->setViewPointer('not_found.phtml');
+
+        $this->assertSame('not_found.phtml', $response->viewPointer());
     }
 
     public function testSetViewPointerFailsIfViewFileDoesntExist()
@@ -193,5 +190,14 @@ class ResponseTest extends TestCase
         $output = $response->render();
 
         $this->assertSame('', $output);
+    }
+
+    public function testRenderWithNoController()
+    {
+        $response = Response::notFound('not_found.phtml');
+
+        $output = $response->render();
+
+        $this->assertStringContainsString("<h1>Page not found</h1>\n", $output);
     }
 }

@@ -160,7 +160,6 @@ class Response
     /**
      * @param string $view_pointer A pointer to a view file (can be empty)
      *
-     * @throws \Minz\Errors\ResponseError if the view pointer doesn't contain a hash
      * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
      *
      * @return void
@@ -168,16 +167,10 @@ class Response
     public function setViewPointer($view_pointer)
     {
         if ($view_pointer !== '') {
-            if (strpos($view_pointer, '#') === false) {
-                throw new Errors\ResponseError(
-                    "{$view_pointer} view pointer must contain a hash (#)."
-                );
-            }
-
             $view_filepath = self::viewFilepath($view_pointer);
             if (!file_exists($view_filepath)) {
-                list($controller_name, $view_filename) = explode('#', $view_pointer);
-                $missing_file = "src/{$controller_name}/views/{$view_filename}";
+                $app_path_length = strlen(Configuration::$app_path);
+                $missing_file = substr($view_filepath, $app_path_length + 1);
                 throw new Errors\ResponseError("{$missing_file} file cannot be found.");
             }
         }
@@ -267,9 +260,13 @@ class Response
      */
     private static function viewFilepath($view_pointer)
     {
-        list($controller_name, $view_filename) = explode('#', $view_pointer);
         $app_path = Configuration::$app_path;
-        return "{$app_path}/src/{$controller_name}/views/{$view_filename}";
+        if (strpos($view_pointer, '#') !== false) {
+            list($controller_name, $view_filename) = explode('#', $view_pointer);
+            return "{$app_path}/src/{$controller_name}/views/{$view_filename}";
+        } else {
+            return "{$app_path}/src/views/{$view_pointer}";
+        }
     }
 
     /**
