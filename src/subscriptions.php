@@ -19,7 +19,7 @@ function handleRequest($request)
     // See https://www.php.net/variables.external#language.variables.external.dot-in-names
     $mode = $request->param('hub_mode', '');
     if ($mode !== 'subscribe') {
-        return Response::badRequest('subscriptions#error.txt', [
+        return Response::badRequest('subscriptions/error.txt', [
             'error' => "{$mode} mode is invalid.",
         ]);
     }
@@ -27,11 +27,11 @@ function handleRequest($request)
     try {
         return handleSubscribe($request);
     } catch (models\Errors\SubscriptionError $e) {
-        return Response::badRequest('subscriptions#error.txt', [
+        return Response::badRequest('subscriptions/error.txt', [
             'error' => $e->getMessage(),
         ]);
     } catch (\Exception $e) {
-        return Response::internalServerError('subscriptions#error.txt', [
+        return Response::internalServerError('subscriptions/error.txt', [
             'error' => (
                 'An unexpected error occured, it’s not your fault.'
                 . ' Please retry later or contact an administrator.'

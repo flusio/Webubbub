@@ -10,9 +10,9 @@ class ResponseTest extends TestCase
     {
         $response = new Response(200, '');
 
-        $response->setViewPointer('rabbits#items.phtml');
+        $response->setViewPointer('rabbits/items.phtml');
 
-        $this->assertSame('rabbits#items.phtml', $response->viewPointer());
+        $this->assertSame('rabbits/items.phtml', $response->viewPointer());
     }
 
     public function testSetViewPointerCanBeEmpty()
@@ -24,25 +24,16 @@ class ResponseTest extends TestCase
         $this->assertSame('', $response->viewPointer());
     }
 
-    public function testSetViewPointerCanPointToNoController()
-    {
-        $response = new Response(200, '');
-
-        $response->setViewPointer('not_found.phtml');
-
-        $this->assertSame('not_found.phtml', $response->viewPointer());
-    }
-
     public function testSetViewPointerFailsIfViewFileDoesntExist()
     {
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage(
-            'src/rabbits/views/missing.phtml file cannot be found.'
+            'src/views/rabbits/missing.phtml file cannot be found.'
         );
 
         $response = new Response(200, '');
 
-        $response->setViewPointer('rabbits#missing.phtml');
+        $response->setViewPointer('rabbits/missing.phtml');
     }
 
     public function testSetCode()
@@ -78,16 +69,16 @@ class ResponseTest extends TestCase
 
     public function testConstructor()
     {
-        $response = new Response(200, 'rabbits#items.phtml');
+        $response = new Response(200, 'rabbits/items.phtml');
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/html'], $response->headers());
-        $this->assertSame('rabbits#items.phtml', $response->viewPointer());
+        $this->assertSame('rabbits/items.phtml', $response->viewPointer());
     }
 
     public function testConstructorAdaptsTheContentTypeFromFileType()
     {
-        $response = new Response(200, 'rabbits#items.txt');
+        $response = new Response(200, 'rabbits/items.txt');
 
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
     }
@@ -106,17 +97,15 @@ class ResponseTest extends TestCase
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage('666 is not a valid HTTP code.');
 
-        $response = new Response(666, 'rabbits#items.phtml');
+        $response = new Response(666, 'rabbits/items.phtml');
     }
 
     public function testConstructorFailsIfViewFileDoesntExist()
     {
         $this->expectException(Errors\ResponseError::class);
-        $this->expectExceptionMessage(
-            'src/rabbits/views/missing.phtml file cannot be found.'
-        );
+        $this->expectExceptionMessage('src/views/missing.phtml file cannot be found.');
 
-        $response = new Response(200, 'rabbits#missing.phtml');
+        $response = new Response(200, 'missing.phtml');
     }
 
     public function testConstructorFailsIfViewFileExtensionIsntSupported()
@@ -126,19 +115,19 @@ class ResponseTest extends TestCase
             'nope is not a supported view file extension.'
         );
 
-        $response = new Response(200, 'rabbits#items.nope');
+        $response = new Response(200, 'rabbits/items.nope');
     }
 
     public function testOk()
     {
-        $response = Response::ok('rabbits#items.phtml');
+        $response = Response::ok('rabbits/items.phtml');
 
         $this->assertSame(200, $response->code());
     }
 
     public function testAccepted()
     {
-        $response = Response::accepted('rabbits#items.phtml');
+        $response = Response::accepted('rabbits/items.phtml');
 
         $this->assertSame(202, $response->code());
     }
@@ -171,7 +160,7 @@ class ResponseTest extends TestCase
             'Clémentine',
             'Jean-Jean',
         ];
-        $response = Response::ok('rabbits#items.phtml', [
+        $response = Response::ok('rabbits/items.phtml', [
             'rabbits' => $rabbits,
         ]);
 
@@ -190,14 +179,5 @@ class ResponseTest extends TestCase
         $output = $response->render();
 
         $this->assertSame('', $output);
-    }
-
-    public function testRenderWithNoController()
-    {
-        $response = Response::notFound('not_found.phtml');
-
-        $output = $response->render();
-
-        $this->assertStringContainsString("<h1>Page not found</h1>\n", $output);
     }
 }

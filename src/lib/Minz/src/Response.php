@@ -10,8 +10,8 @@ namespace Minz;
  * generating the content which is returned to the user. It is generally a
  * `.phtml` file.
  *
- * A view pointer is in the form of `controller_name#filename`. For instance,
- * `rabbits#items.phtml` targets the file `src/rabbits/views/items.phtml`.
+ * A view pointer should be in the form of `controller_name/filename`. For
+ * instance, `rabbits/items.phtml` targets the file `src/rabbits/views/items.phtml`.
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -261,12 +261,7 @@ class Response
     private static function viewFilepath($view_pointer)
     {
         $app_path = Configuration::$app_path;
-        if (strpos($view_pointer, '#') !== false) {
-            list($controller_name, $view_filename) = explode('#', $view_pointer);
-            return "{$app_path}/src/{$controller_name}/views/{$view_filename}";
-        } else {
-            return "{$app_path}/src/views/{$view_pointer}";
-        }
+        return "{$app_path}/src/views/{$view_pointer}";
     }
 
     /**

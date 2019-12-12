@@ -12,14 +12,14 @@ function items($request)
         'Jean-Jean',
     ];
 
-    return Response::ok('rabbits#items.phtml', [
+    return Response::ok('rabbits/items.phtml', [
         'rabbits' => $rabbits,
     ]);
 }
 
 function missingViewFile($request)
 {
-    return Response::ok('rabbits#missing.phtml');
+    return Response::ok('rabbits/missing.phtml');
 }
 
 function noResponse($request)
