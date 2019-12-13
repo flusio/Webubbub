@@ -52,6 +52,7 @@ function subscribe($request)
     ]);
 
     if (!$subscription_values) {
+        // New subscription, not in database
         try {
             $subscription = new models\Subscription(
                 $callback,
@@ -69,7 +70,10 @@ function subscribe($request)
         $values['created_at'] = time();
         $dao->create($values);
     } else {
-        // Subscriptions renewal will be implemented later
+        // Subscription renewal
+        $subscription = models\Subscription::fromValues($subscription_values);
+        $subscription->renew($lease_seconds, $secret);
+        $dao->update($subscription->id(), $subscription->toValues());
     }
 
     return Response::accepted();

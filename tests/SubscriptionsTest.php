@@ -80,22 +80,29 @@ class SubscriptionsTest extends ActionControllerTestCase
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
         $dao = new models\dao\Subscription();
-        $dao->create([
+        $id = $dao->create([
             'callback' => $callback,
             'topic' => $topic,
             'created_at' => time(),
             'status' => 'new',
             'lease_seconds' => 432000,
+            'pending_request' => null,
         ]);
         $request = new \Minz\Request('CLI', '/subscriptions/subscribe', [
             'hub_callback' => $callback,
             'hub_topic' => $topic,
+            'hub_lease_seconds' => 543000,
+            'hub_secret' => 'a secret string',
         ]);
 
         $response = subscribe($request);
 
+        $subscription = $dao->find($id);
         $this->assertSame(1, $dao->count());
         $this->assertResponse($response, 202);
+        $this->assertSame('543000', $subscription['lease_seconds']);
+        $this->assertSame('a secret string', $subscription['secret']);
+        $this->assertSame('subscribe', $subscription['pending_request']);
     }
 
     /**

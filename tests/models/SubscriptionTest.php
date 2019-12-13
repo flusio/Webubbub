@@ -217,6 +217,59 @@ class SubscriptionTest extends TestCase
         $subscription->verify();
     }
 
+    public function testRenew()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::MIN_LEASE_SECONDS,
+            'a secret'
+        );
+
+        $subscription->verify();
+
+        $this->assertNull($subscription->pendingRequest());
+        $this->assertSame(Subscription::MIN_LEASE_SECONDS, $subscription->leaseSeconds());
+        $this->assertSame('a secret', $subscription->secret());
+
+        $subscription->renew(
+            Subscription::DEFAULT_LEASE_SECONDS,
+            'another secret'
+        );
+
+        $this->assertSame('subscribe', $subscription->pendingRequest());
+        $this->assertSame(Subscription::DEFAULT_LEASE_SECONDS, $subscription->leaseSeconds());
+        $this->assertSame('another secret', $subscription->secret());
+    }
+
+    public function testRenewForcesLeaseSeconds()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $lease_seconds = Subscription::MIN_LEASE_SECONDS - 42;
+
+        $subscription->renew($lease_seconds);
+
+        $this->assertSame(Subscription::MIN_LEASE_SECONDS, $subscription->leaseSeconds());
+    }
+
+    public function testRenewFailsIfInvalidSecret()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage(
+            'Secret must either be not given or be a cryptographically random unique secret string.'
+        );
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $subscription->renew(Subscription::DEFAULT_LEASE_SECONDS, '');
+    }
+
     public function testRequestUnsubscription()
     {
         $subscription = new Subscription(

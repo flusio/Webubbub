@@ -102,26 +102,10 @@ class Subscription
             throw new Errors\SubscriptionError("{$topic} topic is invalid.");
         }
 
-        if ($secret === '') {
-            throw new Errors\SubscriptionError(
-                'Secret must either be not given or be a cryptographically random unique secret string.'
-            );
-        }
-
-        $max_secret_length = self::MAX_SECRET_LENGTH;
-        if (strlen($secret) > $max_secret_length) {
-            throw new Errors\SubscriptionError(
-                "Secret must be equal or less than {$max_secret_length} bytes in length."
-            );
-        }
-
         $this->callback = urldecode($callback);
         $this->topic = urldecode($topic);
-        $this->lease_seconds = max(
-            min($lease_seconds, self::MAX_LEASE_SECONDS),
-            self::MIN_LEASE_SECONDS
-        );
-        $this->secret = $secret;
+        $this->setLeaseSeconds($lease_seconds);
+        $this->setSecret($secret);
 
         $this->status = 'new';
         $this->pending_request = 'subscribe';
@@ -189,6 +173,20 @@ class Subscription
         $expired_at = new \DateTime();
         $expired_at->setTimestamp($expired_at_timestamp);
         $this->expired_at = $expired_at;
+    }
+
+    /**
+     * Renew a subscription by setting lease seconds and secret. It also set
+     * the pending request to "subscribe"
+     *
+     * @param integer $lease_seconds
+     * @param string|null $secret
+     */
+    public function renew($lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
+    {
+        $this->setLeaseSeconds($lease_seconds);
+        $this->setSecret($secret);
+        $this->pending_request = 'subscribe';
     }
 
     /**
@@ -278,6 +276,41 @@ class Subscription
     {
         return $this->expired_at;
     }
+
+    /**
+     * @param integer $lease_seconds
+     */
+    private function setLeaseSeconds($lease_seconds)
+    {
+        $this->lease_seconds = max(
+            min($lease_seconds, self::MAX_LEASE_SECONDS),
+            self::MIN_LEASE_SECONDS
+        );
+    }
+
+    /**
+     * @param string|null $secret
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if secret is invalid
+     */
+    private function setSecret($secret)
+    {
+        if ($secret === '') {
+            throw new Errors\SubscriptionError(
+                'Secret must either be not given or be a cryptographically random unique secret string.'
+            );
+        }
+
+        $max_secret_length = self::MAX_SECRET_LENGTH;
+        if (strlen($secret) > $max_secret_length) {
+            throw new Errors\SubscriptionError(
+                "Secret must be equal or less than {$max_secret_length} bytes in length."
+            );
+        }
+
+        $this->secret = $secret;
+    }
+
 
     /**
      * Return the model values, in order to be passed to the DAO model. Note
