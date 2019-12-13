@@ -152,6 +152,59 @@ class DatabaseModel
     }
 
     /**
+     * Return a row of the current model/table.
+     *
+     * @param mixed[] $values The values which must match
+     *
+     * @throws \Minz\Errors\DatabaseModelError if values is empty
+     * @throws \Minz\Errors\DatabaseModelError if at least one property isn't
+     *                                         declared by the model
+     * @throws \Minz\Errors\DatabaseModelError if an error occured in the SQL syntax
+     *
+     * @return array|null Return the corresponding row data, null otherwise
+     */
+    public function findBy($values)
+    {
+        if (!$values) {
+            $class = get_called_class();
+            throw new Errors\DatabaseModelError(
+                "{$class}::findBy method expect values to be passed."
+            );
+        }
+
+        $properties = array_keys($values);
+        $undeclared_property = $this->findUndeclaredProperty($properties);
+        if ($undeclared_property) {
+            $class = get_called_class();
+            throw new Errors\DatabaseModelError(
+                "{$undeclared_property} is not declared in the {$class} model."
+            );
+        }
+
+        $where_statement_as_array = [];
+        foreach ($properties as $property) {
+            $where_statement_as_array[] = "{$property} = ?";
+        }
+        $where_statement = implode(' AND ', $where_statement_as_array);
+
+        $sql = "SELECT * FROM {$this->table_name} WHERE {$where_statement}";
+
+        $statement = $this->prepare($sql);
+        $parameters = array_values($values);
+        $result = $statement->execute($parameters);
+        if (!$result) {
+            throw self::sqlStatementError($statement);
+        }
+
+        $result = $statement->fetch();
+        if ($result) {
+            return $result;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Update a row
      *
      * @param mixed[] $values The list of properties with associated values

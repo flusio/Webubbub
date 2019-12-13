@@ -226,6 +226,52 @@ SQL;
         $this->assertNull($is_someone);
     }
 
+    public function testFindBy()
+    {
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $joel = $dao->findBy(['name' => 'Joël']);
+
+        $this->assertSame('Joël', $joel['name']);
+    }
+
+    public function testFindByWithNoMatchingData()
+    {
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $someone = $dao->findBy(['name' => 'Josy']);
+
+        $this->assertNull($someone);
+    }
+
+    public function testFindByFailsWithEmptyValues()
+    {
+        $this->expectException(Errors\DatabaseModelError::class);
+        $this->expectExceptionMessage(
+            'AppTest\models\dao\Friend::findBy method expect values to be passed.'
+        );
+
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $dao->findBy([]);
+    }
+
+    public function testFindByFailsIfUnsupportedProperty()
+    {
+        $this->expectException(Errors\DatabaseModelError::class);
+        $this->expectExceptionMessage(
+            'not_property is not declared in the AppTest\models\dao\Friend model.'
+        );
+
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $dao->findBy(['not_property' => 'foo']);
+    }
+
     public function testUpdate()
     {
         $dao = new models\dao\Friend();
