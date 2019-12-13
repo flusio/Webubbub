@@ -11,11 +11,11 @@ class Application
     {
         $router = new \Minz\Router();
         $router->addRoute('/', 'home#index', 'get');
-        $router->addRoute('/', 'subscriptions#handle', ['post', 'cli']);
+        $router->addRoute('/', 'requests#handle', ['post', 'cli']);
 
-        $router->addRoute('/subscriptions/subscribe', 'subscriptions#subscribe', 'cli');
-        $router->addRoute('/subscriptions/unsubscribe', 'subscriptions#unsubscribe', 'cli');
-        $router->addRoute('/subscriptions/publish', 'subscriptions#publish', 'cli');
+        $router->addRoute('/requests/subscribe', 'requests#subscribe', 'cli');
+        $router->addRoute('/requests/unsubscribe', 'requests#unsubscribe', 'cli');
+        $router->addRoute('/requests/publish', 'requests#publish', 'cli');
         $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
 
