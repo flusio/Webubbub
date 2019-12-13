@@ -10,3 +10,9 @@ CREATE TABLE subscriptions (
   lease_seconds integer NOT NULL,
   secret text
 );
+
+CREATE TABLE contents (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  created_at datetime NOT NULL,
+  url text NOT NULL
+);

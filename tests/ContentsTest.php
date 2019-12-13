@@ -1,11 +1,11 @@
 <?php
 
-namespace Webubbub\controllers\subscriptions;
+namespace Webubbub\controllers\contents;
 
 use Minz\Tests\ActionControllerTestCase;
 use Webubbub\models;
 
-class SubscriptionsTest extends ActionControllerTestCase
+class ContentsTest extends ActionControllerTestCase
 {
     private static $schema;
 
@@ -30,21 +30,17 @@ class SubscriptionsTest extends ActionControllerTestCase
 
     public function testItems()
     {
-        $dao = new models\dao\Subscription();
+        $dao = new models\dao\Content();
         $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
+            'url' => 'https://some.site.fr/feed.xml',
             'created_at' => time(),
-            'status' => 'new',
-            'lease_seconds' => 432000,
         ]);
-        $request = new \Minz\Request('CLI', '/subscriptions/items');
+        $request = new \Minz\Request('CLI', '/contents/items');
 
         $response = items($request);
 
         $output = $response->render();
         $this->assertResponse($response, 200);
-        $this->assertStringContainsString('https://subscriber.com/callback', $output);
         $this->assertStringContainsString('https://some.site.fr/feed.xml', $output);
     }
 }

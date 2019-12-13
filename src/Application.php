@@ -11,12 +11,23 @@ class Application
     {
         $router = new \Minz\Router();
         $router->addRoute('/', 'home#index', 'get');
-        $router->addRoute('/', 'subscriptions#handle', ['post', 'cli']);
 
-        $router->addRoute('/subscriptions/subscribe', 'subscriptions#subscribe', 'cli');
-        $router->addRoute('/subscriptions/unsubscribe', 'subscriptions#unsubscribe', 'cli');
-        $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');
+        // This is the main route that subscribers and publishers must use
+        $router->addRoute('/', 'requests#handle', ['post', 'cli']);
+
+        // These are the same but don't require the `mode` parameter (only CLI)
+        $router->addRoute('/requests/subscribe', 'requests#subscribe', 'cli');
+        $router->addRoute('/requests/unsubscribe', 'requests#unsubscribe', 'cli');
+        $router->addRoute('/requests/publish', 'requests#publish', 'cli');
+
+        // This one is intended to be called regularly on the server to verify
+        // intents of new subscribers or for unsubscriptions. It can be called
+        // via a cron task but it would be better via a job queue.
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
+
+        // These routes list what is in database, to help to debug
+        $router->addRoute('/subscriptions', 'subscriptions#items', 'cli');
+        $router->addRoute('/contents', 'contents#items', 'cli');
 
         $this->engine = new \Minz\Engine($router);
 
