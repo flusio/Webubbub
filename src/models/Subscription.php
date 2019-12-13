@@ -10,15 +10,11 @@ namespace Webubbub\models;
  * - `new` the subscriber just made its first subscription request, it must be
  *   now validated (optional) or verified
  * - `validated` the hub checked additional details and accepted the subscription,
- *   it have to be verified
+ *   it has to be verified
  * - `verified` the hub checked the intent of the subscriber, who confirmed the
  *   subscription
  * - `expired` the subscription expired because subscriber didn't renew before
  *   the end of lease duration
- *
- * An `expired` subscription can be deleted at any time. It might be kept for
- * a bit of time to ease a potential late renewal, allowing to skip the
- * additional validation step.
  *
  * Content distribution requests must be sent only to `verified` subscriptions.
  *
@@ -26,20 +22,21 @@ namespace Webubbub\models;
  * It stores the last request made by the subscriber (`subscribe` or `unsubscribe`)
  * and needing a verification of intent.
  *
- * If `pending_request` is `subscribe`:
+ * If intent is verified, there are two cases:
  *
- * - intent is verified and the status is set to `verified`
- * - intent is declined and the pending request is set to null (status left
- *   unchanged)
+ * - `pending_request` is `subscribe`, the status is set to `verified`
+ * - `pending_request` is `unsubscribe`, the Subscription is deleted
  *
- * If `pending_request` is `unsubscribe`:
- *
- * - intent is verified and the Subscription is deleted
- * - intent is declined and nothing changes
+ * If intent is not verified, the pending request is set to null and the status
+ * is left unchanged.
  *
  * Pending requests should be resolved before sending a content distribution
  * request. In case it cannot (e.g. high rate of unsubscription requests), the
  * request should be delayed for the concerned subscribers.
+ *
+ * `new`, `validated` and `renew` subscriptions with no pending_request can be
+ * deleted but should be after a time of retention (based on `created_at` or
+ * `expired_at` attributes).
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
