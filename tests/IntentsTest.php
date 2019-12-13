@@ -118,7 +118,8 @@ class IntentsTest extends ActionControllerTestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertNull($subscription);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertNull($subscription['pending_request']);
     }
 
     public function testVerifyWithUnsubscribeAndUnmatchingChallenge()
@@ -166,7 +167,8 @@ class IntentsTest extends ActionControllerTestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertNull($subscription);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertNull($subscription['pending_request']);
     }
 
     /**

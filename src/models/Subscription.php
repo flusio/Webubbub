@@ -29,8 +29,8 @@ namespace Webubbub\models;
  * If `pending_request` is `subscribe`:
  *
  * - intent is verified and the status is set to `verified`
- * - intent is declined and the Subscription is deleted, unless status is
- *   `verified` and the lease duration is not over yet.
+ * - intent is declined and the pending request is set to null (status left
+ *   unchanged)
  *
  * If `pending_request` is `unsubscribe`:
  *
@@ -201,17 +201,9 @@ class Subscription
 
     /**
      * Set the pending request to null
-     *
-     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is subscribe
      */
-    public function cancelUnsubscription()
+    public function cancelRequest()
     {
-        if ($this->pending_request === 'subscribe') {
-            throw new Errors\SubscriptionError(
-                'Cannot cancel unsubscription because pending request is subscribe.'
-            );
-        }
-
         $this->pending_request = null;
     }
 

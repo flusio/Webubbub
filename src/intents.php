@@ -41,12 +41,8 @@ function verify($request)
                 "{$challenge} challenge does not match ({$intent_callback})."
             );
 
-            if ($pending_request === 'subscribe') {
-                $dao->delete($subscription->id());
-            } elseif ($pending_request === 'unsubscribe') {
-                $subscription->cancelUnsubscription();
-                $dao->update($subscription->id(), $subscription->toValues());
-            }
+            $subscription->cancelRequest();
+            $dao->update($subscription->id(), $subscription->toValues());
         }
     }
 
