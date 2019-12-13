@@ -186,6 +186,65 @@ class SubscriptionsTest extends ActionControllerTestCase
         $this->assertSame(0, $dao->count());
     }
 
+    public function testPublish()
+    {
+        $dao = new models\dao\Content();
+        $url = 'https://some.site.fr/feed.xml';
+        $request = new \Minz\Request('CLI', '/subscriptions/publish', [
+            'hub_url' => $url,
+        ]);
+
+        $this->assertSame(0, $dao->count());
+
+        $response = publish($request);
+
+        $this->assertResponse($response, 200);
+        $this->assertSame(1, $dao->count());
+        $content = $dao->listAll()[0];
+        $this->assertSame($url, $content['url']);
+    }
+
+    public function testPublishWithExistingUrl()
+    {
+        $dao = new models\dao\Content();
+        $url = 'https://some.site.fr/feed.xml';
+        $dao->create([
+            'url' => $url,
+            'created_at' => time(),
+        ]);
+        $request = new \Minz\Request('CLI', '/subscriptions/publish', [
+            'hub_url' => $url,
+        ]);
+
+        $this->assertSame(1, $dao->count());
+
+        $response = publish($request);
+
+        $this->assertResponse($response, 200);
+        $this->assertSame(1, $dao->count());
+    }
+
+    /**
+     * @dataProvider invalidUrlProvider
+     */
+    public function testPublishFailsIfUrlIsInvalid($invalid_url)
+    {
+        $request = new \Minz\Request('CLI', '/subscriptions/publish', [
+            'hub_url' => $invalid_url,
+        ]);
+
+        $response = publish($request);
+
+        $dao = new models\dao\Content();
+        $this->assertSame(0, $dao->count());
+        $this->assertResponse(
+            $response,
+            400,
+            "{$invalid_url} url is invalid.\n",
+            ['Content-Type' => 'text/plain']
+        );
+    }
+
     public function testItems()
     {
         $dao = new models\dao\Subscription();

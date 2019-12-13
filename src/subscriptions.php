@@ -18,7 +18,7 @@ function handle($request)
     // reasons, PHP replaces those dots by underscores. Meh!
     // See https://www.php.net/variables.external#language.variables.external.dot-in-names
     $mode = $request->param('hub_mode', '');
-    if ($mode !== 'subscribe' && $mode !== 'unsubscribe') {
+    if ($mode !== 'subscribe' && $mode !== 'unsubscribe' && $mode !== 'publish') {
         return Response::badRequest('subscriptions/error.txt', [
             'error' => "{$mode} mode is invalid.",
         ]);
@@ -28,6 +28,8 @@ function handle($request)
         return subscribe($request);
     } elseif ($mode === 'unsubscribe') {
         return unsubscribe($request);
+    } elseif ($mode === 'publish') {
+        return publish($request);
     }
 }
 
@@ -118,6 +120,40 @@ function unsubscribe($request)
     }
 
     return Response::accepted();
+}
+
+/**
+ * Handle the "publish" requests to the hub.
+ *
+ * @param \Minz\Request $request
+ *
+ * @return \Minz\Response
+ */
+function publish($request)
+{
+    $url = $request->param('hub_url', '');
+
+    $dao = new models\dao\Content();
+    $content_values = $dao->findBy(['url' => $url]);
+
+    if ($content_values) {
+        // we already know about this content, it will be delivered soon
+        return Response::ok();
+    }
+
+    try {
+        $content = new models\Content($url);
+    } catch (models\Errors\ContentError $e) {
+        return Response::badRequest('subscriptions/error.txt', [
+            'error' => $e->getMessage(),
+        ]);
+    }
+
+    $values = $content->toValues();
+    $values['created_at'] = time();
+    $dao->create($values);
+
+    return Response::ok();
 }
 
 /**

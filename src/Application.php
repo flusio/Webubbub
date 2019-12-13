@@ -15,6 +15,7 @@ class Application
 
         $router->addRoute('/subscriptions/subscribe', 'subscriptions#subscribe', 'cli');
         $router->addRoute('/subscriptions/unsubscribe', 'subscriptions#unsubscribe', 'cli');
+        $router->addRoute('/subscriptions/publish', 'subscriptions#publish', 'cli');
         $router->addRoute('/subscriptions/items', 'subscriptions#items', 'cli');
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
 
