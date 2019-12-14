@@ -55,6 +55,25 @@ class Content
     }
 
     /**
+     * Mark a content as fetched, setting the given values
+     *
+     * @param string $content
+     * @param string $type
+     * @param string $links
+     */
+    public function fetch($content, $type, $links)
+    {
+        $this->status = 'fetched';
+        $this->content = $content;
+        $this->type = $type;
+        $this->links = $links;
+
+        $fetched_at = new \DateTime();
+        $fetched_at->setTimestamp(\Minz\Time::now());
+        $this->fetched_at = $fetched_at;
+    }
+
+    /**
      * @return integer|null
      */
     public function id()

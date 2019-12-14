@@ -6,6 +6,11 @@ use PHPUnit\Framework\TestCase;
 
 class ContentTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        \Minz\Time::unfreeze();
+    }
+
     public function testConstructor()
     {
         $url = 'https://some.site.fr/feed.xml';
@@ -37,6 +42,25 @@ class ContentTest extends TestCase
         $this->expectExceptionMessage("{$invalid_url} url is invalid.");
 
         new Content($invalid_url);
+    }
+
+    public function testFetch()
+    {
+        \Minz\Time::freeze(1000);
+
+        $url = 'https://some.site.fr/feed';
+        $links = 'https://some.site.fr/feed.xml';
+        $type = 'application/rss+xml';
+        $content_text = '<some>xml</some>';
+        $content = new Content($url);
+
+        $content->fetch($content_text, $type, $links);
+
+        $this->assertSame('fetched', $content->status());
+        $this->assertSame(1000, $content->fetchedAt()->getTimestamp());
+        $this->assertSame($links, $content->links());
+        $this->assertSame($type, $content->type());
+        $this->assertSame($content_text, $content->content());
     }
 
     public function testFromValues()
