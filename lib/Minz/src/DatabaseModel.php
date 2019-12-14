@@ -152,7 +152,7 @@ class DatabaseModel
     }
 
     /**
-     * Return a row of the current model/table.
+     * Return a row matching the given values.
      *
      * @param mixed[] $values The values which must match
      *
@@ -165,10 +165,31 @@ class DatabaseModel
      */
     public function findBy($values)
     {
+        $result = $this->listBy($values);
+        if ($result) {
+            return $result[0];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Return a list of rows matching the given values.
+     *
+     * @param mixed[] $values The values which must match
+     *
+     * @throws \Minz\Errors\DatabaseModelError if values is empty
+     * @throws \Minz\Errors\DatabaseModelError if at least one property isn't
+     *                                         declared by the model
+     * @throws \Minz\Errors\DatabaseModelError if an error occured in the SQL syntax
+     *
+     * @return array Return the corresponding row data, null otherwise
+     */
+    public function listBy($values)
+    {
         if (!$values) {
-            $class = get_called_class();
             throw new Errors\DatabaseModelError(
-                "{$class}::findBy method expect values to be passed."
+                'It is expected values not to be empty.'
             );
         }
 
@@ -196,11 +217,11 @@ class DatabaseModel
             throw self::sqlStatementError($statement);
         }
 
-        $result = $statement->fetch();
-        if ($result) {
+        $result = $statement->fetchAll();
+        if ($result !== false) {
             return $result;
         } else {
-            return null;
+            throw self::sqlStatementError($statement);
         }
     }
 

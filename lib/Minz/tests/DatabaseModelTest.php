@@ -249,9 +249,7 @@ SQL;
     public function testFindByFailsWithEmptyValues()
     {
         $this->expectException(Errors\DatabaseModelError::class);
-        $this->expectExceptionMessage(
-            'AppTest\models\dao\Friend::findBy method expect values to be passed.'
-        );
+        $this->expectExceptionMessage('It is expected values not to be empty.');
 
         $dao = new models\dao\Friend();
         $dao->create(['name' => 'Joël']);
@@ -270,6 +268,53 @@ SQL;
         $dao->create(['name' => 'Joël']);
 
         $dao->findBy(['not_property' => 'foo']);
+    }
+
+    public function testListBy()
+    {
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+        $dao->create(['name' => 'Joël']);
+
+        $joels = $dao->listBy(['name' => 'Joël']);
+
+        $this->assertSame(2, count($joels));
+        $this->assertSame('Joël', $joels[0]['name']);
+        $this->assertSame('Joël', $joels[1]['name']);
+    }
+
+    public function testListByWithNoMatchingData()
+    {
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $friends = $dao->listBy(['name' => 'Josy']);
+
+        $this->assertSame([], $friends);
+    }
+
+    public function testListByFailsWithEmptyValues()
+    {
+        $this->expectException(Errors\DatabaseModelError::class);
+        $this->expectExceptionMessage('It is expected values not to be empty.');
+
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $dao->listBy([]);
+    }
+
+    public function testListByFailsIfUnsupportedProperty()
+    {
+        $this->expectException(Errors\DatabaseModelError::class);
+        $this->expectExceptionMessage(
+            'not_property is not declared in the AppTest\models\dao\Friend model.'
+        );
+
+        $dao = new models\dao\Friend();
+        $dao->create(['name' => 'Joël']);
+
+        $dao->listBy(['not_property' => 'foo']);
     }
 
     public function testUpdate()
