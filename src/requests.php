@@ -70,7 +70,7 @@ function subscribe($request)
         }
 
         $values = $subscription->toValues();
-        $values['created_at'] = time();
+        $values['created_at'] = \Minz\Time::now();
         $dao->create($values);
     } else {
         // Subscription renewal
@@ -151,7 +151,7 @@ function publish($request)
     }
 
     $values = $content->toValues();
-    $values['created_at'] = time();
+    $values['created_at'] = \Minz\Time::now();
     $dao->create($values);
 
     return Response::ok();

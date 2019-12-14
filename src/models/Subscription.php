@@ -166,7 +166,7 @@ class Subscription
         $this->status = 'verified';
         $this->pending_request = null;
 
-        $expired_at_timestamp = time() + $this->lease_seconds;
+        $expired_at_timestamp = \Minz\Time::fromNow($this->lease_seconds);
         $expired_at = new \DateTime();
         $expired_at->setTimestamp($expired_at_timestamp);
         $this->expired_at = $expired_at;
@@ -192,7 +192,7 @@ class Subscription
     public function shouldExpire()
     {
         if ($this->expired_at) {
-            return $this->expired_at->getTimestamp() <= time();
+            return $this->expired_at->getTimestamp() <= \Minz\Time::now();
         } else {
             return false;
         }

@@ -4,30 +4,11 @@ namespace Webubbub\models;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * Override time() in current namespace for testing. It's a bit hacky, but
- * it'll be good enough for now.
- *
- * @see https://www.schmengler-se.de/en/2011/03/php-mocking-built-in-functions-like-time-in-unit-tests/
- *
- * @return int
- */
-function time()
-{
-    if (SubscriptionTest::$now) {
-        return SubscriptionTest::$now;
-    } else {
-        return \time();
-    }
-}
-
 class SubscriptionTest extends TestCase
 {
-    public static $now;
-
     public function tearDown(): void
     {
-        self::$now = null;
+        \Minz\Time::unfreeze();
     }
 
     public function testConstructor()
@@ -179,7 +160,7 @@ class SubscriptionTest extends TestCase
 
     public function testVerify()
     {
-        self::$now = 1000;
+        \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
@@ -192,7 +173,7 @@ class SubscriptionTest extends TestCase
 
         $subscription->verify();
 
-        $expected_expired_at = self::$now + Subscription::MIN_LEASE_SECONDS;
+        $expected_expired_at = 1000 + Subscription::MIN_LEASE_SECONDS;
         $this->assertSame('verified', $subscription->status());
         $this->assertNull($subscription->pendingRequest());
         $this->assertSame(
@@ -272,7 +253,7 @@ class SubscriptionTest extends TestCase
 
     public function testExpire()
     {
-        self::$now = 1000;
+        \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
@@ -283,7 +264,7 @@ class SubscriptionTest extends TestCase
         $this->assertSame('verified', $subscription->status());
         $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
 
-        self::$now = $expected_expired_at;
+        \Minz\Time::freeze($expected_expired_at);
 
         $subscription->expire();
 
@@ -311,7 +292,7 @@ class SubscriptionTest extends TestCase
         $this->expectException(Errors\SubscriptionError::class);
         $this->expectExceptionMessage('Subscription expiration date is not over yet.');
 
-        self::$now = 1000;
+        \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
@@ -321,14 +302,14 @@ class SubscriptionTest extends TestCase
         $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
         $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
 
-        self::$now = $expected_expired_at - 1;
+        \Minz\Time::freeze($expected_expired_at - 1);
 
         $subscription->expire();
     }
 
     public function testShouldExpire()
     {
-        self::$now = 1000;
+        \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
@@ -338,7 +319,7 @@ class SubscriptionTest extends TestCase
         $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
         $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
 
-        self::$now = $expected_expired_at;
+        \Minz\Time::freeze($expected_expired_at);
 
         $should_expire = $subscription->shouldExpire();
 
@@ -347,7 +328,7 @@ class SubscriptionTest extends TestCase
 
     public function testShouldExpireIfExpiredAtIsNotOver()
     {
-        self::$now = 1000;
+        \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
@@ -357,7 +338,7 @@ class SubscriptionTest extends TestCase
         $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
         $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
 
-        self::$now = $expected_expired_at - 1;
+        \Minz\Time::freeze($expected_expired_at - 1);
 
         $should_expire = $subscription->shouldExpire();
 
