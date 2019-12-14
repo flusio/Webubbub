@@ -12,7 +12,12 @@ class Content extends \Minz\DatabaseModel
             [
                 'id',
                 'created_at',
+                'fetched_at',
+                'status',
                 'url',
+                'links',
+                'type',
+                'content',
             ]
         );
     }

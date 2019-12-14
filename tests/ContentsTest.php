@@ -13,6 +13,7 @@ class ContentsTest extends IntegrationTestCase
         $dao->create([
             'url' => 'https://some.site.fr/feed.xml',
             'created_at' => time(),
+            'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents');
 

@@ -13,6 +13,7 @@ class ContentTest extends TestCase
         $content = new Content($url);
 
         $this->assertSame($url, $content->url());
+        $this->assertSame('new', $content->status());
     }
 
     public function testConstructorDecodesUrls()
@@ -43,6 +44,7 @@ class ContentTest extends TestCase
         $content = Content::fromValues([
             'id' => '1',
             'created_at' => '10000',
+            'status' => 'new',
             'url' => 'https://some.site.fr/feed.xml',
         ]);
 
@@ -73,6 +75,7 @@ class ContentTest extends TestCase
         $values = [
             'id' => '1',
             'created_at' => '10000',
+            'status' => 'new',
             'url' => 'https://some.site.fr/feed.xml',
         ];
         $values[$value_name] = 'not an integer';
@@ -95,6 +98,7 @@ class ContentTest extends TestCase
         return [
             ['id'],
             ['created_at'],
+            ['fetched_at'],
         ];
     }
 
@@ -103,6 +107,7 @@ class ContentTest extends TestCase
         $default_values = [
             'id' => '1',
             'created_at' => '10000',
+            'status' => 'new',
             'url' => 'https://some.site.fr/feed.xml',
         ];
 
