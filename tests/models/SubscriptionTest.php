@@ -270,6 +270,114 @@ class SubscriptionTest extends TestCase
         $subscription->renew(Subscription::DEFAULT_LEASE_SECONDS, '');
     }
 
+    public function testExpire()
+    {
+        self::$now = 1000;
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->verify();
+
+        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
+        $this->assertSame('verified', $subscription->status());
+        $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
+
+        self::$now = $expected_expired_at;
+
+        $subscription->expire();
+
+        $this->assertSame('expired', $subscription->status());
+    }
+
+    public function testExpireIfStatusIsNotVerified()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage('Subscription cannot expire with new status.');
+
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $this->assertSame('new', $subscription->status());
+        $this->assertNull($subscription->expiredAt());
+
+        $subscription->expire();
+    }
+
+    public function testExpireIfExpiredAtIsNotOver()
+    {
+        $this->expectException(Errors\SubscriptionError::class);
+        $this->expectExceptionMessage('Subscription expiration date is not over yet.');
+
+        self::$now = 1000;
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->verify();
+
+        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
+        $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
+
+        self::$now = $expected_expired_at - 1;
+
+        $subscription->expire();
+    }
+
+    public function testShouldExpire()
+    {
+        self::$now = 1000;
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->verify();
+
+        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
+        $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
+
+        self::$now = $expected_expired_at;
+
+        $should_expire = $subscription->shouldExpire();
+
+        $this->assertTrue($should_expire);
+    }
+
+    public function testShouldExpireIfExpiredAtIsNotOver()
+    {
+        self::$now = 1000;
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+        $subscription->verify();
+
+        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
+        $this->assertSame($expected_expired_at, $subscription->expiredAt()->getTimestamp());
+
+        self::$now = $expected_expired_at - 1;
+
+        $should_expire = $subscription->shouldExpire();
+
+        $this->assertFalse($should_expire);
+    }
+
+    public function testShouldExpireWithNoExpiredAt()
+    {
+        $subscription = new Subscription(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+        );
+
+        $this->assertNull($subscription->expiredAt());
+
+        $should_expire = $subscription->shouldExpire();
+
+        $this->assertFalse($should_expire);
+    }
+
     public function testRequestUnsubscription()
     {
         $subscription = new Subscription(

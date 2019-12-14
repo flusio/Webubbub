@@ -28,6 +28,46 @@ class SubscriptionsTest extends ActionControllerTestCase
         \Minz\Database::drop();
     }
 
+    public function testExpire()
+    {
+        $dao = new models\dao\Subscription();
+        $id = $dao->create([
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => 432000,
+            'created_at' => time(),
+            'expired_at' => time(),
+            'status' => 'verified',
+        ]);
+        $request = new \Minz\Request('CLI', '/subscriptions/expire');
+
+        $response = expire($request);
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('expired', $subscription['status']);
+    }
+
+    public function testExpireWithNoExpiredDate()
+    {
+        $dao = new models\dao\Subscription();
+        $id = $dao->create([
+            'callback' => 'https://subscriber.com/callback',
+            'topic' => 'https://some.site.fr/feed.xml',
+            'lease_seconds' => 432000,
+            'created_at' => time(),
+            'expired_at' => time() + 1000,
+            'status' => 'verified',
+        ]);
+        $request = new \Minz\Request('CLI', '/subscriptions/expire');
+
+        $response = expire($request);
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('verified', $subscription['status']);
+    }
+
     public function testItems()
     {
         $dao = new models\dao\Subscription();

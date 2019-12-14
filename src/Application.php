@@ -20,10 +20,10 @@ class Application
         $router->addRoute('/requests/unsubscribe', 'requests#unsubscribe', 'cli');
         $router->addRoute('/requests/publish', 'requests#publish', 'cli');
 
-        // This one is intended to be called regularly on the server to verify
-        // intents of new subscribers or for unsubscriptions. It can be called
-        // via a cron task but it would be better via a job queue.
+        // These ones are intended to be called regularly on the server (e.g.
+        // via a cron task and later via a job queue).
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
+        $router->addRoute('/subscriptions/expire', 'subscriptions#expire', 'cli');
 
         // These routes list what is in database, to help to debug
         $router->addRoute('/subscriptions', 'subscriptions#items', 'cli');

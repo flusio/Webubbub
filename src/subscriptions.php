@@ -10,6 +10,26 @@ use Webubbub\models;
  *
  * @return \Minz\Response
  */
+function expire($request)
+{
+    $dao = new models\dao\Subscription();
+    $verified_subscriptions_values = $dao->listBy(['status' => 'verified']);
+    foreach ($verified_subscriptions_values as $subscription_values) {
+        $subscription = models\Subscription::fromValues($subscription_values);
+        if ($subscription->shouldExpire()) {
+            $subscription->expire();
+            $dao->update($subscription->id(), $subscription->toValues());
+        }
+    }
+
+    return Response::ok();
+}
+
+/**
+ * @param \Minz\Request $request
+ *
+ * @return \Minz\Response
+ */
 function items($request)
 {
     $dao = new models\dao\Subscription();

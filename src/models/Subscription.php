@@ -187,6 +187,41 @@ class Subscription
     }
 
     /**
+     * @return boolean True if the subscription should expire, false otherwise
+     */
+    public function shouldExpire()
+    {
+        if ($this->expired_at) {
+            return $this->expired_at->getTimestamp() <= time();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Set the status to expired
+     *
+     * @throws \Webubbub\models\Errors\SubscriptionError if status is not verified
+     * @throws \Webubbub\models\Errors\SubscriptionError if expired_at is not over
+     */
+    public function expire()
+    {
+        if ($this->status !== 'verified') {
+            throw new Errors\SubscriptionError(
+                "Subscription cannot expire with {$this->status} status."
+            );
+        }
+
+        if (!$this->shouldExpire()) {
+            throw new Errors\SubscriptionError(
+                'Subscription expiration date is not over yet.'
+            );
+        }
+
+        $this->status = 'expired';
+    }
+
+    /**
      * Set the pending request to "unsubscribe"
      */
     public function requestUnsubscription()
