@@ -27,9 +27,14 @@ function verify($request)
         $expected_challenge = $intents_service->generateChallenge();
         $intent_callback = $subscription->intentCallback($expected_challenge);
 
-        $challenge = $intents_service->getChallengeFromCallback($intent_callback);
+        $curl_response = services\Curl::get($intent_callback);
 
-        if ($challenge === $expected_challenge) {
+        $http_code_successful = (
+            $curl_response->http_code >= 200 &&
+            $curl_response->http_code < 300
+        );
+        $challenges_match = $curl_response->content === $expected_challenge;
+        if ($http_code_successful && $challenges_match) {
             if ($pending_request === 'subscribe') {
                 $subscription->verify();
                 $dao->update($subscription->id(), $subscription->toValues());
@@ -37,9 +42,15 @@ function verify($request)
                 $dao->delete($subscription->id());
             }
         } else {
-            \Minz\Log::notice(
-                "{$challenge} challenge does not match ({$intent_callback})."
-            );
+            if ($http_code_successful) {
+                \Minz\Log::notice(
+                    "[intents#verify] {$curl_response->content} challenge does not match ({$intent_callback})."
+                );
+            } else {
+                \Minz\Log::notice(
+                    "[intents#verify] {$curl_response->http_code} HTTP code is not successful ({$intent_callback})."
+                );
+            }
 
             $subscription->cancelRequest();
             $dao->update($subscription->id(), $subscription->toValues());

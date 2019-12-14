@@ -8,8 +8,6 @@ use Webubbub\models;
 class IntentsTest extends IntegrationTestCase
 {
     public static $challenge;
-    public static $subscriber_challenge;
-    public static $subscriber_http_code;
 
     private static $application;
     private static $schema;
@@ -28,13 +26,13 @@ class IntentsTest extends IntegrationTestCase
         $database->exec(self::$schema);
 
         self::$challenge = 'foobar';
-        self::$subscriber_challenge = 'foobar';
-        self::$subscriber_http_code = 200;
+        \Webubbub\services\Curl::mock(self::$challenge);
     }
 
     public function tearDown(): void
     {
         \Minz\Database::drop();
+        \Webubbub\services\Curl::resetMock();
     }
 
     public function testVerifyWithSubscribePendingRequest()
@@ -111,7 +109,8 @@ class IntentsTest extends IntegrationTestCase
             'lease_seconds' => 432000,
             'pending_request' => 'subscribe',
         ]);
-        self::$subscriber_challenge = 'not the correct challenge';
+
+        \Webubbub\services\Curl::mock('not the correct challenge');
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
@@ -134,7 +133,8 @@ class IntentsTest extends IntegrationTestCase
             'lease_seconds' => 432000,
             'pending_request' => 'unsubscribe',
         ]);
-        self::$subscriber_challenge = 'not the correct challenge';
+
+        \Webubbub\services\Curl::mock('not the correct challenge');
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
@@ -160,7 +160,8 @@ class IntentsTest extends IntegrationTestCase
             'lease_seconds' => 432000,
             'pending_request' => 'subscribe',
         ]);
-        self::$subscriber_http_code = $http_code;
+
+        \Webubbub\services\Curl::mock(self::$challenge, $http_code);
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
@@ -186,7 +187,8 @@ class IntentsTest extends IntegrationTestCase
             'lease_seconds' => 432000,
             'pending_request' => 'unsubscribe',
         ]);
-        self::$subscriber_http_code = $http_code;
+
+        \Webubbub\services\Curl::mock(self::$challenge, $http_code);
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
@@ -210,8 +212,6 @@ class IntentsTest extends IntegrationTestCase
 
 namespace Webubbub\services;
 
-// Berk :x
-
 /**
  * Override sha1() in current namespace for testing.
  *
@@ -223,37 +223,4 @@ namespace Webubbub\services;
 function sha1()
 {
     return \Webubbub\controllers\intents\IntentsTest::$challenge;
-}
-
-/**
- * Override curl_exec() in current namespace for testing.
- *
- * @see https://www.schmengler-se.de/en/2011/03/php-mocking-built-in-functions-like-time-in-unit-tests/
- * @see https://www.php.net/manual/fr/function.curl-exec.php
- *
- * @return mixed
- */
-function curl_exec()
-{
-    return \Webubbub\controllers\intents\IntentsTest::$subscriber_challenge;
-}
-
-/**
- * Override curl_getinfo() in current namespace for testing.
- *
- * @see https://www.schmengler-se.de/en/2011/03/php-mocking-built-in-functions-like-time-in-unit-tests/
- * @see https://www.php.net/manual/fr/function.curl-getinfo.php
- *
- * @param resource $curl_resource
- * @param int $opt
- *
- * @return mixed
- */
-function curl_getinfo($curl_resource, $opt)
-{
-    if ($opt === CURLINFO_RESPONSE_CODE) {
-        return \Webubbub\controllers\intents\IntentsTest::$subscriber_http_code;
-    } else {
-        \curl_getinfo($curl_resource, $opt);
-    }
 }
