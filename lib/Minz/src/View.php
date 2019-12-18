@@ -94,6 +94,6 @@ class View
     private static function templateFilepath($template_name)
     {
         $app_path = Configuration::$app_path;
-        return "{$app_path}/src/templates/{$template_name}";
+        return "{$app_path}/src/views/templates/{$template_name}";
     }
 }
