@@ -2,19 +2,20 @@
 
 namespace Webubbub\controllers\subscriptions;
 
-use Minz\Tests\ActionControllerTestCase;
+use Minz\Tests\IntegrationTestCase;
 use Webubbub\models;
 
-class SubscriptionsTest extends ActionControllerTestCase
+class SubscriptionsTest extends IntegrationTestCase
 {
+    private static $application;
     private static $schema;
 
     public static function setUpBeforeClass(): void
     {
-        self::includeController();
-
         $configuration_path = \Minz\Configuration::$configuration_path;
         self::$schema = file_get_contents($configuration_path . '/schema.sql');
+
+        self::$application = new \Webubbub\Application();
     }
 
     public function setUp(): void
@@ -41,7 +42,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         ]);
         $request = new \Minz\Request('CLI', '/subscriptions/expire');
 
-        $response = expire($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -61,7 +62,7 @@ class SubscriptionsTest extends ActionControllerTestCase
         ]);
         $request = new \Minz\Request('CLI', '/subscriptions/expire');
 
-        $response = expire($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -78,9 +79,9 @@ class SubscriptionsTest extends ActionControllerTestCase
             'status' => 'new',
             'lease_seconds' => 432000,
         ]);
-        $request = new \Minz\Request('CLI', '/subscriptions/items');
+        $request = new \Minz\Request('CLI', '/subscriptions');
 
-        $response = items($request);
+        $response = self::$application->run($request);
 
         $output = $response->render();
         $this->assertResponse($response, 200);

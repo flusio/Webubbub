@@ -2,23 +2,24 @@
 
 namespace Webubbub\controllers\intents;
 
-use Minz\Tests\ActionControllerTestCase;
+use Minz\Tests\IntegrationTestCase;
 use Webubbub\models;
 
-class IntentsTest extends ActionControllerTestCase
+class IntentsTest extends IntegrationTestCase
 {
     public static $challenge;
     public static $subscriber_challenge;
     public static $subscriber_http_code;
 
+    private static $application;
     private static $schema;
 
     public static function setUpBeforeClass(): void
     {
-        self::includeController();
-
         $configuration_path = \Minz\Configuration::$configuration_path;
         self::$schema = file_get_contents($configuration_path . '/schema.sql');
+
+        self::$application = new \Webubbub\Application();
     }
 
     public function setUp(): void
@@ -50,7 +51,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -71,7 +72,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -92,7 +93,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -114,7 +115,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -137,7 +138,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -163,7 +164,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -189,7 +190,7 @@ class IntentsTest extends ActionControllerTestCase
 
         $request = new \Minz\Request('CLI', '/intents/verify');
 
-        $response = verify($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);

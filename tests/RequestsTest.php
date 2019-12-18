@@ -2,19 +2,20 @@
 
 namespace Webubbub\controllers\requests;
 
-use Minz\Tests\ActionControllerTestCase;
+use Minz\Tests\IntegrationTestCase;
 use Webubbub\models;
 
-class RequestsTest extends ActionControllerTestCase
+class RequestsTest extends IntegrationTestCase
 {
+    private static $application;
     private static $schema;
 
     public static function setUpBeforeClass(): void
     {
-        self::includeController();
-
         $configuration_path = \Minz\Configuration::$configuration_path;
         self::$schema = file_get_contents($configuration_path . '/schema.sql');
+
+        self::$application = new \Webubbub\Application();
     }
 
     public function setUp(): void
@@ -39,7 +40,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_mode' => $invalidMode,
         ]);
 
-        $response = handle($request);
+        $response = self::$application->run($request);
 
         $this->assertResponse(
             $response,
@@ -58,7 +59,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_secret' => 'a cryptographically random unique secret string',
         ]);
 
-        $response = subscribe($request);
+        $response = self::$application->run($request);
 
         $dao = new models\dao\Subscription();
         $this->assertSame(1, $dao->count());
@@ -95,7 +96,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_secret' => 'a secret string',
         ]);
 
-        $response = subscribe($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertSame(1, $dao->count());
@@ -115,7 +116,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_topic' => 'https://some.site.fr/feed.xml',
         ]);
 
-        $response = subscribe($request);
+        $response = self::$application->run($request);
 
         $this->assertResponse(
             $response,
@@ -135,7 +136,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_topic' => $invalid_url,
         ]);
 
-        $response = subscribe($request);
+        $response = self::$application->run($request);
 
         $this->assertResponse(
             $response,
@@ -164,7 +165,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_topic' => $topic,
         ]);
 
-        $response = unsubscribe($request);
+        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 202);
@@ -179,7 +180,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_topic' => 'https://some.site.fr/feed.xml',
         ]);
 
-        $response = unsubscribe($request);
+        $response = self::$application->run($request);
 
         $dao = new models\dao\Subscription();
         $this->assertResponse($response, 400, "Unknown subscription.\n");
@@ -196,7 +197,7 @@ class RequestsTest extends ActionControllerTestCase
 
         $this->assertSame(0, $dao->count());
 
-        $response = publish($request);
+        $response = self::$application->run($request);
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $dao->count());
@@ -218,7 +219,7 @@ class RequestsTest extends ActionControllerTestCase
 
         $this->assertSame(1, $dao->count());
 
-        $response = publish($request);
+        $response = self::$application->run($request);
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $dao->count());
@@ -233,7 +234,7 @@ class RequestsTest extends ActionControllerTestCase
             'hub_url' => $invalid_url,
         ]);
 
-        $response = publish($request);
+        $response = self::$application->run($request);
 
         $dao = new models\dao\Content();
         $this->assertSame(0, $dao->count());
