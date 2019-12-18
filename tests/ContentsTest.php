@@ -7,14 +7,15 @@ use Webubbub\models;
 
 class ContentsTest extends ActionControllerTestCase
 {
+    private static $application;
     private static $schema;
 
     public static function setUpBeforeClass(): void
     {
-        self::includeController();
-
         $configuration_path = \Minz\Configuration::$configuration_path;
         self::$schema = file_get_contents($configuration_path . '/schema.sql');
+
+        self::$application = new \Webubbub\Application();
     }
 
     public function setUp(): void
@@ -35,9 +36,9 @@ class ContentsTest extends ActionControllerTestCase
             'url' => 'https://some.site.fr/feed.xml',
             'created_at' => time(),
         ]);
-        $request = new \Minz\Request('CLI', '/contents/items');
+        $request = new \Minz\Request('CLI', '/contents');
 
-        $response = items($request);
+        $response = self::$application->run($request);
 
         $output = $response->render();
         $this->assertResponse($response, 200);

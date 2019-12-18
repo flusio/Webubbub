@@ -7,28 +7,6 @@ use PHPUnit\Framework\TestCase;
 class ActionControllerTestCase extends TestCase
 {
     /**
-     * Load the controller code, based on the called class.
-     *
-     * It should be called in `setUpBeforeClass`.
-     *
-     * @throws LogicException if the controller file cannot be included
-     *
-     * @return void
-     */
-    public static function includeController()
-    {
-        $function = new \ReflectionClass(get_called_class());
-        $class = $function->getShortName();
-        $class_without_test = strtolower(substr($class, 0, -4));
-        $included = \Minz\ActionController::loadControllerCode($class_without_test);
-        if (!$included) {
-            throw new \LogicException(
-                "{$class_without_test} controller file cannot be loaded."
-            );
-        }
-    }
-
-    /**
      * Assert that a Response is matching the given conditions.
      *
      * @param \Minz\Response $response
