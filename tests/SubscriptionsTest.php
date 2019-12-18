@@ -2,10 +2,10 @@
 
 namespace Webubbub\controllers\subscriptions;
 
-use Minz\Tests\ActionControllerTestCase;
+use Minz\Tests\IntegrationTestCase;
 use Webubbub\models;
 
-class SubscriptionsTest extends ActionControllerTestCase
+class SubscriptionsTest extends IntegrationTestCase
 {
     private static $application;
     private static $schema;

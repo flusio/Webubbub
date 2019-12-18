@@ -2,10 +2,10 @@
 
 namespace Webubbub\controllers\requests;
 
-use Minz\Tests\ActionControllerTestCase;
+use Minz\Tests\IntegrationTestCase;
 use Webubbub\models;
 
-class RequestsTest extends ActionControllerTestCase
+class RequestsTest extends IntegrationTestCase
 {
     private static $application;
     private static $schema;

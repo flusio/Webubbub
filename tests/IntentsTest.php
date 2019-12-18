@@ -2,10 +2,10 @@
 
 namespace Webubbub\controllers\intents;
 
-use Minz\Tests\ActionControllerTestCase;
+use Minz\Tests\IntegrationTestCase;
 use Webubbub\models;
 
-class IntentsTest extends ActionControllerTestCase
+class IntentsTest extends IntegrationTestCase
 {
     public static $challenge;
     public static $subscriber_challenge;

@@ -4,7 +4,7 @@ namespace Minz\Tests;
 
 use PHPUnit\Framework\TestCase;
 
-class ActionControllerTestCase extends TestCase
+class IntegrationTestCase extends TestCase
 {
     /**
      * Assert that a Response is matching the given conditions.
