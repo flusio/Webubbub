@@ -1,0 +1,10 @@
+language: php
+php:
+    - 7.2
+    - 7.3
+    - 7.4
+
+script:
+    - php ./bin/phpcs --standard=PSR12 ./src ./tests ./lib/Minz
+    - php ./bin/phpunit --bootstrap ./lib/Minz/tests/bootstrap.php ./lib/Minz/tests
+    - php ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests

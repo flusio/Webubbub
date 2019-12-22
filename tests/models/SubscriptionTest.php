@@ -164,7 +164,7 @@ class SubscriptionTest extends TestCase
         $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
-            Subscription::MIN_LEASE_SECONDS,
+            Subscription::MIN_LEASE_SECONDS
         );
 
         $this->assertSame('new', $subscription->status());
@@ -191,7 +191,7 @@ class SubscriptionTest extends TestCase
 
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
@@ -227,7 +227,7 @@ class SubscriptionTest extends TestCase
     {
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $lease_seconds = Subscription::MIN_LEASE_SECONDS - 42;
 
@@ -245,7 +245,7 @@ class SubscriptionTest extends TestCase
 
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
 
         $subscription->renew(Subscription::DEFAULT_LEASE_SECONDS, '');
@@ -256,7 +256,7 @@ class SubscriptionTest extends TestCase
         \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
@@ -278,7 +278,7 @@ class SubscriptionTest extends TestCase
 
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
 
         $this->assertSame('new', $subscription->status());
@@ -295,7 +295,7 @@ class SubscriptionTest extends TestCase
         \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
@@ -312,7 +312,7 @@ class SubscriptionTest extends TestCase
         \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
@@ -331,7 +331,7 @@ class SubscriptionTest extends TestCase
         \Minz\Time::freeze(1000);
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
@@ -349,7 +349,7 @@ class SubscriptionTest extends TestCase
     {
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
 
         $this->assertNull($subscription->expiredAt());
@@ -363,7 +363,7 @@ class SubscriptionTest extends TestCase
     {
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
 
         $this->assertSame('subscribe', $subscription->pendingRequest());
@@ -377,7 +377,7 @@ class SubscriptionTest extends TestCase
     {
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
 
         $this->assertSame('subscribe', $subscription->pendingRequest());
@@ -391,7 +391,7 @@ class SubscriptionTest extends TestCase
     {
         $subscription = new Subscription(
             'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
+            'https://some.site.fr/feed.xml'
         );
         $subscription->requestUnsubscription();
 
