@@ -23,9 +23,10 @@ class Curl
 
         // @see https://stackoverflow.com/a/41135574
         $headers = [];
-        curl_setopt($curl_session, CURLOPT_HEADERFUNCTION,
-            function($curl, $header) use (&$headers)
-            {
+        curl_setopt(
+            $curl_session,
+            CURLOPT_HEADERFUNCTION,
+            function ($curl, $header) use (&$headers) {
                 $len = strlen($header);
                 $header_exploded = explode(':', $header, 2);
                 if (count($header_exploded) < 2) {
