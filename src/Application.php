@@ -29,6 +29,10 @@ class Application
         $router->addRoute('/subscriptions', 'subscriptions#items', 'cli');
         $router->addRoute('/contents', 'contents#items', 'cli');
 
+        // These are used to manipulate the system
+        $router->addRoute('/system/init', 'system#init', 'cli');
+        $router->addRoute('/system/migrate', 'system#migrate', 'cli');
+
         $this->engine = new \Minz\Engine($router);
     }
 

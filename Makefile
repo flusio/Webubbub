@@ -11,6 +11,14 @@ start: ## Start a development server (use Docker)
 stop: ## Stop and clean Docker server
 	docker-compose -f docker/docker-compose.yml down
 
+.PHONY: create-migration
+create-migration: ## Create a migration file
+	MIGRATION_NAME=$(shell date +%Y%m%d_%H%M%S)_$(NAME) ;\
+	MIGRATION_FILE=src/migrations/$${MIGRATION_NAME}.php ;\
+	cp docs/migration.template.php $${MIGRATION_FILE} ;\
+	sed -i s/{NAMESPACE}/$${MIGRATION_NAME}/ $${MIGRATION_FILE} ;\
+	$(EDITOR) $${MIGRATION_FILE}
+
 .PHONY: test
 test: ## Run the tests suite
 	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests

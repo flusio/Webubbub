@@ -1,0 +1,4 @@
+<?php foreach ($results as $migration => $result): ?>
+<?= $migration ?>: <?= $result ?>
+
+<?php endforeach; ?>
