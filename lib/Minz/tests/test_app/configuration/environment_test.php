@@ -2,6 +2,9 @@
 
 return [
     'app_name' => 'AppTest',
+    'url_options' => [
+        'host' => 'localhost',
+    ],
     'database' => [
         'dsn' => 'sqlite::memory:',
     ],

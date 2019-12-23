@@ -34,6 +34,7 @@ class Application
         $router->addRoute('/system/migrate', 'system#migrate', 'cli');
 
         $this->engine = new \Minz\Engine($router);
+        \Minz\Url::setRouter($router);
     }
 
     public function run($request)

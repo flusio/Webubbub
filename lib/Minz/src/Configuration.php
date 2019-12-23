@@ -14,11 +14,16 @@ namespace Minz;
  * file, where `<environment>` is replaced by the value of the current env.
  * These files must return a PHP array.
  *
- * The `app_name` key is required and it must be the same as the base namespace
- * of the application.
- *
  * An `environment` and an `app_path` values are automatically set from the
  * parameters of the `load` method.
+ *
+ * Required parameters are:
+ * - app_name: it must be the same as the base namespace of the application
+ * - url_options, with:
+ *   - host: the domain name pointing to your server
+ *   - port: the listening port of your server (default is 80)
+ *   - path: URI path to your application (default is /)
+ *   - protocol: the protocol used by your server (default is http)
  *
  * Other automated values are:
  * - configuration_path: the path to the configuration directory
@@ -55,6 +60,9 @@ class Configuration
      *             application's namespace.
      */
     public static $app_name;
+
+    /** @var array The web server information to build URLs */
+    public static $url_options;
 
     /** @var string[] An array containing database configuration */
     public static $database;
@@ -103,6 +111,26 @@ class Configuration
         self::$configuration_filepath = $configuration_filepath;
 
         self::$app_name = self::getRequired($raw_configuration, 'app_name');
+
+        $url_options = self::getRequired($raw_configuration, 'url_options');
+        if (!is_array($url_options)) {
+            throw new Errors\ConfigurationError(
+                'URL options configuration must be an array, containing at least a host key.'
+            );
+        }
+
+        if (!isset($url_options['host'])) {
+            throw new Errors\ConfigurationError(
+                'URL options configuration must contain at least a host key.'
+            );
+        }
+
+        $default_url_options = [
+            'port' => 80,
+            'path' => '/',
+            'protocol' => 'http',
+        ];
+        self::$url_options = array_merge($default_url_options, $url_options);
 
         $database = self::getDefault($raw_configuration, 'database', null);
         if ($database !== null) {

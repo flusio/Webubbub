@@ -148,6 +148,43 @@ class Router
     }
 
     /**
+     * @param string $via
+     * @param string $action_pointer
+     * @param array $parameters
+     *
+     * @throws \Minz\Errors\RoutingError if via is invalid
+     * @throws \Minz\Errors\RoutingError if required parameters are missing
+     * @throws \Minz\Errors\RouteNotFoundError if action pointer matches with no route
+     *
+     * @return string The URI corresponding to the action
+     */
+    public function uriFor($via, $action_pointer, $parameters = [])
+    {
+        if (!in_array($via, self::VALID_VIAS)) {
+            $vias_as_string = implode(', ', self::VALID_VIAS);
+            throw new Errors\RoutingError(
+                "{$via} via is invalid ({$vias_as_string})."
+            );
+        }
+
+        $path = Configuration::$url_options['path'];
+        if (substr($path, -1) === '/') {
+            $path = substr($path, 0, -1);
+        }
+
+        $via_routes = $this->routes[$via];
+        foreach ($via_routes as $pattern => $route_action_pointer) {
+            if ($action_pointer === $route_action_pointer) {
+                return $path . $this->patternToUri($pattern, $parameters);
+            }
+        }
+
+        throw new Errors\RouteNotFoundError(
+            "Action pointer \"{$via} {$action_pointer}\" doesn’t match any route."
+        );
+    }
+
+    /**
      * Check if a path matches with a pattern.
      *
      * @param string $path
@@ -180,5 +217,53 @@ class Router
         }
 
         return true;
+    }
+
+    /**
+     * Replace variables of a pattern by the given values and return
+     * corresponding URI.
+     *
+     * If given parameters don't correspond to a pattern variable, they are
+     * added as a query string (e.g. `?id=value`).
+     *
+     * @param string $pattern
+     * @param array $parameters
+     *
+     * @throws \Minz\Errors\RoutingError if required parameters are missing
+     *
+     * @return string
+     */
+    private function patternToUri($pattern, $parameters = [])
+    {
+        $uri_elements = [];
+
+        $pattern_elements = explode('/', $pattern);
+        foreach ($pattern_elements as $pattern_element) {
+            if (!$pattern_element) {
+                continue;
+            }
+
+            $element_is_variable = $pattern_element[0] === ':';
+            if ($element_is_variable) {
+                $variable = substr($pattern_element, 1);
+                if (!isset($parameters[$variable])) {
+                    throw new Errors\RoutingError(
+                        "Required `{$variable}` parameter is missing."
+                    );
+                }
+
+                $uri_elements[] = $parameters[$variable];
+                unset($parameters[$variable]);
+            } else {
+                $uri_elements[] = $pattern_element;
+            }
+        }
+
+        $query_string = '';
+        if ($parameters) {
+            $query_string = '?' . http_build_query($parameters);
+        }
+
+        return '/' . implode('/', $uri_elements) . $query_string;
     }
 }

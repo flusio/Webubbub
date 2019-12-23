@@ -227,6 +227,88 @@ class RouterTest extends TestCase
         $router->match($invalidVia, '/rabbits');
     }
 
+    public function testUriFor()
+    {
+        $router = new Router();
+        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+
+        $uri = $router->uriFor('get', 'rabbits#list');
+
+        $this->assertSame('/rabbits', $uri);
+    }
+
+    public function testUriForWithParams()
+    {
+        $router = new Router();
+        $router->addRoute('/rabbits/:id', 'rabbits#details', 'get');
+
+        $uri = $router->uriFor('get', 'rabbits#details', ['id' => 42]);
+
+        $this->assertSame('/rabbits/42', $uri);
+    }
+
+    public function testUriWithAdditionalParameters()
+    {
+        $router = new Router();
+        $router->addRoute('/rabbits', 'rabbits#details', 'get');
+
+        $uri = $router->uriFor('get', 'rabbits#details', ['id' => 42]);
+
+        $this->assertSame('/rabbits?id=42', $uri);
+    }
+
+    public function testUriForWithUrlOptionPath()
+    {
+        Configuration::$url_options['path'] = '/path';
+        $router = new Router();
+        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+
+        $uri = $router->uriFor('get', 'rabbits#list');
+
+        $this->assertSame('/path/rabbits', $uri);
+
+        Configuration::$url_options['path'] = '';
+    }
+
+    public function testUriForFailsIfParameterIsMissing()
+    {
+        $this->expectException(Errors\RoutingError::class);
+        $this->expectExceptionMessage('Required `id` parameter is missing.');
+
+        $router = new Router();
+        $router->addRoute('/rabbits/:id', 'rabbits#details', 'get');
+
+        $uri = $router->uriFor('get', 'rabbits#details');
+    }
+
+    public function testUriForFailsIfActionPointerNotRegistered()
+    {
+        $this->expectException(Errors\RouteNotFoundError::class);
+        $this->expectExceptionMessage(
+            'Action pointer "get rabbits#list" doesn’t match any route.'
+        );
+
+        $router = new Router();
+
+        $router->uriFor('get', 'rabbits#list');
+    }
+
+    /**
+     * @dataProvider invalidViaProvider
+     */
+    public function testUriForFailsIfViaIsInvalid($invalid_via)
+    {
+        $this->expectException(Errors\RoutingError::class);
+        $this->expectExceptionMessage(
+            "{$invalid_via} via is invalid (get, post, patch, put, delete, cli)."
+        );
+
+        $router = new Router();
+        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+
+        $router->uriFor($invalid_via, 'rabbits#list');
+    }
+
     public function emptyValuesProvider()
     {
         return [
