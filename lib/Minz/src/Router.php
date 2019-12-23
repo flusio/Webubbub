@@ -127,6 +127,10 @@ class Router
             );
         }
 
+        if ($path !== '/') {
+            $path = rtrim($path, '/');
+        }
+
         $via_routes = $this->routes[$via];
         foreach ($via_routes as $pattern => $action_pointer) {
             if ($this->pathMatchesPattern($path, $pattern)) {

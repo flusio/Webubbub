@@ -168,6 +168,16 @@ class RouterTest extends TestCase
         $this->assertSame('rabbits#list', $action_pointer);
     }
 
+    public function testMatchWithTrailingSlashes()
+    {
+        $router = new Router();
+        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+
+        $action_pointer = $router->match('get', '/rabbits//');
+
+        $this->assertSame('rabbits#list', $action_pointer);
+    }
+
     public function testMatchWithParam()
     {
         $router = new Router();
