@@ -20,6 +20,9 @@ class Application
         $router->addRoute('/requests/unsubscribe', 'requests#unsubscribe', 'cli');
         $router->addRoute('/requests/publish', 'requests#publish', 'cli');
 
+        // This route just simulate a subscriber, just for testing
+        $router->addRoute('/dummy-subscriber', 'home#dummySubscriber', ['get', 'post']);
+
         // These ones are intended to be called regularly on the server (e.g.
         // via a cron task and later via a job queue).
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
