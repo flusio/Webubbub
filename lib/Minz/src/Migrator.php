@@ -114,19 +114,26 @@ class Migrator
     }
 
     /**
+     * @return string|null
+     */
+    public function lastVersion()
+    {
+        $migrations = array_keys($this->migrations());
+        if (!$migrations) {
+            return null;
+        }
+
+        return end($migrations);
+    }
+
+    /**
      * @return boolean Return true if the application is up-to-date, false
      *                 otherwise. If no migrations are registered, it always
      *                 returns true.
      */
     public function upToDate()
     {
-        $migrations = array_keys($this->migrations());
-        if (!$migrations) {
-            return true;
-        }
-
-        $last_migration = end($migrations);
-        return $this->version === $last_migration;
+        return $this->version === $this->lastVersion();
     }
 
     /**

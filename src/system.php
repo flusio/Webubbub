@@ -5,7 +5,7 @@ namespace Webubbub\controllers\system;
 use Minz\Response;
 
 /**
- * Initialize the database.
+ * Initialize the database and set the migration version.
  *
  * @param \Minz\Request $request
  *
@@ -13,10 +13,29 @@ use Minz\Response;
  */
 function init($request)
 {
+    $app_path = \Minz\Configuration::$app_path;
+    $migrations_path = $app_path . '/src/migrations';
+    $migrations_version_path = $app_path . '/data/migrations_version.txt';
     $configuration_path = \Minz\Configuration::$configuration_path;
+
+    if (file_exists($migrations_version_path)) {
+        return Response::internalServerError('system/error.txt', [
+            'error' => 'data/migrations_version.txt file exists, the system is already initialized.',
+        ]);
+    }
+
     $schema = file_get_contents($configuration_path . '/schema.sql');
     $database = \Minz\Database::get();
     $database->exec($schema);
+
+    $migrator = new \Minz\Migrator($migrations_path);
+    $version = $migrator->lastVersion();
+    $saved = @file_put_contents($migrations_version_path, $version);
+    if ($saved === false) {
+        return Response::internalServerError('system/error.txt', [
+            'error' => "Cannot save data/migrations_version.txt file ({$version}).",
+        ]);
+    }
 
     return Response::ok();
 }
@@ -33,10 +52,22 @@ function migrate($request)
 {
     $app_path = \Minz\Configuration::$app_path;
     $migrations_path = $app_path . '/src/migrations';
-    $migrator = new \Minz\Migrator($migrations_path);
-
     $migrations_version_path = $app_path . '/data/migrations_version.txt';
+
+    if (!file_exists($migrations_version_path)) {
+        return Response::internalServerError('system/error.txt', [
+            'error' => 'data/migrations_version.txt file does not exist, you must initialize the system first.',
+        ]);
+    }
+
     $migration_version = @file_get_contents($migrations_version_path);
+    if ($migration_version === false) {
+        return Response::internalServerError('system/error.txt', [
+            'error' => 'Cannot read data/migrations_version.txt file.',
+        ]);
+    }
+
+    $migrator = new \Minz\Migrator($migrations_path);
     if ($migration_version) {
         $migrator->setVersion($migration_version);
     }
@@ -48,10 +79,10 @@ function migrate($request)
     $results = $migrator->migrate();
 
     $new_version = $migrator->version();
-    $saved = file_put_contents($migrations_version_path, $new_version);
+    $saved = @file_put_contents($migrations_version_path, $new_version);
     if ($saved === false) {
         return Response::internalServerError('system/error.txt', [
-            'error' => "Cannot save data/migrations_version.txt file ({$new_version})",
+            'error' => "Cannot save data/migrations_version.txt file ({$new_version}).",
         ]);
     }
 

@@ -233,6 +233,42 @@ class MigratorTest extends TestCase
         $this->assertTrue($upToDate);
     }
 
+    public function testLastVersion()
+    {
+        $migrator = new Migrator();
+        $migrator->addMigration('foo', function () {
+            return true;
+        });
+
+        $version = $migrator->lastVersion();
+
+        $this->assertSame('foo', $version);
+    }
+
+    public function testLastVersionRespectsOrder()
+    {
+        $migrator = new Migrator();
+        $migrator->addMigration('2_foo', function () {
+            return true;
+        });
+        $migrator->addMigration('1_foo', function () {
+            return true;
+        });
+
+        $version = $migrator->lastVersion();
+
+        $this->assertSame('2_foo', $version);
+    }
+
+    public function testLastVersionIfNoMigrations()
+    {
+        $migrator = new Migrator();
+
+        $version = $migrator->lastVersion();
+
+        $this->assertNull($version);
+    }
+
     public function testConstructorLoadsDirectory()
     {
         $migrations_path = Configuration::$app_path . '/src/migrations';
