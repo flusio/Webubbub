@@ -6,6 +6,47 @@ use PHPUnit\Framework\TestCase;
 
 class IntegrationTestCase extends TestCase
 {
+    protected static $application;
+
+    /** @var string */
+    protected static $schema;
+
+    /**
+     * @beforeClass
+     */
+    public static function loadApplication()
+    {
+        $app_name = \Minz\Configuration::$app_name;
+        $application_class_name = "\\{$app_name}\\Application";
+        self::$application = new $application_class_name();
+    }
+
+    /**
+     * @beforeClass
+     */
+    public static function loadSchema()
+    {
+        $configuration_path = \Minz\Configuration::$configuration_path;
+        self::$schema = file_get_contents($configuration_path . '/schema.sql');
+    }
+
+    /**
+     * @before
+     */
+    public function initDatabase()
+    {
+        $database = \Minz\Database::get();
+        $database->exec(self::$schema);
+    }
+
+    /**
+     * @after
+     */
+    public function dropDatabase()
+    {
+        \Minz\Database::drop();
+    }
+
     /**
      * Assert that a Response is matching the given conditions.
      *

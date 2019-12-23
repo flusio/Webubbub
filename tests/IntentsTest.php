@@ -9,29 +9,14 @@ class IntentsTest extends IntegrationTestCase
 {
     public static $challenge;
 
-    private static $application;
-    private static $schema;
-
-    public static function setUpBeforeClass(): void
-    {
-        $configuration_path = \Minz\Configuration::$configuration_path;
-        self::$schema = file_get_contents($configuration_path . '/schema.sql');
-
-        self::$application = new \Webubbub\Application();
-    }
-
     public function setUp(): void
     {
-        $database = \Minz\Database::get();
-        $database->exec(self::$schema);
-
         self::$challenge = 'foobar';
         \Webubbub\services\Curl::mock(self::$challenge);
     }
 
     public function tearDown(): void
     {
-        \Minz\Database::drop();
         \Webubbub\services\Curl::resetMock();
     }
 
