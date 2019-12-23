@@ -183,13 +183,14 @@ class RequestsTest extends IntegrationTestCase
         $this->assertSame($url, $content['url']);
     }
 
-    public function testPublishWithExistingUrl()
+    public function testPublishWithSameUrlAndNewStatus()
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
         $dao->create([
             'url' => $url,
             'created_at' => time(),
+            'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/requests/publish', [
             'hub_url' => $url,
@@ -201,6 +202,27 @@ class RequestsTest extends IntegrationTestCase
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $dao->count());
+    }
+
+    public function testPublishWithSameUrlAndFetchedStatus()
+    {
+        $dao = new models\dao\Content();
+        $url = 'https://some.site.fr/feed.xml';
+        $dao->create([
+            'url' => $url,
+            'created_at' => time(),
+            'status' => 'fetched',
+        ]);
+        $request = new \Minz\Request('CLI', '/requests/publish', [
+            'hub_url' => $url,
+        ]);
+
+        $this->assertSame(1, $dao->count());
+
+        $response = publish($request);
+
+        $this->assertResponse($response, 200);
+        $this->assertSame(2, $dao->count());
     }
 
     /**

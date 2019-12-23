@@ -14,5 +14,11 @@ CREATE TABLE subscriptions (
 CREATE TABLE contents (
   id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
   created_at datetime NOT NULL,
-  url text NOT NULL
+  fetched_at datetime,
+  status text NOT NULL,
+
+  url text NOT NULL,
+  links text,
+  type text,
+  content text
 );

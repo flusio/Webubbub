@@ -27,6 +27,7 @@ class Application
         // via a cron task and later via a job queue).
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
         $router->addRoute('/subscriptions/expire', 'subscriptions#expire', 'cli');
+        $router->addRoute('/contents/fetch', 'contents#fetch', 'cli');
 
         // These routes list what is in database, to help to debug
         $router->addRoute('/subscriptions', 'subscriptions#items', 'cli');

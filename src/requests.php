@@ -135,7 +135,10 @@ function publish($request)
     $url = $request->param('hub_url', '');
 
     $dao = new models\dao\Content();
-    $content_values = $dao->findBy(['url' => $url]);
+    $content_values = $dao->findBy([
+        'url' => $url,
+        'status' => 'new',
+    ]);
 
     if ($content_values) {
         // we already know about this content, it will be delivered soon
