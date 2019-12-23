@@ -60,6 +60,18 @@ class MigratorTest extends TestCase
         $this->assertSame('foo', $migrator->version());
     }
 
+    public function testSetVersionTrimArgument()
+    {
+        $migrator = new Migrator();
+        $migrator->addMigration('foo', function () {
+            return true;
+        });
+
+        $migrator->setVersion("foo\n");
+
+        $this->assertSame('foo', $migrator->version());
+    }
+
     public function testSetVersionFailsIfMigrationDoesNotExist()
     {
         $this->expectException(Errors\MigrationError::class);

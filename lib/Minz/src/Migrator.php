@@ -98,6 +98,7 @@ class Migrator
      */
     public function setVersion($version)
     {
+        $version = trim($version);
         if (!isset($this->migrations[$version])) {
             throw new Errors\MigrationError("{$version} migration does not exist.");
         }
