@@ -15,10 +15,10 @@ function expire($request)
     $dao = new models\dao\Subscription();
     $verified_subscriptions_values = $dao->listBy(['status' => 'verified']);
     foreach ($verified_subscriptions_values as $subscription_values) {
-        $subscription = models\Subscription::fromValues($subscription_values);
+        $subscription = new models\Subscription($subscription_values);
         if ($subscription->shouldExpire()) {
             $subscription->expire();
-            $dao->update($subscription->id(), $subscription->toValues());
+            $dao->update($subscription->id, $subscription->toValues());
         }
     }
 

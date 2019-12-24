@@ -57,13 +57,13 @@ function subscribe($request)
     if (!$subscription_values) {
         // New subscription, not in database
         try {
-            $subscription = new models\Subscription(
+            $subscription = models\Subscription::new(
                 $callback,
                 $topic,
                 $lease_seconds,
                 $secret
             );
-        } catch (models\Errors\SubscriptionError $e) {
+        } catch (\Minz\Errors\ModelPropertyError $e) {
             return Response::badRequest('requests/error.txt', [
                 'error' => $e->getMessage(),
             ]);
@@ -74,9 +74,9 @@ function subscribe($request)
         $dao->create($values);
     } else {
         // Subscription renewal
-        $subscription = models\Subscription::fromValues($subscription_values);
+        $subscription = new models\Subscription($subscription_values);
         $subscription->renew($lease_seconds, $secret);
-        $dao->update($subscription->id(), $subscription->toValues());
+        $dao->update($subscription->id, $subscription->toValues());
     }
 
     return Response::accepted();
@@ -102,8 +102,8 @@ function unsubscribe($request)
 
     if ($subscription_values) {
         try {
-            $subscription = models\Subscription::fromValues($subscription_values);
-        } catch (models\Errors\SubscriptionError $e) {
+            $subscription = new models\Subscription($subscription_values);
+        } catch (\Minz\Errors\ModelPropertyError $e) {
             return Response::badRequest('requests/error.txt', [
                 'error' => $e->getMessage(),
             ]);
@@ -111,7 +111,7 @@ function unsubscribe($request)
 
         $subscription->requestUnsubscription();
 
-        $dao->update($subscription->id(), $subscription->toValues());
+        $dao->update($subscription->id, $subscription->toValues());
     } else {
         // We received an unsubscription for an unknown subscription. We return
         // an error message to indicate we'll not process any verification.

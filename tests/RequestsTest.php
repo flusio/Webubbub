@@ -99,7 +99,7 @@ class RequestsTest extends IntegrationTestCase
         $this->assertResponse(
             $response,
             400,
-            "{$invalid_url} callback is invalid.\n",
+            "`callback` property is invalid ({$invalid_url}).\n",
             ['Content-Type' => 'text/plain']
         );
     }
@@ -119,7 +119,7 @@ class RequestsTest extends IntegrationTestCase
         $this->assertResponse(
             $response,
             400,
-            "{$invalid_url} topic is invalid.\n",
+            "`topic` property is invalid ({$invalid_url}).\n",
             ['Content-Type' => 'text/plain']
         );
     }
