@@ -11,6 +11,10 @@ start: ## Start a development server (use Docker)
 stop: ## Stop and clean Docker server
 	docker-compose -f docker/docker-compose.yml down
 
+.PHONY: init
+init: ## Initialize the application
+	docker-compose -f docker/docker-compose.yml run --no-deps php php ./webubbub --request /system/init
+
 .PHONY: create-migration
 create-migration: ## Create a migration file
 	MIGRATION_NAME=$(shell date +%Y%m%d_%H%M%S)_$(NAME) ;\
@@ -18,6 +22,10 @@ create-migration: ## Create a migration file
 	cp docs/migration.template.php $${MIGRATION_FILE} ;\
 	sed -i s/{NAMESPACE}/$${MIGRATION_NAME}/ $${MIGRATION_FILE} ;\
 	$(EDITOR) $${MIGRATION_FILE}
+
+.PHONY: migrate
+migrate: ## Apply pending migrations
+	docker-compose -f docker/docker-compose.yml run --no-deps php php ./webubbub --request /system/migrate
 
 .PHONY: test
 test: ## Run the tests suite
