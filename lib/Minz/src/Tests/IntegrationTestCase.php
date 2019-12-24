@@ -58,9 +58,10 @@ class IntegrationTestCase extends TestCase
      */
     public function assertResponse($response, $code, $output = null, $headers = null)
     {
-        $this->assertSame($code, $response->code());
+        $response_output = $response->render();
+        $this->assertSame($code, $response->code(), 'Output is: ' . $response_output);
         if ($output !== null) {
-            $this->assertSame($output, $response->render());
+            $this->assertSame($output, $response_output);
         }
         if ($headers !== null) {
             // I would use assertArraySubset, but it's deprecated in PHPUnit 8
