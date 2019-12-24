@@ -22,3 +22,14 @@ CREATE TABLE contents (
   type text,
   content text
 );
+
+CREATE TABLE content_deliveries (
+  id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  subscription_id integer NOT NULL,
+  content_id integer NOT NULL,
+  created_at datetime NOT NULL,
+  try_at datetime NOT NULL,
+  tries_count integer NOT NULL DEFAULT 0,
+  FOREIGN KEY (subscription_id) REFERENCES subscriptions(id),
+  FOREIGN KEY (content_id) REFERENCES contents(id)
+);
