@@ -8,7 +8,7 @@ class DatabaseModel
     private const VALID_COLUMN_NAME_REGEX = '/^\w[\w\d]*$/';
 
     /** @var \Minz\Database */
-    private $database;
+    protected $database;
 
     /** @var string */
     protected $table_name;
