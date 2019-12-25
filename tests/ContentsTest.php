@@ -15,9 +15,8 @@ class ContentsTest extends IntegrationTestCase
     public function testFetch()
     {
         $dao = new models\dao\Content();
-        $id = $dao->create([
+        $id = self::$factories['contents']->create([
             'url' => 'https://some.site.fr/feed',
-            'created_at' => time(),
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents/fetch');
@@ -49,9 +48,8 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithNoLinks()
     {
         $dao = new models\dao\Content();
-        $id = $dao->create([
+        $id = self::$factories['contents']->create([
             'url' => 'https://some.site.fr/feed',
-            'created_at' => time(),
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents/fetch');
@@ -74,9 +72,8 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithMissingSelfLink()
     {
         $dao = new models\dao\Content();
-        $id = $dao->create([
+        $id = self::$factories['contents']->create([
             'url' => 'https://some.site.fr/feed',
-            'created_at' => time(),
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents/fetch');
@@ -104,9 +101,8 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithMissingHubLink()
     {
         $dao = new models\dao\Content();
-        $id = $dao->create([
+        $id = self::$factories['contents']->create([
             'url' => 'https://some.site.fr/feed',
-            'created_at' => time(),
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents/fetch');
@@ -133,9 +129,7 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithMissingContentType()
     {
         $dao = new models\dao\Content();
-        $id = $dao->create([
-            'url' => 'https://some.site.fr/feed',
-            'created_at' => time(),
+        $id = self::$factories['contents']->create([
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents/fetch');
@@ -161,9 +155,7 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithErrorHttpCode()
     {
         $dao = new models\dao\Content();
-        $id = $dao->create([
-            'url' => 'https://some.site.fr/feed',
-            'created_at' => time(),
+        $id = self::$factories['contents']->create([
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents/fetch');
@@ -187,10 +179,8 @@ class ContentsTest extends IntegrationTestCase
     public function testItems()
     {
         $dao = new models\dao\Content();
-        $dao->create([
+        self::$factories['contents']->create([
             'url' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
-            'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/contents');
 
