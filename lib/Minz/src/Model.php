@@ -192,7 +192,7 @@ class Model
             if ($value !== null) {
                 if (
                     $declaration['type'] === 'integer' &&
-                    !filter_var($value, FILTER_VALIDATE_INT)
+                    filter_var($value, FILTER_VALIDATE_INT) === false
                 ) {
                     throw new Errors\ModelPropertyError(
                         "`{$property}` property must be an integer."
@@ -201,7 +201,7 @@ class Model
 
                 if (
                     $declaration['type'] === 'datetime' &&
-                    !filter_var($value, FILTER_VALIDATE_INT)
+                    filter_var($value, FILTER_VALIDATE_INT) === false
                 ) {
                     throw new Errors\ModelPropertyError(
                         "`{$property}` property must be a timestamp."
@@ -210,7 +210,7 @@ class Model
 
                 if (
                     $declaration['type'] === 'boolean' &&
-                    !filter_var($value, FILTER_VALIDATE_BOOLEAN)
+                    filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === null
                 ) {
                     throw new Errors\ModelPropertyError(
                         "`{$property}` property must be a boolean."

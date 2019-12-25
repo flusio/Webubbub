@@ -288,6 +288,15 @@ class ModelTest extends TestCase
         $this->assertSame(42, $model->id);
     }
 
+    public function testFromValuesWithIntegerZero()
+    {
+        $model = new Model(['id' => 'integer']);
+
+        $model->fromValues(['id' => '0']);
+
+        $this->assertSame(0, $model->id);
+    }
+
     public function testFromValuesWithBoolean()
     {
         $model = new Model(['is_cool' => 'boolean']);
@@ -298,7 +307,17 @@ class ModelTest extends TestCase
         $this->assertTrue($model->is_cool);
     }
 
-    public function testFromValuesWithDatetimeType()
+    public function testFromValuesWithBooleanFalse()
+    {
+        $model = new Model(['is_cool' => 'boolean']);
+
+        // @todo check value returned by SQLite
+        $model->fromValues(['is_cool' => 'false']);
+
+        $this->assertFalse($model->is_cool);
+    }
+
+    public function testFromValuesWithDatetime()
     {
         $model = new Model(['created_at' => 'datetime']);
 
@@ -306,6 +325,15 @@ class ModelTest extends TestCase
 
         $this->assertInstanceOf(\DateTime::class, $model->created_at);
         $this->assertSame(1000, $model->created_at->getTimestamp());
+    }
+
+    public function testFromValuesWithDatetimeTimestampZero()
+    {
+        $model = new Model(['created_at' => 'datetime']);
+
+        $model->fromValues(['created_at' => '0']);
+
+        $this->assertSame(0, $model->created_at->getTimestamp());
     }
 
     public function testFromValuesWithValidator()
