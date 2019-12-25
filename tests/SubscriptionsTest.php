@@ -10,11 +10,7 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testExpire()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'lease_seconds' => 432000,
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'expired_at' => time(),
             'status' => 'verified',
         ]);
@@ -27,14 +23,10 @@ class SubscriptionsTest extends IntegrationTestCase
         $this->assertSame('expired', $subscription['status']);
     }
 
-    public function testExpireWithNoExpiredDate()
+    public function testExpireWithExpiredDateInFuture()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'lease_seconds' => 432000,
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'expired_at' => time() + 1000,
             'status' => 'verified',
         ]);
@@ -50,12 +42,9 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testItems()
     {
         $dao = new models\dao\Subscription();
-        $dao->create([
+        self::$factories['subscriptions']->create([
             'callback' => 'https://subscriber.com/callback',
             'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
-            'status' => 'new',
-            'lease_seconds' => 432000,
         ]);
         $request = new \Minz\Request('CLI', '/subscriptions');
 

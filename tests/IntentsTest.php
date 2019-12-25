@@ -23,12 +23,8 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithSubscribePendingRequest()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => 'subscribe',
         ]);
 
@@ -44,12 +40,7 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithUnsubscribePendingRequest()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
-            'status' => 'new',
-            'lease_seconds' => 432000,
+        $id = self::$factories['subscriptions']->create([
             'pending_request' => 'unsubscribe',
         ]);
 
@@ -65,12 +56,8 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithoutPendingRequest()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => null,
         ]);
 
@@ -86,12 +73,8 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithSubscribeAndUnmatchingChallenge()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => 'subscribe',
         ]);
 
@@ -110,12 +93,8 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithUnsubscribeAndUnmatchingChallenge()
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => 'unsubscribe',
         ]);
 
@@ -137,12 +116,8 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithSubscribeAndNonSuccessHttpCode($http_code)
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => 'subscribe',
         ]);
 
@@ -164,12 +139,8 @@ class IntentsTest extends IntegrationTestCase
     public function testVerifyWithUnsubscribeAndNonSuccessHttpCode($http_code)
     {
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'created_at' => time(),
+        $id = self::$factories['subscriptions']->create([
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => 'unsubscribe',
         ]);
 

@@ -59,11 +59,9 @@ class RequestsTest extends IntegrationTestCase
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
+        $id = self::$factories['subscriptions']->create([
             'callback' => $callback,
             'topic' => $topic,
-            'created_at' => time(),
-            'status' => 'new',
             'lease_seconds' => 432000,
             'pending_request' => null,
         ]);
@@ -73,6 +71,8 @@ class RequestsTest extends IntegrationTestCase
             'hub_lease_seconds' => 543000,
             'hub_secret' => 'a secret string',
         ]);
+
+        $this->assertSame(1, $dao->count());
 
         $response = self::$application->run($request);
 
@@ -129,12 +129,10 @@ class RequestsTest extends IntegrationTestCase
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
         $dao = new models\dao\Subscription();
-        $id = $dao->create([
+        $id = self::$factories['subscriptions']->create([
             'callback' => $callback,
             'topic' => $topic,
-            'created_at' => time(),
             'status' => 'new',
-            'lease_seconds' => 432000,
             'pending_request' => null,
         ]);
 
@@ -187,9 +185,8 @@ class RequestsTest extends IntegrationTestCase
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
-        $dao->create([
+        self::$factories['contents']->create([
             'url' => $url,
-            'created_at' => time(),
             'status' => 'new',
         ]);
         $request = new \Minz\Request('CLI', '/requests/publish', [
@@ -208,9 +205,8 @@ class RequestsTest extends IntegrationTestCase
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
-        $dao->create([
+        self::$factories['contents']->create([
             'url' => $url,
-            'created_at' => time(),
             'status' => 'fetched',
         ]);
         $request = new \Minz\Request('CLI', '/requests/publish', [
