@@ -258,6 +258,18 @@ class ModelTest extends TestCase
         $model->setProperty('status', 'new');
     }
 
+    public function testSetPropertyFailsIfUndeclaredProperty()
+    {
+        $this->expectException(Errors\ModelPropertyError::class);
+        $this->expectExceptionMessage(
+            '`status` property has not been declared.'
+        );
+
+        $model = new Model([]);
+
+        $model->setProperty('status', 'new');
+    }
+
     public function testFromValuesWithString()
     {
         $model = new Model(['foo' => 'string']);
@@ -387,6 +399,18 @@ class ModelTest extends TestCase
         ]);
 
         $model->fromValues(['status' => 'not valid']);
+    }
+
+    public function testFromValuesFailsIfUndeclaredProperty()
+    {
+        $this->expectException(Errors\ModelPropertyError::class);
+        $this->expectExceptionMessage(
+            '`status` property has not been declared.'
+        );
+
+        $model = new Model([]);
+
+        $model->fromValues(['status' => 'new']);
     }
 
     public function validTypesProvider()

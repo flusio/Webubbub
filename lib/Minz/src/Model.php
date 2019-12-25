@@ -161,6 +161,7 @@ class Model
      * @param array $values
      *
      * @throws \Minz\Errors\ModelPropertyError if required property is missing
+     * @throws \Minz\Errors\ModelPropertyError if property is not declared
      * @throws \Minz\Errors\ModelPropertyError if value doesn't correspond to the
      *                                         declared type
      * @throws \Minz\Errors\ModelPropertyError if validator returns false or a
@@ -180,6 +181,12 @@ class Model
         }
 
         foreach ($values as $property => $value) {
+            if (!isset($this->property_declarations[$property])) {
+                throw new Errors\ModelPropertyError(
+                    "`{$property}` property has not been declared."
+                );
+            }
+
             $declaration = $this->property_declarations[$property];
 
             if ($value !== null) {
@@ -233,12 +240,19 @@ class Model
      *
      * @param array $values
      *
+     * @throws \Minz\Errors\ModelPropertyError if property is not declared
      * @throws \Minz\Errors\ModelPropertyError if required property is null
      * @throws \Minz\Errors\ModelPropertyError if validator returns false or a
      *                                         custom message
      */
     public function setProperty($property, $value)
     {
+        if (!isset($this->property_declarations[$property])) {
+            throw new Errors\ModelPropertyError(
+                "`{$property}` property has not been declared."
+            );
+        }
+
         $declaration = $this->property_declarations[$property];
 
         if ($declaration['required'] && $value === null) {
