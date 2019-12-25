@@ -13,45 +13,60 @@ namespace Webubbub\models;
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
  */
-class Content
+class Content extends \Minz\Model
 {
-    /** @var integer|null */
-    private $id;
+    public const VALID_STATUSES = ['new', 'fetched'];
 
-    /** @var \DateTime|null */
-    private $created_at;
+    public const PROPERTIES = [
+        'id' => 'integer',
 
-    /** @var \DateTime|null */
-    private $fetched_at;
+        'created_at' => 'datetime',
 
-    /** @var string */
-    private $status;
+        'fetched_at' => 'datetime',
 
-    /** @var string */
-    private $url;
+        'status' => [
+            'type' => 'string',
+            'required' => true,
+            'validator' => '\Webubbub\models\Content::validateStatus',
+        ],
 
-    /** @var string|null */
-    private $links;
+        'url' => [
+            'type' => 'string',
+            'required' => true,
+            'validator' => '\Webubbub\models\Content::validateUrl',
+        ],
 
-    /** @var string|null */
-    private $type;
+        'links' => 'string',
 
-    /** @var string|null */
-    private $content;
+        'type' => 'string',
+
+        'content' => 'string',
+    ];
 
     /**
      * @param string $url
      *
-     * @throws \Webubbub\models\Errors\ContentError if url is invalid
+     * @throws \Minz\Errors\ModelPropertyError if url is invalid
      */
-    public function __construct($url)
+    public static function new($url)
     {
-        if (!self::validateUrl($url)) {
-            throw new Errors\ContentError("{$url} url is invalid.");
-        }
+        return new self([
+            'url' => urldecode($url),
+            'status' => 'new',
+        ]);
+    }
 
-        $this->url = urldecode($url);
-        $this->status = 'new';
+    /**
+     * Initialize a Content from values (usually from database).
+     *
+     * @param array $values
+     *
+     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
+     */
+    public function __construct($values)
+    {
+        parent::__construct(self::PROPERTIES);
+        $this->fromValues($values);
     }
 
     /**
@@ -63,162 +78,14 @@ class Content
      */
     public function fetch($content, $type, $links)
     {
-        $this->status = 'fetched';
-        $this->content = $content;
-        $this->type = $type;
-        $this->links = $links;
+        $this->setProperty('content', $content);
+        $this->setProperty('type', $type);
+        $this->setProperty('links', $links);
 
         $fetched_at = new \DateTime();
         $fetched_at->setTimestamp(\Minz\Time::now());
-        $this->fetched_at = $fetched_at;
-    }
-
-    /**
-     * @return integer|null
-     */
-    public function id()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function createdAt()
-    {
-        return $this->created_at;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function fetchedAt()
-    {
-        return $this->fetched_at;
-    }
-
-    /**
-     * @return string
-     */
-    public function status()
-    {
-        return $this->status;
-    }
-
-    /**
-     * @return string
-     */
-    public function url()
-    {
-        return $this->url;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function links()
-    {
-        return $this->links;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function type()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function content()
-    {
-        return $this->content;
-    }
-
-    /**
-     * Return the model values, in order to be passed to the DAO model. Note
-     * that additional process might be needed (e.g. setting the required
-     * `created_at` for a creation).
-     *
-     * @return mixed[]
-     */
-    public function toValues()
-    {
-        return [
-            'id' => $this->id,
-            'created_at' => $this->created_at ? $this->created_at->getTimestamp() : null,
-            'fetched_at' => $this->created_at ? $this->created_at->getTimestamp() : null,
-            'status' => $this->status,
-            'url' => $this->url,
-            'links' => $this->links,
-            'type' => $this->type,
-            'content' => $this->content,
-        ];
-    }
-
-    /**
-     * Create a Content object from given values.
-     *
-     * It should be used with values coming from the database.
-     *
-     * @param mixed[] $values
-     *
-     * @throws \Webubbub\models\Errors\ContentError if a required value is missing
-     *                                              or is not valid
-     *
-     * @return \Webubbub\models\Content
-     */
-    public static function fromValues($values)
-    {
-        $required_values = ['id', 'created_at', 'status', 'url'];
-        foreach ($required_values as $value_name) {
-            if (!isset($values[$value_name])) {
-                throw new Errors\ContentError(
-                    "{$value_name} value is required."
-                );
-            }
-        }
-
-        $integer_values = ['id', 'created_at', 'fetched_at'];
-        foreach ($integer_values as $value_name) {
-            if (
-                isset($values[$value_name]) &&
-                !filter_var($values[$value_name], FILTER_VALIDATE_INT)
-            ) {
-                throw new Errors\ContentError(
-                    "{$value_name} value must be an integer."
-                );
-            }
-        }
-
-        $subscription = new self($values['url']);
-
-        $subscription->id = intval($values['id']);
-        $subscription->status = $values['status'];
-
-        $created_at = new \DateTime();
-        $created_at->setTimestamp(intval($values['created_at']));
-        $subscription->created_at = $created_at;
-
-        if (isset($values['links'])) {
-            $subscription->links = $values['links'];
-        }
-        if (isset($values['type'])) {
-            $subscription->type = $values['type'];
-        }
-        if (isset($values['content'])) {
-            $subscription->content = $values['content'];
-        }
-
-        if (isset($values['fetched_at'])) {
-            $fetched_at = new \DateTime();
-            $fetched_at->setTimestamp(intval($values['fetched_at']));
-            $subscription->fetched_at = $fetched_at;
-        }
-
-        return $subscription;
+        $this->setProperty('fetched_at', $fetched_at);
+        $this->setProperty('status', 'fetched');
     }
 
     /**
@@ -228,7 +95,7 @@ class Content
      *
      * @return boolean Return true if the URL is valid, false otherwise
      */
-    private static function validateUrl($url)
+    public static function validateUrl($url)
     {
         $url_components = parse_url($url);
         if (!$url_components || !isset($url_components['scheme'])) {
@@ -237,5 +104,23 @@ class Content
 
         $url_scheme = $url_components['scheme'];
         return $url_scheme === 'http' || $url_scheme === 'https';
+    }
+
+    /**
+     * Check the given status is valid.
+     *
+     * @param string $status
+     *
+     * @return boolean|string It returns true if the status is valid, or a string
+     *                        explaining the error otherwise.
+     */
+    public static function validateStatus($status)
+    {
+        if (!in_array($status, self::VALID_STATUSES)) {
+            $statuses_as_string = implode(', ', self::VALID_STATUSES);
+            return "valid values are {$statuses_as_string}";
+        }
+
+        return true;
     }
 }

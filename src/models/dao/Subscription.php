@@ -2,26 +2,14 @@
 
 namespace Webubbub\models\dao;
 
+use Webubbub\models;
+
 class Subscription extends \Minz\DatabaseModel
 {
     public function __construct()
     {
-        parent::__construct(
-            'subscriptions',
-            'id',
-            [
-                'id',
-                'created_at',
-                'expired_at',
-                'status',
-                'pending_request',
-
-                'callback',
-                'topic',
-                'lease_seconds',
-                'secret',
-            ]
-        );
+        $subscription_properties = array_keys(models\Subscription::PROPERTIES);
+        parent::__construct('subscriptions', 'id', $subscription_properties);
     }
 
     /**

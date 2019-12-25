@@ -41,7 +41,7 @@ namespace Webubbub\models;
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
  */
-class Subscription
+class Subscription extends \Minz\Model
 {
     public const MIN_LEASE_SECONDS = 86400; // Equivalent to 1 day
 
@@ -55,57 +55,81 @@ class Subscription
 
     public const VALID_REQUESTS = ['subscribe', 'unsubscribe'];
 
-    /** @var integer|null */
-    private $id;
+    public const PROPERTIES = [
+        'id' => 'integer',
 
-    /** @var \DateTime|null */
-    private $created_at;
+        'created_at' => 'datetime',
 
-    /** @var \DateTime|null */
-    private $expired_at;
+        'expired_at' => 'datetime',
 
-    /** @var string */
-    private $status;
+        'status' => [
+            'type' => 'string',
+            'required' => true,
+            'validator' => '\Webubbub\models\Subscription::validateStatus',
+        ],
 
-    /** @var string|null */
-    private $pending_request;
+        'pending_request' => [
+            'type' => 'string',
+            'validator' => '\Webubbub\models\Subscription::validateRequest',
+        ],
 
-    /** @var string */
-    private $callback;
+        'callback' => [
+            'type' => 'string',
+            'required' => true,
+            'validator' => '\Webubbub\models\Subscription::validateUrl',
+        ],
 
-    /** @var string */
-    private $topic;
+        'topic' => [
+            'type' => 'string',
+            'required' => true,
+            'validator' => '\Webubbub\models\Subscription::validateUrl',
+        ],
 
-    /** @var integer */
-    private $lease_seconds;
+        'lease_seconds' => [
+            'type' => 'integer',
+            'required' => true,
+            'validator' => '\Webubbub\models\Subscription::validateLeaseSeconds',
+        ],
 
-    /** @var string|null */
-    private $secret;
+        'secret' => [
+            'type' => 'string',
+            'validator' => '\Webubbub\models\Subscription::validateSecret',
+        ],
+    ];
 
     /**
      * @param string $callback
      * @param string $topic
+     * @param integer $lease_seconds
+     * @param string|null $secret
      *
-     * @throws \Webubbub\models\Errors\SubscriptionError if callback, topic or
-     *                                                   secret is invalid
+     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
+     *
+     * @return \Webubbub\models\Subscription
      */
-    public function __construct($callback, $topic, $lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
+    public static function new($callback, $topic, $lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
     {
-        if (!self::validateUrl($callback)) {
-            throw new Errors\SubscriptionError("{$callback} callback is invalid.");
-        }
+        return new Subscription([
+            'callback' => urldecode($callback),
+            'topic' => urldecode($topic),
+            'lease_seconds' => self::boundLeaseSeconds($lease_seconds),
+            'secret' => $secret,
+            'status' => 'new',
+            'pending_request' => 'subscribe',
+        ]);
+    }
 
-        if (!self::validateUrl($topic)) {
-            throw new Errors\SubscriptionError("{$topic} topic is invalid.");
-        }
-
-        $this->callback = urldecode($callback);
-        $this->topic = urldecode($topic);
-        $this->setLeaseSeconds($lease_seconds);
-        $this->setSecret($secret);
-
-        $this->status = 'new';
-        $this->pending_request = 'subscribe';
+    /**
+     * Initialize a Subscription from values (usually from database).
+     *
+     * @param array $values
+     *
+     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
+     */
+    public function __construct($values)
+    {
+        parent::__construct(self::PROPERTIES);
+        $this->fromValues($values);
     }
 
     /**
@@ -173,17 +197,19 @@ class Subscription
     }
 
     /**
-     * Renew a subscription by setting lease seconds and secret. It also set
-     * the pending request to "subscribe"
+     * Renew a subscription by setting lease seconds and secret. It also sets
+     * the pending request to "subscribe".
      *
      * @param integer $lease_seconds
      * @param string|null $secret
+     *
+     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
      */
     public function renew($lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
     {
-        $this->setLeaseSeconds($lease_seconds);
-        $this->setSecret($secret);
-        $this->pending_request = 'subscribe';
+        $this->setProperty('lease_seconds', self::boundLeaseSeconds($lease_seconds));
+        $this->setProperty('secret', $secret);
+        $this->setProperty('pending_request', 'subscribe');
     }
 
     /**
@@ -218,7 +244,7 @@ class Subscription
             );
         }
 
-        $this->status = 'expired';
+        $this->setProperty('status', 'expired');
     }
 
     /**
@@ -226,7 +252,7 @@ class Subscription
      */
     public function requestUnsubscription()
     {
-        $this->pending_request = 'unsubscribe';
+        $this->setProperty('pending_request', 'unsubscribe');
     }
 
     /**
@@ -234,227 +260,20 @@ class Subscription
      */
     public function cancelRequest()
     {
-        $this->pending_request = null;
-    }
-
-    /**
-     * @return integer|null
-     */
-    public function id()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function callback()
-    {
-        return $this->callback;
-    }
-
-    /**
-     * @return string
-     */
-    public function topic()
-    {
-        return $this->topic;
-    }
-
-    /**
-     * @return integer
-     */
-    public function leaseSeconds()
-    {
-        return $this->lease_seconds;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function secret()
-    {
-        return $this->secret;
-    }
-
-    /**
-     * @return string
-     */
-    public function status()
-    {
-        return $this->status;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function pendingRequest()
-    {
-        return $this->pending_request;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function createdAt()
-    {
-        return $this->created_at;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function expiredAt()
-    {
-        return $this->expired_at;
+        $this->setProperty('pending_request', null);
     }
 
     /**
      * @param integer $lease_seconds
+     *
+     * @return integer
      */
-    private function setLeaseSeconds($lease_seconds)
+    private static function boundLeaseSeconds($lease_seconds)
     {
-        $this->lease_seconds = max(
+        return max(
             min($lease_seconds, self::MAX_LEASE_SECONDS),
             self::MIN_LEASE_SECONDS
         );
-    }
-
-    /**
-     * @param string|null $secret
-     *
-     * @throws \Webubbub\models\Errors\SubscriptionError if secret is invalid
-     */
-    private function setSecret($secret)
-    {
-        if ($secret === '') {
-            throw new Errors\SubscriptionError(
-                'Secret must either be not given or be a cryptographically random unique secret string.'
-            );
-        }
-
-        $max_secret_length = self::MAX_SECRET_LENGTH;
-        if (strlen($secret) > $max_secret_length) {
-            throw new Errors\SubscriptionError(
-                "Secret must be equal or less than {$max_secret_length} bytes in length."
-            );
-        }
-
-        $this->secret = $secret;
-    }
-
-
-    /**
-     * Return the model values, in order to be passed to the DAO model. Note
-     * that additional process might be needed (e.g. setting the required
-     * `created_at` for a creation).
-     *
-     * @return mixed[]
-     */
-    public function toValues()
-    {
-        return [
-            'id' => $this->id,
-            'created_at' => $this->created_at ? $this->created_at->getTimestamp() : null,
-            'expired_at' => $this->expired_at ? $this->expired_at->getTimestamp() : null,
-            'status' => $this->status,
-            'pending_request' => $this->pending_request,
-
-            'callback' => $this->callback,
-            'topic' => $this->topic,
-            'lease_seconds' => $this->lease_seconds,
-            'secret' => $this->secret,
-        ];
-    }
-
-    /**
-     * Create a Subscription object from given values.
-     *
-     * It should be used with values coming from the database.
-     *
-     * @param mixed[] $values
-     *
-     * @throws \Webubbub\models\Errors\SubscriptionError if a required value is missing
-     *                                                   or is not valid
-     *
-     * @return \Webubbub\models\Subscription
-     */
-    public static function fromValues($values)
-    {
-        $required_values = [
-            'id',
-            'callback',
-            'topic',
-            'lease_seconds',
-            'status',
-            'created_at'
-        ];
-        foreach ($required_values as $value_name) {
-            if (!isset($values[$value_name])) {
-                throw new Errors\SubscriptionError(
-                    "{$value_name} value is required."
-                );
-            }
-        }
-
-        $integer_values = ['id', 'lease_seconds', 'created_at', 'expired_at'];
-        foreach ($integer_values as $value_name) {
-            if (
-                isset($values[$value_name]) &&
-                !filter_var($values[$value_name], FILTER_VALIDATE_INT)
-            ) {
-                throw new Errors\SubscriptionError(
-                    "{$value_name} value must be an integer."
-                );
-            }
-        }
-
-        if (!in_array($values['status'], self::VALID_STATUSES)) {
-            throw new Errors\SubscriptionError(
-                "{$values['status']} is not a valid status."
-            );
-        }
-
-        if (
-            isset($values['pending_request']) &&
-            !in_array($values['pending_request'], self::VALID_REQUESTS)
-        ) {
-            throw new Errors\SubscriptionError(
-                "{$values['pending_request']} is not a valid pending request."
-            );
-        }
-
-        if (isset($values['secret'])) {
-            $secret = $values['secret'];
-        } else {
-            $secret = null;
-        }
-
-        $subscription = new self(
-            $values['callback'],
-            $values['topic'],
-            intval($values['lease_seconds']),
-            $secret
-        );
-
-        $subscription->id = intval($values['id']);
-        $subscription->status = $values['status'];
-
-        $created_at = new \DateTime();
-        $created_at->setTimestamp(intval($values['created_at']));
-        $subscription->created_at = $created_at;
-
-        if (isset($values['pending_request'])) {
-            $subscription->pending_request = $values['pending_request'];
-        }
-
-        if (isset($values['expired_at'])) {
-            $expired_at = new \DateTime();
-            $expired_at->setTimestamp(intval($values['expired_at']));
-            $subscription->expired_at = $expired_at;
-        }
-
-        return $subscription;
     }
 
     /**
@@ -464,7 +283,7 @@ class Subscription
      *
      * @return boolean Return true if the URL is valid, false otherwise
      */
-    private static function validateUrl($url)
+    public static function validateUrl($url)
     {
         $url_components = parse_url($url);
         if (!$url_components || !isset($url_components['scheme'])) {
@@ -473,5 +292,80 @@ class Subscription
 
         $url_scheme = $url_components['scheme'];
         return $url_scheme === 'http' || $url_scheme === 'https';
+    }
+
+    /**
+     * Check the given status is valid.
+     *
+     * @param string $status
+     *
+     * @return boolean|string It returns true if the status is valid, or a string
+     *                        explaining the error otherwise.
+     */
+    public static function validateStatus($status)
+    {
+        if (!in_array($status, self::VALID_STATUSES)) {
+            $statuses_as_string = implode(', ', self::VALID_STATUSES);
+            return "valid values are {$statuses_as_string}";
+        }
+
+        return true;
+    }
+
+    /**
+     * Check the given request is valid.
+     *
+     * @param string $request
+     *
+     * @return boolean|string It returns true if the request is valid, or a string
+     *                        explaining the error otherwise
+     */
+    public static function validateRequest($request)
+    {
+        if (!in_array($request, self::VALID_REQUESTS)) {
+            $requests_as_string = implode(', ', self::VALID_REQUESTS);
+            return "valid values are {$requests_as_string}";
+        }
+
+        return true;
+    }
+
+    /**
+     * Check the given lease is between MIN_LEASE_SECONDS and MAX_LEASE_SECONDS.
+     *
+     * The lease seconds should always be bound with the static `boundLeaseSeconds`
+     * method.
+     *
+     * @param integer $lease_seconds
+     *
+     * @return boolean It returns true if the lease value is valid, false otherwise
+     */
+    public static function validateLeaseSeconds($lease_seconds)
+    {
+        return (
+            $lease_seconds >= self::MIN_LEASE_SECONDS &&
+            $lease_seconds <= self::MAX_LEASE_SECONDS
+        );
+    }
+
+    /**
+     * Check the given secret is valid.
+     *
+     * @param string $secret
+     *
+     * @return boolean|string It returns true if the secret is valid, or a string
+     *                        explaining the error otherwise
+     */
+    public static function validateSecret($secret)
+    {
+        if ($secret === '') {
+            return 'must either be not given or be a cryptographically random unique secret string';
+        }
+
+        if (strlen($secret) > self::MAX_SECRET_LENGTH) {
+            return 'must be equal or less than 200 bytes in length';
+        }
+
+        return true;
     }
 }

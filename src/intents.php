@@ -21,8 +21,7 @@ function verify($request)
     $subscriptions_values = $dao->listWherePendingRequests();
 
     foreach ($subscriptions_values as $subscription_values) {
-        $subscription = models\Subscription::fromValues($subscription_values);
-        $pending_request = $subscription->pendingRequest();
+        $subscription = new models\Subscription($subscription_values);
 
         $expected_challenge = $intents_service->generateChallenge();
         $intent_callback = $subscription->intentCallback($expected_challenge);
@@ -35,11 +34,11 @@ function verify($request)
         );
         $challenges_match = $curl_response->content === $expected_challenge;
         if ($http_code_successful && $challenges_match) {
-            if ($pending_request === 'subscribe') {
+            if ($subscription->pending_request === 'subscribe') {
                 $subscription->verify();
-                $dao->update($subscription->id(), $subscription->toValues());
-            } elseif ($pending_request === 'unsubscribe') {
-                $dao->delete($subscription->id());
+                $dao->update($subscription->id, $subscription->toValues());
+            } elseif ($subscription->pending_request === 'unsubscribe') {
+                $dao->delete($subscription->id);
             }
         } else {
             if ($http_code_successful) {
@@ -53,7 +52,7 @@ function verify($request)
             }
 
             $subscription->cancelRequest();
-            $dao->update($subscription->id(), $subscription->toValues());
+            $dao->update($subscription->id, $subscription->toValues());
         }
     }
 
