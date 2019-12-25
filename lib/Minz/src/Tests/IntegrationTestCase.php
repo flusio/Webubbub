@@ -11,6 +11,9 @@ class IntegrationTestCase extends TestCase
     /** @var string */
     protected static $schema;
 
+    /** @var array */
+    protected static $factories;
+
     /**
      * @beforeClass
      */
@@ -28,6 +31,17 @@ class IntegrationTestCase extends TestCase
     {
         $configuration_path = \Minz\Configuration::$configuration_path;
         self::$schema = file_get_contents($configuration_path . '/schema.sql');
+    }
+
+    /**
+     * @beforeClass
+     */
+    public static function loadFactories()
+    {
+        $factories = DatabaseFactory::factories();
+        foreach ($factories as $factory_name => $_) {
+            self::$factories[$factory_name] = new DatabaseFactory($factory_name);
+        }
     }
 
     /**
