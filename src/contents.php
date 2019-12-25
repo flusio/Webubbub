@@ -13,9 +13,13 @@ use Webubbub\services;
  */
 function fetch($request)
 {
-    $dao = new models\dao\Content();
-    $contents_values = $dao->listBy(['status' => 'new']);
+    $subscription_dao = new models\dao\Subscription();
+    $content_dao = new models\dao\Content();
+    $content_delivery_dao = new models\dao\ContentDelivery();
+
+    $contents_values = $content_dao->listBy(['status' => 'new']);
     foreach ($contents_values as $content_values) {
+        // Fetch the content
         $content = new models\Content($content_values);
 
         $curl_response = services\Curl::get($content->url, [
@@ -53,7 +57,30 @@ function fetch($request)
         }
 
         $content->fetch($curl_response->content, $content_type, $links);
-        $dao->update($content->id, $content->toValues());
+        $content_dao->update($content->id, $content->toValues());
+
+        // Then, create content deliveries for subscribers
+        $subscriptions_values = $subscription_dao->listBy([
+            'topic' => $content->url,
+            'status' => 'verified',
+        ]);
+
+        if (!$subscriptions_values) {
+            // there's no subscriptions to this topic, we don't need to process it
+            continue;
+        }
+
+        $content_deliveries_values = [];
+        foreach ($subscriptions_values as $subscription_values) {
+            $content_delivery = models\ContentDelivery::new(
+                intval($subscription_values['id']),
+                $content->id
+            );
+            $values = $content_delivery->toValues();
+            $values['created_at'] = \Minz\Time::now();
+            $content_deliveries_values[] = $values;
+        }
+        $content_delivery_dao->createList($content_deliveries_values);
     }
     return Response::ok();
 }
