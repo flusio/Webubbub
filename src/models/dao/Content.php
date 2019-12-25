@@ -2,23 +2,13 @@
 
 namespace Webubbub\models\dao;
 
+use Webubbub\models;
+
 class Content extends \Minz\DatabaseModel
 {
     public function __construct()
     {
-        parent::__construct(
-            'contents',
-            'id',
-            [
-                'id',
-                'created_at',
-                'fetched_at',
-                'status',
-                'url',
-                'links',
-                'type',
-                'content',
-            ]
-        );
+        $content_properties = array_keys(models\Content::PROPERTIES);
+        parent::__construct('contents', 'id', $content_properties);
     }
 }

@@ -241,7 +241,7 @@ class RequestsTest extends IntegrationTestCase
         $this->assertResponse(
             $response,
             400,
-            "{$invalid_url} url is invalid.\n",
+            "`url` property is invalid ({$invalid_url}).\n",
             ['Content-Type' => 'text/plain']
         );
     }

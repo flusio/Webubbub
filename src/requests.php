@@ -146,8 +146,8 @@ function publish($request)
     }
 
     try {
-        $content = new models\Content($url);
-    } catch (models\Errors\ContentError $e) {
+        $content = models\Content::new($url);
+    } catch (\Minz\Errors\ModelPropertyError $e) {
         return Response::badRequest('requests/error.txt', [
             'error' => $e->getMessage(),
         ]);

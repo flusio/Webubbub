@@ -11,37 +11,37 @@ class ContentTest extends TestCase
         \Minz\Time::unfreeze();
     }
 
-    public function testConstructor()
+    public function testNew()
     {
         $url = 'https://some.site.fr/feed.xml';
 
-        $content = new Content($url);
+        $content = Content::new($url);
 
-        $this->assertSame($url, $content->url());
-        $this->assertSame('new', $content->status());
+        $this->assertSame($url, $content->url);
+        $this->assertSame('new', $content->status);
     }
 
-    public function testConstructorDecodesUrls()
+    public function testNewDecodesUrls()
     {
         $url = 'https://some.site.fr/feed.xml?foo%2Bbar';
 
-        $content = new Content($url);
+        $content = Content::new($url);
 
         $this->assertSame(
             'https://some.site.fr/feed.xml?foo+bar',
-            $content->url()
+            $content->url
         );
     }
 
     /**
      * @dataProvider invalidUrlProvider
      */
-    public function testConstructorFailsIfUrlIsInvalid($invalid_url)
+    public function testNewFailsIfUrlIsInvalid($invalid_url)
     {
-        $this->expectException(Errors\ContentError::class);
-        $this->expectExceptionMessage("{$invalid_url} url is invalid.");
+        $this->expectException(\Minz\Errors\ModelPropertyError::class);
+        $this->expectExceptionMessage("`url` property is invalid ({$invalid_url}).");
 
-        new Content($invalid_url);
+        Content::new($invalid_url);
     }
 
     public function testFetch()
@@ -52,59 +52,42 @@ class ContentTest extends TestCase
         $links = 'https://some.site.fr/feed.xml';
         $type = 'application/rss+xml';
         $content_text = '<some>xml</some>';
-        $content = new Content($url);
+        $content = Content::new($url);
 
         $content->fetch($content_text, $type, $links);
 
-        $this->assertSame('fetched', $content->status());
-        $this->assertSame(1000, $content->fetchedAt()->getTimestamp());
-        $this->assertSame($links, $content->links());
-        $this->assertSame($type, $content->type());
-        $this->assertSame($content_text, $content->content());
+        $this->assertSame('fetched', $content->status);
+        $this->assertSame(1000, $content->fetched_at->getTimestamp());
+        $this->assertSame($links, $content->links);
+        $this->assertSame($type, $content->type);
+        $this->assertSame($content_text, $content->content);
     }
 
-    public function testFromValues()
+    public function testConstructor()
     {
-        $content = Content::fromValues([
+        $content = new Content([
             'id' => '1',
             'created_at' => '10000',
             'status' => 'new',
             'url' => 'https://some.site.fr/feed.xml',
         ]);
 
-        $this->assertSame(1, $content->id());
-        $this->assertSame(10000, $content->createdAt()->getTimestamp());
-        $this->assertSame('https://some.site.fr/feed.xml', $content->url());
+        $this->assertSame(1, $content->id);
+        $this->assertSame(10000, $content->created_at->getTimestamp());
+        $this->assertSame('https://some.site.fr/feed.xml', $content->url);
     }
 
     /**
      * @dataProvider missingValuesProvider
      */
-    public function testFromValuesFailsIfRequiredValueIsMissing($values, $missing_value_name)
+    public function testConstructorFailsIfRequiredValueIsMissing($values, $missing_value_name)
     {
-        $this->expectException(Errors\ContentError::class);
-        $this->expectExceptionMessage("{$missing_value_name} value is required.");
+        $this->expectException(\Minz\Errors\ModelPropertyError::class);
+        $this->expectExceptionMessage(
+            "Required `{$missing_value_name}` property is missing."
+        );
 
-        Content::fromValues($values);
-    }
-
-    /**
-     * @dataProvider integerValuesNamesProvider
-     */
-    public function testFromValuesFailsIfIntegerValueCannotBeParsed($value_name)
-    {
-        $this->expectException(Errors\ContentError::class);
-        $this->expectExceptionMessage("{$value_name} value must be an integer.");
-
-        $values = [
-            'id' => '1',
-            'created_at' => '10000',
-            'status' => 'new',
-            'url' => 'https://some.site.fr/feed.xml',
-        ];
-        $values[$value_name] = 'not an integer';
-
-        Content::fromValues($values);
+        new Content($values);
     }
 
     public function invalidUrlProvider()
@@ -117,20 +100,9 @@ class ContentTest extends TestCase
         ];
     }
 
-    public function integerValuesNamesProvider()
-    {
-        return [
-            ['id'],
-            ['created_at'],
-            ['fetched_at'],
-        ];
-    }
-
     public function missingValuesProvider()
     {
         $default_values = [
-            'id' => '1',
-            'created_at' => '10000',
             'status' => 'new',
             'url' => 'https://some.site.fr/feed.xml',
         ];
