@@ -10,6 +10,8 @@ namespace Webubbub\models;
  */
 class ContentDelivery extends \Minz\Model
 {
+    public const MAX_TRIES_COUNT = 7;
+
     public const PROPERTIES = [
         'id' => 'integer',
 
@@ -65,5 +67,28 @@ class ContentDelivery extends \Minz\Model
     {
         parent::__construct(self::PROPERTIES);
         $this->fromValues($values);
+    }
+
+    /**
+     * Set the try_at property to a later time and increase the tries_count.
+     *
+     * @throws \Webubbub\models\Errors\ContentDeliveryError if the maximum allowed
+     *                                                      tries count is reached
+     */
+    public function retryLater()
+    {
+        if ($this->tries_count >= self::MAX_TRIES_COUNT) {
+            throw new Errors\ContentDeliveryError(
+                'Content delivery has reached the maximum of allowed number '
+                . 'of tries (' . self::MAX_TRIES_COUNT . ').'
+            );
+        }
+
+        $tries_count = $this->tries_count + 1;
+        $try_at = new \DateTime();
+        $try_at->setTimestamp(\Minz\Time::now() + pow(5, $tries_count));
+
+        $this->setProperty('try_at', $try_at);
+        $this->setProperty('tries_count', $tries_count);
     }
 }

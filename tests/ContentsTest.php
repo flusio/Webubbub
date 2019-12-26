@@ -349,6 +349,63 @@ class ContentsTest extends IntegrationTestCase
         $this->assertSame($expected_signature, $mock->received_headers['X-Hub-Signature']);
     }
 
+    public function testDeliverWithErrorHttpCode()
+    {
+        \Minz\Time::freeze(2000);
+
+        $content_dao = new models\dao\Content();
+        $content_delivery_dao = new models\dao\ContentDelivery();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+        ]);
+        $content_delivery_id = self::$factories['content_deliveries']->create([
+            'content_id' => $content_id,
+            'try_at' => 1000,
+            'tries_count' => 0,
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock('', 500);
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $content_delivery = $content_delivery_dao->find($content_delivery_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('fetched', $content['status']);
+        $this->assertSame(2005, intval($content_delivery['try_at']));
+        $this->assertSame(1, intval($content_delivery['tries_count']));
+    }
+
+    public function testDeliverWithErrorHttpCodeAndMaxTriesReached()
+    {
+        \Minz\Time::freeze(2000);
+
+        $content_dao = new models\dao\Content();
+        $content_delivery_dao = new models\dao\ContentDelivery();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+        ]);
+        $content_delivery_id = self::$factories['content_deliveries']->create([
+            'content_id' => $content_id,
+            'try_at' => 1000,
+            'tries_count' => models\ContentDelivery::MAX_TRIES_COUNT,
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock('', 500);
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $content_delivery = $content_delivery_dao->find($content_delivery_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('delivered', $content['status']);
+        $this->assertNull($content_delivery);
+    }
+
     public function testDeliverWith410HttpCode()
     {
         $content_dao = new models\dao\Content();

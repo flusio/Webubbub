@@ -141,14 +141,32 @@ function deliver($request)
                 ]
             );
 
-            // @todo add retry mecanism
-            $content_delivery_dao->delete($content_delivery->id);
-            $count_deleted += 1;
+            $http_code = $curl_response->http_code;
+            if (($http_code >= 200 && $http_code < 300) || $http_code === 410) {
+                $content_delivery_dao->delete($content_delivery->id);
+                $count_deleted += 1;
 
-            if ($curl_response->http_code === 410) {
-                // HTTP 410 code means the subscription has been deleted and we
-                // can terminate the subscription
-                $subscription_dao->delete($subscription->id);
+                if ($http_code === 410) {
+                    // HTTP 410 code means the subscription has been deleted
+                    // and we can terminate the subscription
+                    $subscription_dao->delete($subscription->id);
+                }
+            } else {
+                try {
+                    // The request failed, we should retry later
+                    $content_delivery->retryLater();
+                    $content_delivery_dao->update(
+                        $content_delivery->id,
+                        $content_delivery->toValues()
+                    );
+                } catch (models\Errors\ContentDeliveryError $e) {
+                    \Minz\Log::warning(
+                        "[contents#deliver] Cannot send {$content->url} to "
+                        . "{$subscription->callback} subscriber (reached max tries count)."
+                    );
+                    $content_delivery_dao->delete($content_delivery->id);
+                    $count_deleted += 1;
+                }
             }
         }
 

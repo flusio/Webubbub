@@ -58,6 +58,43 @@ class ContentDeliveryTest extends TestCase
         new ContentDelivery($values);
     }
 
+    /**
+     * @dataProvider triesToDelayProvider
+     */
+    public function testRetryLater($initial_tries, $delay)
+    {
+        \Minz\Time::freeze(2000);
+
+        $content = new ContentDelivery([
+            'subscription_id' => 1,
+            'content_id' => 1,
+            'try_at' => 1000,
+            'tries_count' => $initial_tries,
+        ]);
+
+        $content->retryLater();
+
+        $this->assertSame(2000 + $delay, $content->try_at->getTimestamp());
+        $this->assertSame($initial_tries + 1, $content->tries_count);
+    }
+
+    public function testRetryLaterFailsIfMaxTriesReached()
+    {
+        $this->expectException(Errors\ContentDeliveryError::class);
+        $this->expectExceptionMessage(
+            'Content delivery has reached the maximum of allowed number of tries (7).'
+        );
+
+        $content = new ContentDelivery([
+            'subscription_id' => 1,
+            'content_id' => 1,
+            'try_at' => 1000,
+            'tries_count' => 7,
+        ]);
+
+        $content->retryLater();
+    }
+
     public function missingValuesProvider()
     {
         $default_values = [
@@ -75,5 +112,19 @@ class ContentDeliveryTest extends TestCase
         }
 
         return $dataset;
+    }
+
+    public function triesToDelayProvider()
+    {
+        return [
+            [0, 5], // when initial number of tries is 0, try_at will be incremented
+                    // by 5 seconds from now.
+            [1, 25],
+            [2, 125], // ~2 minutes
+            [3, 625], // ~10 minutes
+            [4, 3125], // ~52 minutes
+            [5, 15625], // ~4 hours 20 minutes
+            [6, 78125], // ~21 hours 42 minutes
+        ];
     }
 }
