@@ -48,6 +48,22 @@ a {
     color: #a6253a;
 }
 
-p {
+p,
+ul {
     max-width: 30rem;
+}
+
+pre {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding: .5rem 1rem;
+
+  overflow: auto;
+
+  font-size: 0.9rem;
+  color: #f8f6ff;
+
+  background-color: #2a2230;
+  border-top: 4px solid #c02b43;
+  border-bottom: 4px solid #c02b43;
 }

@@ -7,8 +7,46 @@
 </p>
 
 <p>
-    … well, it’ll probably be in the future. This is the very beginning
-    of this project, there is nothing more to see here.
+    <strong>Important: the hub is actually opened and doesn't require to register.
+    It’ll probably change in the future so don't use it in production.</strong>
+</p>
+
+<p>
+    If you have a blog, you can configure your <abbr>RSS</abbr> or Atom feed by
+    adding this link element:
+</p>
+
+<pre>
+<code>&lt;link href="<?= \Minz\Url::absoluteFor('requests#handle') ?>" rel="hub" /&gt;</code>
+</pre>
+
+<p>
+    Aggregators that support Websub will soon discover the link and subscribe
+    to this hub.
+</p>
+
+<p>
+    Next time you'll publish an article, just send a POST request to the hub with the following parameters:
+</p>
+
+<ul>
+    <li><code>hub.mode="publish"</code></li>
+    <li><code>hub.url=&lt;URL of your feed&gt;</code> (that's important the
+    URL is exactly the same than the <code>self</code> link in your feed)</li>
+</ul>
+
+<p>
+    For instance, with curl:
+</p>
+
+<pre>
+<code>curl -d "hub.mode=publish&amp;hub.topic=&lt;URL of your feed&gt;" -X POST <?= \Minz\Url::absoluteFor('requests#handle') ?></code>
+</pre>
+
+<p>
+    It should work well but Webubbub is still young so please be comprehensive
+    if you encounter bugs. It also lacks of documentation so please come back
+    later for more fun!
 </p>
 
 <p>
@@ -19,7 +57,7 @@
 
 <p>
     <small>
-        Websub is brought to you by <a href="https://marienfressinaud.fr">Marien Fressinaud</a>.
+        Webubbub is brought to you by <a href="https://marienfressinaud.fr">Marien Fressinaud</a>.
         Please consider support my work by <a href="https://flus.io">taking a subscription to Flus</a>,
         a news aggregator service using <a href="https://freshrss.org">FreshRSS</a>.
     </small>
