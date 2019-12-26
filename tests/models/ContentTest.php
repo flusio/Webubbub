@@ -63,6 +63,31 @@ class ContentTest extends TestCase
         $this->assertSame($content_text, $content->content);
     }
 
+    public function testDeliver()
+    {
+        $content = new Content([
+            'url' => 'https://some.site.fr/feed',
+            'status' => 'fetched',
+        ]);
+
+        $content->deliver();
+
+        $this->assertSame('delivered', $content->status);
+    }
+
+    public function testDeliverFailsIfStatusIsNew()
+    {
+        $this->expectException(Errors\ContentError::class);
+        $this->expectExceptionMessage('Content cannot be delivered with `new` status.');
+
+        $content = new Content([
+            'url' => 'https://some.site.fr/feed',
+            'status' => 'new',
+        ]);
+
+        $content->deliver();
+    }
+
     public function testConstructor()
     {
         $content = new Content([

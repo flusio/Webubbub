@@ -15,7 +15,7 @@ namespace Webubbub\models;
  */
 class Content extends \Minz\Model
 {
-    public const VALID_STATUSES = ['new', 'fetched'];
+    public const VALID_STATUSES = ['new', 'fetched', 'delivered'];
 
     public const PROPERTIES = [
         'id' => 'integer',
@@ -86,6 +86,20 @@ class Content extends \Minz\Model
         $fetched_at->setTimestamp(\Minz\Time::now());
         $this->setProperty('fetched_at', $fetched_at);
         $this->setProperty('status', 'fetched');
+    }
+
+    /**
+     * Mark a content as delivered
+     */
+    public function deliver()
+    {
+        if ($this->status !== 'fetched') {
+            throw new Errors\ContentError(
+                "Content cannot be delivered with `{$this->status}` status."
+            );
+        }
+
+        $this->setProperty('status', 'delivered');
     }
 
     /**

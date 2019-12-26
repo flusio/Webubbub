@@ -9,6 +9,7 @@ class ContentsTest extends IntegrationTestCase
 {
     public function tearDown(): void
     {
+        \Minz\Time::unfreeze();
         \Webubbub\services\Curl::resetMock();
     }
 
@@ -224,6 +225,122 @@ class ContentsTest extends IntegrationTestCase
         $this->assertNull($content['content']);
         $this->assertNull($content['type']);
         $this->assertNull($content['links']);
+    }
+
+    public function testDeliver()
+    {
+        $content_dao = new models\dao\Content();
+        $content_delivery_dao = new models\dao\ContentDelivery();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+        ]);
+        $content_delivery_id = self::$factories['content_deliveries']->create([
+            'content_id' => $content_id,
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock();
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $content_delivery = $content_delivery_dao->find($content_delivery_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('delivered', $content['status']);
+        $this->assertNull($content_delivery);
+    }
+
+    public function testDeliverWithNewStatus()
+    {
+        $content_dao = new models\dao\Content();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'new',
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock();
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('new', $content['status']);
+    }
+
+    public function testDeliverWithTryAtInFuture()
+    {
+        \Minz\Time::freeze(1000);
+
+        $content_dao = new models\dao\Content();
+        $content_delivery_dao = new models\dao\ContentDelivery();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+        ]);
+        $content_delivery_id = self::$factories['content_deliveries']->create([
+            'content_id' => $content_id,
+            'try_at' => 2000,
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock();
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $content_delivery = $content_delivery_dao->find($content_delivery_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('fetched', $content['status']);
+        $this->assertNotNull($content_delivery);
+    }
+
+    public function testDeliverWithNoContentDeliveries()
+    {
+        $content_dao = new models\dao\Content();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock();
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('delivered', $content['status']);
+    }
+
+    public function testDeliverWith410HttpCode()
+    {
+        $content_dao = new models\dao\Content();
+        $subscription_dao = new models\dao\Subscription();
+        $content_delivery_dao = new models\dao\ContentDelivery();
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+        ]);
+        $subscription_id = self::$factories['subscriptions']->create();
+        $content_delivery_id = self::$factories['content_deliveries']->create([
+            'content_id' => $content_id,
+            'subscription_id' => $subscription_id,
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        \Webubbub\services\Curl::mock('', 410);
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $subscription = $subscription_dao->find($subscription_id);
+        $content_delivery = $content_delivery_dao->find($content_delivery_id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('delivered', $content['status']);
+        $this->assertNull($subscription);
+        $this->assertNull($content_delivery);
     }
 
     public function testItems()

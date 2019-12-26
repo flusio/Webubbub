@@ -28,6 +28,7 @@ class Application
         $router->addRoute('/intents/verify', 'intents#verify', 'cli');
         $router->addRoute('/subscriptions/expire', 'subscriptions#expire', 'cli');
         $router->addRoute('/contents/fetch', 'contents#fetch', 'cli');
+        $router->addRoute('/contents/deliver', 'contents#deliver', 'cli');
 
         // These routes list what is in database, to help to debug
         $router->addRoute('/subscriptions', 'subscriptions#items', 'cli');
