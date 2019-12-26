@@ -58,6 +58,13 @@ class Curl
         return new self($result, $http_code, $headers);
     }
 
+    public static function post($url, $post_fields, $options = [])
+    {
+        $options[CURLOPT_POST] = true;
+        $options[CURLOPT_POSTFIELDS] = $post_fields;
+        return self::get($url, $options);
+    }
+
     public static function mock($content = '', $http_code = 200, $headers = [])
     {
         self::$mock = new self($content, $http_code, $headers);
