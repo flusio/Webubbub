@@ -29,3 +29,21 @@ include $app_path . '/autoload.php';
         'status' => 'new',
     ]
 );
+
+\Minz\Tests\DatabaseFactory::addFactory(
+    'content_deliveries',
+    '\Webubbub\models\dao\ContentDelivery',
+    [
+        'subscription_id' => function () {
+            $subscriptions_factory = new \Minz\Tests\DatabaseFactory('subscriptions');
+            return $subscriptions_factory->create();
+        },
+        'content_id' => function () {
+            $contents_factory = new \Minz\Tests\DatabaseFactory('contents');
+            return $contents_factory->create();
+        },
+        'created_at' => time(),
+        'try_at' => time(),
+        'tries_count' => 0,
+    ]
+);
