@@ -25,7 +25,7 @@ class Application
 
         // These ones are intended to be called regularly on the server (e.g.
         // via a cron task and later via a job queue).
-        $router->addRoute('/intents/verify', 'intents#verify', 'cli');
+        $router->addRoute('/subscriptions/verify', 'subscriptions#verify', 'cli');
         $router->addRoute('/subscriptions/expire', 'subscriptions#expire', 'cli');
         $router->addRoute('/contents/fetch', 'contents#fetch', 'cli');
         $router->addRoute('/contents/deliver', 'contents#deliver', 'cli');
