@@ -39,6 +39,21 @@ namespace Minz\Tests;
  * to the factory. It just merges default values with the given ones and
  * delegate the creation to the DAO class.
  *
+ * A default value can contain a callable function to be executed at the
+ * runtime. It is useful to create references to other factories:
+ *
+ *     \Minz\Tests\DatabaseFactory::addFactory(
+ *         'friends',
+ *         '\MyApp\models\dao\Rabbit',
+ *         [
+ *             'name' => 'Martin',
+ *             'rabbit_id' => function () {
+ *                 $rabbits_factory = new \Minz\Tests\DatabaseFactory('rabbits');
+ *                 return $rabbits_factory->create();
+ *             },
+ *         ]
+ *     );
+ *
  * It is recommended:
  *
  * - to give default values only for required data (i.e. NOT NULL constraints)
@@ -85,8 +100,16 @@ class DatabaseFactory
      */
     public function create($values = [])
     {
+        $default_values = [];
+        foreach ($this->default_values as $property => $value) {
+            if (is_callable($value) && !isset($values[$property])) {
+                $value = $value();
+            }
+            $default_values[$property] = $value;
+        }
+
         $dao = new $this->dao_name();
-        $values = array_merge($this->default_values, $values);
+        $values = array_merge($default_values, $values);
         return $dao->create($values);
     }
 
