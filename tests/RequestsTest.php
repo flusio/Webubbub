@@ -62,6 +62,7 @@ class RequestsTest extends IntegrationTestCase
         $id = self::$factories['subscriptions']->create([
             'callback' => $callback,
             'topic' => $topic,
+            'secret' => null,
             'lease_seconds' => 432000,
             'pending_request' => null,
         ]);
@@ -79,8 +80,10 @@ class RequestsTest extends IntegrationTestCase
         $subscription = $dao->find($id);
         $this->assertSame(1, $dao->count());
         $this->assertResponse($response, 202);
-        $this->assertSame('543000', $subscription['lease_seconds']);
-        $this->assertSame('a secret string', $subscription['secret']);
+        $this->assertSame('432000', $subscription['lease_seconds']);
+        $this->assertNull($subscription['secret']);
+        $this->assertSame('543000', $subscription['pending_lease_seconds']);
+        $this->assertSame('a secret string', $subscription['pending_secret']);
         $this->assertSame('subscribe', $subscription['pending_request']);
     }
 

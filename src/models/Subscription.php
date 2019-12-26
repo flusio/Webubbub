@@ -68,11 +68,6 @@ class Subscription extends \Minz\Model
             'validator' => '\Webubbub\models\Subscription::validateStatus',
         ],
 
-        'pending_request' => [
-            'type' => 'string',
-            'validator' => '\Webubbub\models\Subscription::validateRequest',
-        ],
-
         'callback' => [
             'type' => 'string',
             'required' => true,
@@ -92,6 +87,21 @@ class Subscription extends \Minz\Model
         ],
 
         'secret' => [
+            'type' => 'string',
+            'validator' => '\Webubbub\models\Subscription::validateSecret',
+        ],
+
+        'pending_request' => [
+            'type' => 'string',
+            'validator' => '\Webubbub\models\Subscription::validateRequest',
+        ],
+
+        'pending_lease_seconds' => [
+            'type' => 'integer',
+            'validator' => '\Webubbub\models\Subscription::validateLeaseSeconds',
+        ],
+
+        'pending_secret' => [
             'type' => 'string',
             'validator' => '\Webubbub\models\Subscription::validateSecret',
         ],
@@ -187,18 +197,27 @@ class Subscription extends \Minz\Model
             );
         }
 
-        $this->status = 'verified';
-        $this->pending_request = null;
+        $this->setProperty('status', 'verified');
+        $this->setProperty('pending_request', null);
 
         $expired_at_timestamp = \Minz\Time::fromNow($this->lease_seconds);
         $expired_at = new \DateTime();
         $expired_at->setTimestamp($expired_at_timestamp);
-        $this->expired_at = $expired_at;
+        $this->setProperty('expired_at', $expired_at);
+
+        if ($this->pending_lease_seconds) {
+            $this->setProperty('lease_seconds', $this->pending_lease_seconds);
+            $this->setProperty('pending_lease_seconds', null);
+        }
+        if ($this->pending_secret) {
+            $this->setProperty('secret', $this->pending_secret);
+            $this->setProperty('pending_secret', null);
+        }
     }
 
     /**
-     * Renew a subscription by setting lease seconds and secret. It also sets
-     * the pending request to "subscribe".
+     * Renew a subscription by setting (pending) lease seconds and secret. It
+     * also sets the pending request to "subscribe".
      *
      * @param integer $lease_seconds
      * @param string|null $secret
@@ -207,8 +226,8 @@ class Subscription extends \Minz\Model
      */
     public function renew($lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
     {
-        $this->setProperty('lease_seconds', self::boundLeaseSeconds($lease_seconds));
-        $this->setProperty('secret', $secret);
+        $this->setProperty('pending_lease_seconds', self::boundLeaseSeconds($lease_seconds));
+        $this->setProperty('pending_secret', $secret);
         $this->setProperty('pending_request', 'subscribe');
     }
 
@@ -261,6 +280,8 @@ class Subscription extends \Minz\Model
     public function cancelRequest()
     {
         $this->setProperty('pending_request', null);
+        $this->setProperty('pending_lease_seconds', null);
+        $this->setProperty('pending_secret', null);
     }
 
     /**

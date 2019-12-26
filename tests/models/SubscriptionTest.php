@@ -202,6 +202,31 @@ class SubscriptionTest extends TestCase
         $subscription->verify();
     }
 
+    public function testVerifyAfterRenewAndDifferentLeaseSecondsAndSecret()
+    {
+        \Minz\Time::freeze(1000);
+        $subscription = Subscription::new(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS,
+            'a secret'
+        );
+
+        $subscription->renew(Subscription::MIN_LEASE_SECONDS, 'another secret');
+
+        $this->assertSame(Subscription::DEFAULT_LEASE_SECONDS, $subscription->lease_seconds);
+        $this->assertSame(Subscription::MIN_LEASE_SECONDS, $subscription->pending_lease_seconds);
+        $this->assertSame('a secret', $subscription->secret);
+        $this->assertSame('another secret', $subscription->pending_secret);
+
+        $subscription->verify();
+
+        $this->assertSame(Subscription::MIN_LEASE_SECONDS, $subscription->lease_seconds);
+        $this->assertNull($subscription->pending_lease_seconds);
+        $this->assertSame('another secret', $subscription->secret);
+        $this->assertNull($subscription->pending_secret);
+    }
+
     public function testRenew()
     {
         $subscription = Subscription::new(
@@ -223,8 +248,13 @@ class SubscriptionTest extends TestCase
         );
 
         $this->assertSame('subscribe', $subscription->pending_request);
-        $this->assertSame(Subscription::DEFAULT_LEASE_SECONDS, $subscription->lease_seconds);
-        $this->assertSame('another secret', $subscription->secret);
+        $this->assertSame(Subscription::MIN_LEASE_SECONDS, $subscription->lease_seconds);
+        $this->assertSame('a secret', $subscription->secret);
+        $this->assertSame(
+            Subscription::DEFAULT_LEASE_SECONDS,
+            $subscription->pending_lease_seconds
+        );
+        $this->assertSame('another secret', $subscription->pending_secret);
     }
 
     public function testRenewForcesLeaseSeconds()
@@ -237,7 +267,10 @@ class SubscriptionTest extends TestCase
 
         $subscription->renew($lease_seconds);
 
-        $this->assertSame(Subscription::MIN_LEASE_SECONDS, $subscription->lease_seconds);
+        $this->assertSame(
+            Subscription::MIN_LEASE_SECONDS,
+            $subscription->pending_lease_seconds
+        );
     }
 
     public function testRenewFailsIfInvalidSecret()
@@ -404,6 +437,38 @@ class SubscriptionTest extends TestCase
         $subscription->cancelRequest();
 
         $this->assertNull($subscription->pending_request);
+    }
+
+    public function testCancelRequestWithPendingSecretAndLease()
+    {
+        $subscription = Subscription::new(
+            'https://subscriber.com/callback',
+            'https://some.site.fr/feed.xml',
+            Subscription::DEFAULT_LEASE_SECONDS,
+            'a secret'
+        );
+        $subscription->renew(Subscription::MIN_LEASE_SECONDS, 'another secret');
+
+        $this->assertSame(
+            Subscription::DEFAULT_LEASE_SECONDS,
+            $subscription->lease_seconds
+        );
+        $this->assertSame(
+            Subscription::MIN_LEASE_SECONDS,
+            $subscription->pending_lease_seconds
+        );
+        $this->assertSame('a secret', $subscription->secret);
+        $this->assertSame('another secret', $subscription->pending_secret);
+
+        $subscription->cancelRequest();
+
+        $this->assertSame(
+            Subscription::DEFAULT_LEASE_SECONDS,
+            $subscription->lease_seconds
+        );
+        $this->assertNull($subscription->pending_lease_seconds);
+        $this->assertSame('a secret', $subscription->secret);
+        $this->assertNull($subscription->pending_secret);
     }
 
     public function testIntentCallback()

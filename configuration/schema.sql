@@ -3,12 +3,15 @@ CREATE TABLE subscriptions (
   created_at datetime NOT NULL,
   expired_at datetime,
   status text NOT NULL,
-  pending_request text,
 
   callback text NOT NULL,
   topic text NOT NULL,
   lease_seconds integer NOT NULL,
-  secret text
+  secret text,
+
+  pending_request text,
+  pending_lease_seconds integer,
+  pending_secret text
 );
 
 CREATE TABLE contents (

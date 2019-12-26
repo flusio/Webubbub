@@ -70,6 +70,33 @@ class SubscriptionsTest extends IntegrationTestCase
         $this->assertSame('new', $subscription['status']);
     }
 
+    public function testVerifyWithSubscribeAndPendingSecretAndLeaseSeconds()
+    {
+        $dao = new models\dao\Subscription();
+        $id = self::$factories['subscriptions']->create([
+            'status' => 'verified',
+            'lease_seconds' => models\Subscription::DEFAULT_LEASE_SECONDS,
+            'secret' => 'a secret',
+            'pending_request' => 'subscribe',
+            'pending_lease_seconds' => models\Subscription::MIN_LEASE_SECONDS,
+            'pending_secret' => 'another secret',
+        ]);
+
+        $request = new \Minz\Request('CLI', '/subscriptions/verify');
+
+        $response = self::$application->run($request);
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame(
+            models\Subscription::MIN_LEASE_SECONDS,
+            intval($subscription['lease_seconds'])
+        );
+        $this->assertSame('another secret', $subscription['secret']);
+        $this->assertNull($subscription['pending_lease_seconds']);
+        $this->assertNull($subscription['pending_secret']);
+    }
+
     public function testVerifyWithSubscribeAndUnmatchingChallenge()
     {
         $dao = new models\dao\Subscription();
