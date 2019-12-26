@@ -181,6 +181,24 @@ class RequestsTest extends IntegrationTestCase
         $this->assertSame($url, $content['url']);
     }
 
+    public function testPublishAcceptsTopic()
+    {
+        $dao = new models\dao\Content();
+        $url = 'https://some.site.fr/feed.xml';
+        $request = new \Minz\Request('CLI', '/requests/publish', [
+            'hub_topic' => $url,
+        ]);
+
+        $this->assertSame(0, $dao->count());
+
+        $response = self::$application->run($request);
+
+        $this->assertResponse($response, 200);
+        $this->assertSame(1, $dao->count());
+        $content = $dao->listAll()[0];
+        $this->assertSame($url, $content['url']);
+    }
+
     public function testPublishWithSameUrlAndNewStatus()
     {
         $dao = new models\dao\Content();

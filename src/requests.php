@@ -133,6 +133,9 @@ function unsubscribe($request)
 function publish($request)
 {
     $url = $request->param('hub_url', '');
+    if ($url === '') {
+        $url = $request->param('hub_topic', '');
+    }
 
     $dao = new models\dao\Content();
     $content_values = $dao->findBy([
