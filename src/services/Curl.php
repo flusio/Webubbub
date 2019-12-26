@@ -9,6 +9,9 @@ class Curl
     public static function get($url, $options = [])
     {
         if (self::$mock) {
+            if (isset($options[CURLOPT_HTTPHEADER])) {
+                self::$mock->setReceivedHeaders($options[CURLOPT_HTTPHEADER]);
+            }
             return self::$mock;
         }
 
@@ -68,6 +71,7 @@ class Curl
     public static function mock($content = '', $http_code = 200, $headers = [])
     {
         self::$mock = new self($content, $http_code, $headers);
+        return self::$mock;
     }
 
     public static function resetMock()
@@ -84,10 +88,27 @@ class Curl
     /** @var array */
     public $headers;
 
+    /** @var array (only useful during tests) */
+    public $received_headers;
+
     public function __construct($content, $http_code, $headers)
     {
         $this->content = $content;
         $this->http_code = $http_code;
         $this->headers = $headers;
+    }
+
+    public function setReceivedHeaders($headers)
+    {
+        foreach ($headers as $header) {
+            $header_exploded = explode(':', $header, 2);
+            if (count($header_exploded) < 2) {
+                continue;
+            }
+
+            $header_key = trim($header_exploded[0]);
+            $header_value = trim($header_exploded[1]);
+            $this->received_headers[$header_key] = $header_value;
+        }
     }
 }

@@ -119,14 +119,25 @@ function deliver($request)
             );
             $subscription = new models\Subscription($subscription_values);
 
+            $headers = [
+                'Content-Type: ' . $content->type,
+                'Link: ' . $content->links,
+            ];
+
+            if ($subscription->secret) {
+                $signature = hash_hmac(
+                    'sha256',
+                    $content->content,
+                    $subscription->secret
+                );
+                $headers[] = 'X-Hub-Signature: sha256=' . $signature;
+            }
+
             $curl_response = services\Curl::post(
                 $subscription->callback,
                 $content->content,
                 [
-                    CURLOPT_HTTPHEADER => [
-                        'Content-Type: ' . $content->type,
-                        'Link: ' . $content->links,
-                    ],
+                    CURLOPT_HTTPHEADER => $headers,
                 ]
             );
 

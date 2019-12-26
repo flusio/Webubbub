@@ -314,6 +314,41 @@ class ContentsTest extends IntegrationTestCase
         $this->assertSame('delivered', $content['status']);
     }
 
+    public function testDeliverWithSecret()
+    {
+        $content_dao = new models\dao\Content();
+
+        $content_content = 'some content';
+        $subscription_secret = 'a very secure secret';
+
+        $content_id = self::$factories['contents']->create([
+            'status' => 'fetched',
+            'content' => $content_content,
+        ]);
+        $subscription_id = self::$factories['subscriptions']->create([
+            'secret' => $subscription_secret,
+        ]);
+        $content_delivery_id = self::$factories['content_deliveries']->create([
+            'content_id' => $content_id,
+            'subscription_id' => $subscription_id,
+        ]);
+        $request = new \Minz\Request('CLI', '/contents/deliver');
+
+        $mock = \Webubbub\services\Curl::mock();
+
+        $response = self::$application->run($request);
+
+        $content = $content_dao->find($content_id);
+        $expected_signature = 'sha256=' . hash_hmac(
+            'sha256',
+            $content_content,
+            $subscription_secret
+        );
+        $this->assertResponse($response, 200);
+        $this->assertSame('delivered', $content['status']);
+        $this->assertSame($expected_signature, $mock->received_headers['X-Hub-Signature']);
+    }
+
     public function testDeliverWith410HttpCode()
     {
         $content_dao = new models\dao\Content();
