@@ -1,0 +1,7 @@
+<?php if (!$results): ?>
+Nothing to do!
+<?php endif; ?>
+<?php foreach ($results as $result): ?>
+<?= $result ?>
+
+<?php endforeach; ?>

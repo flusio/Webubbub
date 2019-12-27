@@ -19,6 +19,7 @@ function verify($request)
 
     $subscriptions_values = $dao->listWherePendingRequests();
 
+    $results = [];
     foreach ($subscriptions_values as $subscription_values) {
         $subscription = new models\Subscription($subscription_values);
 
@@ -33,6 +34,9 @@ function verify($request)
         );
         $challenges_match = $curl_response->content === $expected_challenge;
         if ($http_code_successful && $challenges_match) {
+            $results[] = "subscription #{$subscription->id}: "
+                . "{$subscription->pending_request} succeeded";
+
             if ($subscription->pending_request === 'subscribe') {
                 $subscription->verify();
                 $dao->update($subscription->id, $subscription->toValues());
@@ -41,12 +45,19 @@ function verify($request)
             }
         } else {
             if ($http_code_successful) {
-                \Minz\Log::notice(
+                $results[] = "subscription #{$subscription->id}: "
+                    . "{$subscription->pending_request} failed, "
+                    . "challenge {$curl_response->content} != {$expected_challenge}.";
+                \Minz\Log::warning(
                     "[subscriptions#verify] {$curl_response->content} challenge does "
                     . "not match ({$intent_callback})."
                 );
             } else {
-                \Minz\Log::notice(
+                $results[] = "subscription #{$subscription->id}: "
+                    . "{$subscription->pending_request} failed, "
+                    . "erroneous HTTP code {$curl_response->http_code} "
+                    . "({$curl_response->content}).";
+                \Minz\Log::warning(
                     "[subscriptions#verify] {$curl_response->http_code} HTTP code is "
                     . "not successful ({$intent_callback})."
                 );
@@ -57,7 +68,9 @@ function verify($request)
         }
     }
 
-    return Response::ok();
+    return Response::ok('subscriptions/verify.txt', [
+        'results' => $results,
+    ]);
 }
 
 /**
