@@ -1,7 +1,8 @@
 .DEFAULT_GOAL := help
 
+USER = $(shell id -u):$(shell id -g)
+
 ifdef DOCKER
-	USER = $(shell id -u):$(shell id -g)
 	PHP = docker-compose -f docker/docker-compose.yml run --no-deps php php
 else
 	PHP = php
