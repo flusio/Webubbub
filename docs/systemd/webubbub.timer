@@ -1,0 +1,10 @@
+[Unit]
+Description=Execute Webubbub jobs every 10 seconds
+
+[Timer]
+OnBootSec=10
+OnUnitActiveSec=10
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
