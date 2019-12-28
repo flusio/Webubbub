@@ -1,6 +1,11 @@
 .DEFAULT_GOAL := help
 
-USER = $(shell id -u):$(shell id -g)
+ifdef DOCKER
+	USER = $(shell id -u):$(shell id -g)
+	PHP = docker-compose -f docker/docker-compose.yml run --no-deps php php
+else
+	PHP = php
+endif
 
 .PHONY: start
 start: ## Start a development server (use Docker)
@@ -13,7 +18,7 @@ stop: ## Stop and clean Docker server
 
 .PHONY: init
 init: ## Initialize the application
-	docker-compose -f docker/docker-compose.yml run --no-deps php php ./webubbub --request /system/init
+	$(PHP) ./webubbub --request /system/init
 
 .PHONY: create-migration
 create-migration: ## Create a migration file
@@ -25,23 +30,23 @@ create-migration: ## Create a migration file
 
 .PHONY: migrate
 migrate: ## Apply pending migrations
-	docker-compose -f docker/docker-compose.yml run --no-deps php php ./webubbub --request /system/migrate
+	$(PHP) ./webubbub --request /system/migrate
 
 .PHONY: test
 test: ## Run the tests suite
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
+	$(PHP) ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
 
 .PHONY: test-minz
 test-minz: ## Run the tests suite for the Minz lib
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpunit --bootstrap ./lib/Minz/tests/bootstrap.php ./lib/Minz/tests
+	$(PHP) ./bin/phpunit --bootstrap ./lib/Minz/tests/bootstrap.php ./lib/Minz/tests
 
 .PHONY: lint
 lint: ## Run the linter on the PHP files
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcs --standard=PSR12 ./src ./tests ./lib/Minz
+	$(PHP) ./bin/phpcs --standard=PSR12 ./src ./tests ./lib/Minz
 
 .PHONY: lint-fix
 lint-fix: ## Fix the errors raised by the linter
-	docker-compose -f docker/docker-compose.yml run --no-deps php ./bin/phpcbf --standard=PSR12 ./src ./tests ./lib/Minz
+	$(PHP) ./bin/phpcbf --standard=PSR12 ./src ./tests ./lib/Minz
 
 .PHONY: help
 help:
