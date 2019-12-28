@@ -19,7 +19,7 @@ class RouterTest extends TestCase
     {
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $routes = $router->routes();
         $this->assertSame([
@@ -33,7 +33,7 @@ class RouterTest extends TestCase
     {
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list', ['get', 'post']);
+        $router->addRoute(['get', 'post'], '/rabbits', 'rabbits#list');
 
         $routes = $router->routes();
         $this->assertSame([
@@ -50,7 +50,7 @@ class RouterTest extends TestCase
     {
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list', 'cli');
+        $router->addRoute('cli', '/rabbits', 'rabbits#list');
 
         $routes = $router->routes();
         $this->assertSame([
@@ -70,7 +70,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute($emptyPath, 'rabbits#list', 'get');
+        $router->addRoute('get', $emptyPath, 'rabbits#list');
     }
 
     public function testAddRouteFailsIfPathDoesntStartWithSlash()
@@ -80,7 +80,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', 'rabbits', 'rabbits#list');
     }
 
     /**
@@ -93,7 +93,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('/rabbits', $emptyTo, 'get');
+        $router->addRoute('get', '/rabbits', $emptyTo);
     }
 
     public function testAddRouteFailsIfToDoesntContainHash()
@@ -103,7 +103,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits_list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits_list');
     }
 
     public function testAddRouteFailsIfToContainsMoreThanOneHash()
@@ -115,7 +115,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list#more', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list#more');
     }
 
     /**
@@ -128,7 +128,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list', $emptyVia);
+        $router->addRoute($emptyVia, '/rabbits', 'rabbits#list');
     }
 
     /**
@@ -143,7 +143,7 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list', $invalidVia);
+        $router->addRoute($invalidVia, '/rabbits', 'rabbits#list');
     }
 
     public function testAddRouteFailsIfContainsInvalidVia()
@@ -155,13 +155,13 @@ class RouterTest extends TestCase
 
         $router = new Router();
 
-        $router->addRoute('/rabbits', 'rabbits#list', ['get', 'invalid']);
+        $router->addRoute(['get', 'invalid'], '/rabbits', 'rabbits#list');
     }
 
     public function testMatch()
     {
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $action_pointer = $router->match('get', '/rabbits');
 
@@ -171,7 +171,7 @@ class RouterTest extends TestCase
     public function testMatchWithTrailingSlashes()
     {
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $action_pointer = $router->match('get', '/rabbits//');
 
@@ -181,7 +181,7 @@ class RouterTest extends TestCase
     public function testMatchWithParam()
     {
         $router = new Router();
-        $router->addRoute('/rabbits/:id', 'rabbits#get', 'get');
+        $router->addRoute('get', '/rabbits/:id', 'rabbits#get');
 
         $action_pointer = $router->match('get', '/rabbits/42');
 
@@ -194,7 +194,7 @@ class RouterTest extends TestCase
         $this->expectExceptionMessage('Path "post /rabbits" doesn’t match any route.');
 
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $router->match('post', '/rabbits');
     }
@@ -205,7 +205,7 @@ class RouterTest extends TestCase
         $this->expectExceptionMessage('Path "get /no-rabbits" doesn’t match any route.');
 
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $router->match('get', '/no-rabbits');
     }
@@ -216,7 +216,7 @@ class RouterTest extends TestCase
         $this->expectExceptionMessage('Path "get /rabbits/42/details" doesn’t match any route.');
 
         $router = new Router();
-        $router->addRoute('/rabbits/:id', 'rabbits#get', 'get');
+        $router->addRoute('get', '/rabbits/:id', 'rabbits#get');
 
         $router->match('get', '/rabbits/42/details');
     }
@@ -232,7 +232,7 @@ class RouterTest extends TestCase
         );
 
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $router->match($invalidVia, '/rabbits');
     }
@@ -240,7 +240,7 @@ class RouterTest extends TestCase
     public function testUriFor()
     {
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $uri = $router->uriFor('get', 'rabbits#list');
 
@@ -250,7 +250,7 @@ class RouterTest extends TestCase
     public function testUriForWithParams()
     {
         $router = new Router();
-        $router->addRoute('/rabbits/:id', 'rabbits#details', 'get');
+        $router->addRoute('get', '/rabbits/:id', 'rabbits#details');
 
         $uri = $router->uriFor('get', 'rabbits#details', ['id' => 42]);
 
@@ -260,7 +260,7 @@ class RouterTest extends TestCase
     public function testUriWithAdditionalParameters()
     {
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#details', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#details');
 
         $uri = $router->uriFor('get', 'rabbits#details', ['id' => 42]);
 
@@ -271,7 +271,7 @@ class RouterTest extends TestCase
     {
         Configuration::$url_options['path'] = '/path';
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $uri = $router->uriFor('get', 'rabbits#list');
 
@@ -286,7 +286,7 @@ class RouterTest extends TestCase
         $this->expectExceptionMessage('Required `id` parameter is missing.');
 
         $router = new Router();
-        $router->addRoute('/rabbits/:id', 'rabbits#details', 'get');
+        $router->addRoute('get', '/rabbits/:id', 'rabbits#details');
 
         $uri = $router->uriFor('get', 'rabbits#details');
     }
@@ -314,7 +314,7 @@ class RouterTest extends TestCase
         );
 
         $router = new Router();
-        $router->addRoute('/rabbits', 'rabbits#list', 'get');
+        $router->addRoute('get', '/rabbits', 'rabbits#list');
 
         $router->uriFor($invalid_via, 'rabbits#list');
     }

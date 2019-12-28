@@ -45,9 +45,9 @@ class Router
      * to make the distinction in the action, but note it's highly recommended
      * to point an action to a single via.
      *
+     * @param string|string[] $vias The valid via(s) of the route
      * @param string $pattern The path pattern of the new route
      * @param string $action_pointer The destination of the route
-     * @param string|string[] $via The valid via(s) of the route
      *
      * @throws \Minz\Errors\RoutingError if pattern is empty
      * @throws \Minz\Errors\RoutingError if pattern doesn't start by a slash
@@ -59,7 +59,7 @@ class Router
      *
      * @return void
      */
-    public function addRoute($pattern, $action_pointer, $vias)
+    public function addRoute($vias, $pattern, $action_pointer)
     {
         if (!$pattern) {
             throw new Errors\RoutingError('Route "pattern" cannot be empty.');
