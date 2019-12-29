@@ -75,7 +75,13 @@ function subscribe($request)
     } else {
         // Subscription renewal
         $subscription = new models\Subscription($subscription_values);
-        $subscription->renew($lease_seconds, $secret);
+        try {
+            $subscription->renew($lease_seconds, $secret);
+        } catch (\Minz\Errors\ModelPropertyError $e) {
+            return Response::badRequest('requests/error.txt', [
+                'error' => $e->getMessage(),
+            ]);
+        }
         $dao->update($subscription->id, $subscription->toValues());
     }
 

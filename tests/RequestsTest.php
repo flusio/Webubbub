@@ -127,6 +127,35 @@ class RequestsTest extends IntegrationTestCase
         );
     }
 
+    public function testSubscribeWithExistingSubscriptionFailsIfSecretIsInvalid()
+    {
+        $callback = 'https://subscriber.com/callback';
+        $topic = 'https://some.site.fr/feed.xml';
+        $id = self::$factories['subscriptions']->create([
+            'callback' => $callback,
+            'topic' => $topic,
+            'secret' => null,
+            'lease_seconds' => 432000,
+            'pending_request' => null,
+        ]);
+        $request = new \Minz\Request('CLI', '/requests/subscribe', [
+            'hub_callback' => $callback,
+            'hub_topic' => $topic,
+            'hub_lease_seconds' => 543000,
+            'hub_secret' => '',
+        ]);
+
+        $response = self::$application->run($request);
+
+        $this->assertResponse(
+            $response,
+            400,
+            '`pending_secret` property is invalid (): must either be not given or be a '
+            . "cryptographically random unique secret string.\n",
+            ['Content-Type' => 'text/plain']
+        );
+    }
+
     public function testUnsubscribe()
     {
         $callback = 'https://subscriber.com/callback';
