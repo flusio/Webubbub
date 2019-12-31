@@ -172,9 +172,10 @@ class Subscription extends \Minz\Model
             $query_char = '?';
         }
 
+        $topic = urlencode($this->topic);
         $intent_callback = $this->callback . $query_char
                          . "hub.mode={$this->pending_request}"
-                         . "&hub.topic={$this->topic}"
+                         . "&hub.topic={$topic}"
                          . "&hub.challenge={$challenge}";
 
         if ($this->pending_request === 'subscribe') {
