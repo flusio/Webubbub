@@ -23,7 +23,7 @@ class ActionControllerTest extends TestCase
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/html'], $response->headers());
-        $this->assertSame('rabbits/items.phtml', $response->viewPointer());
+        $this->assertSame('rabbits/items.phtml', $response->view()->pointer());
     }
 
     public function testExecuteFailsIfControllerDoesntExist()

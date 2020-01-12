@@ -6,36 +6,6 @@ use PHPUnit\Framework\TestCase;
 
 class ResponseTest extends TestCase
 {
-    public function testSetViewPointer()
-    {
-        $response = new Response(200, '');
-
-        $response->setViewPointer('rabbits/items.phtml');
-
-        $this->assertSame('rabbits/items.phtml', $response->viewPointer());
-    }
-
-    public function testSetViewPointerCanBeEmpty()
-    {
-        $response = new Response(200, '');
-
-        $response->setViewPointer('');
-
-        $this->assertSame('', $response->viewPointer());
-    }
-
-    public function testSetViewPointerFailsIfViewFileDoesntExist()
-    {
-        $this->expectException(Errors\ResponseError::class);
-        $this->expectExceptionMessage(
-            'src/views/rabbits/missing.phtml file cannot be found.'
-        );
-
-        $response = new Response(200, '');
-
-        $response->setViewPointer('rabbits/missing.phtml');
-    }
-
     public function testSetCode()
     {
         $response = new Response(200, '');
@@ -69,27 +39,27 @@ class ResponseTest extends TestCase
 
     public function testConstructor()
     {
-        $response = new Response(200, 'rabbits/items.phtml');
+        $view = new View('rabbits/items.phtml');
+        $response = new Response(200, $view);
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/html'], $response->headers());
-        $this->assertSame('rabbits/items.phtml', $response->viewPointer());
     }
 
-    public function testConstructorAdaptsTheContentTypeFromFileType()
+    public function testConstructorAdaptsTheContentTypeFromView()
     {
-        $response = new Response(200, 'rabbits/items.txt');
+        $view = new View('rabbits/items.txt');
+        $response = new Response(200, $view);
 
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
     }
 
-    public function testConstructorAcceptsEmptyViewPointer()
+    public function testConstructorAcceptsNoViews()
     {
-        $response = new Response(200, '');
+        $response = new Response(200, null);
 
         $this->assertSame(200, $response->code());
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());
-        $this->assertSame('', $response->viewPointer());
     }
 
     public function testConstructorFailsIfInvalidCode()
@@ -97,37 +67,19 @@ class ResponseTest extends TestCase
         $this->expectException(Errors\ResponseError::class);
         $this->expectExceptionMessage('666 is not a valid HTTP code.');
 
-        $response = new Response(666, 'rabbits/items.phtml');
-    }
-
-    public function testConstructorFailsIfViewFileDoesntExist()
-    {
-        $this->expectException(Errors\ResponseError::class);
-        $this->expectExceptionMessage('src/views/missing.phtml file cannot be found.');
-
-        $response = new Response(200, 'missing.phtml');
-    }
-
-    public function testConstructorFailsIfViewFileExtensionIsntSupported()
-    {
-        $this->expectException(Errors\ResponseError::class);
-        $this->expectExceptionMessage(
-            'nope is not a supported view file extension.'
-        );
-
-        $response = new Response(200, 'rabbits/items.nope');
+        $response = new Response(666);
     }
 
     public function testOk()
     {
-        $response = Response::ok('rabbits/items.phtml');
+        $response = Response::ok();
 
         $this->assertSame(200, $response->code());
     }
 
     public function testAccepted()
     {
-        $response = Response::accepted('rabbits/items.phtml');
+        $response = Response::accepted();
 
         $this->assertSame(202, $response->code());
     }

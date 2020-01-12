@@ -6,12 +6,8 @@ namespace Minz;
  * The Response represents the answer given to a Request, and returned to the
  * user.
  *
- * A view pointer is attached to a Response. This pointer points to a file
- * generating the content which is returned to the user. It is generally a
- * `.phtml` file.
- *
- * A view pointer should be in the form of `controller_name/filename`. For
- * instance, `rabbits/items.phtml` targets the file `src/rabbits/views/items.phtml`.
+ * A view can be attached to a Response. This view is destined to generate the
+ * output to return to the user.
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -28,109 +24,120 @@ class Response
         500, 501, 502, 503, 504, 505,
     ];
 
-    /** @var string[] */
-    public const EXTENSION_TO_CONTENT_TYPE = [
-        'html' => 'text/html',
-        'json' => 'application/json',
-        'phtml' => 'text/html',
-        'txt' => 'text/plain',
-        'xml' => 'text/xml',
-    ];
-
     /**
-     * Create a successful response (HTTP 200).
+     * Create a successful response (HTTP 200) with a View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
      *
-     * @throws \Minz\Errors\ResponseError
+     * @throws \Minz\Errors\ViewError
      *
      * @return \Minz\Response
      */
     public static function ok($view_pointer = '', $variables = [])
     {
-        return new Response(200, $view_pointer, $variables);
+        if ($view_pointer) {
+            $view = new View($view_pointer, $variables);
+        } else {
+            $view = null;
+        }
+        return new Response(200, $view);
     }
 
     /**
-     * Create an accepted response (HTTP 202).
+     * Create an accepted response (HTTP 202) with a View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
      *
-     * @throws \Minz\Errors\ResponseError
+     * @throws \Minz\Errors\ViewError
      *
      * @return \Minz\Response
      */
     public static function accepted($view_pointer = '', $variables = [])
     {
-        return new Response(202, $view_pointer, $variables);
+        if ($view_pointer) {
+            $view = new View($view_pointer, $variables);
+        } else {
+            $view = null;
+        }
+        return new Response(202, $view);
     }
 
     /**
-     * Create a bad request response (HTTP 400).
+     * Create a bad request response (HTTP 400) with a View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
      *
-     * @throws \Minz\Errors\ResponseError
+     * @throws \Minz\Errors\ViewError
      *
      * @return \Minz\Response
      */
     public static function badRequest($view_pointer = '', $variables = [])
     {
-        return new Response(400, $view_pointer, $variables);
+        if ($view_pointer) {
+            $view = new View($view_pointer, $variables);
+        } else {
+            $view = null;
+        }
+        return new Response(400, $view);
     }
 
     /**
-     * Create a not found response (HTTP 404).
+     * Create a not found response (HTTP 404) with a View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
      *
-     * @throws \Minz\Errors\ResponseError
+     * @throws \Minz\Errors\ViewError
      *
      * @return \Minz\Response
      */
     public static function notFound($view_pointer = '', $variables = [])
     {
-        return new Response(404, $view_pointer, $variables);
+        if ($view_pointer) {
+            $view = new View($view_pointer, $variables);
+        } else {
+            $view = null;
+        }
+        return new Response(404, $view);
     }
 
     /**
-     * Create an internal server error response (HTTP 500).
+     * Create an internal server error response (HTTP 500) with a View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
      *
-     * @throws \Minz\Errors\ResponseError
+     * @throws \Minz\Errors\ViewError
      *
      * @return \Minz\Response
      */
     public static function internalServerError($view_pointer = '', $variables = [])
     {
-        return new Response(500, $view_pointer, $variables);
+        if ($view_pointer) {
+            $view = new View($view_pointer, $variables);
+        } else {
+            $view = null;
+        }
+        return new Response(500, $view);
     }
 
     /**
      * Create a Response from a HTTP status code.
      *
      * @param integer $code The HTTP code to set for the response
-     * @param string $view_pointer The view pointer to set to the response
-     * @param mixed[] $variables A list of optional variables to pass to the view
+     * @param \Minz\View $view The view to set to the response (optional)
      *
      * @throws \Minz\Errors\ResponseError if the code is not a valid HTTP status code
-     * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
-     * @throws \Minz\Errors\ResponseError if the view pointer file extension is
-     *                                    not supported
      */
-    public function __construct($code, $view_pointer, $variables = [])
+    public function __construct($code, $view = null)
     {
         $this->setCode($code);
-        $this->setViewPointer($view_pointer);
-        $this->setVariables($variables);
-        if ($view_pointer) {
-            $content_type = self::contentTypeFromViewPointer($view_pointer);
+        $this->setView($view);
+        if ($view) {
+            $content_type = $view->contentType();
         } else {
             $content_type = 'text/plain';
         }
@@ -143,39 +150,23 @@ class Response
     /** @var string[] */
     private $headers = [];
 
-    /** @var mixed[] */
-    private $variables = [];
-
-    /** @var string */
-    private $view_pointer;
+    /** @var \Minz\View */
+    private $view;
 
     /**
-     * @return string The current view pointer
+     * @return \Minz\View The current view
      */
-    public function viewPointer()
+    public function view()
     {
-        return $this->view_pointer;
+        return $this->view;
     }
 
     /**
-     * @param string $view_pointer A pointer to a view file (can be empty)
-     *
-     * @throws \Minz\Errors\ResponseError if the view pointer file doesn't exist
-     *
-     * @return void
+     * @param \Minz\View $view
      */
-    public function setViewPointer($view_pointer)
+    public function setView($view)
     {
-        if ($view_pointer !== '') {
-            $view_filepath = self::viewFilepath($view_pointer);
-            if (!file_exists($view_filepath)) {
-                $app_path_length = strlen(Configuration::$app_path);
-                $missing_file = substr($view_filepath, $app_path_length + 1);
-                throw new Errors\ResponseError("{$missing_file} file cannot be found.");
-            }
-        }
-
-        $this->view_pointer = $view_pointer;
+        $this->view = $view;
     }
 
     /**
@@ -224,64 +215,17 @@ class Response
     }
 
     /**
-     * @param mixed[] $variables
+     * Generate and return the content from the view.
      *
-     * @return void
-     */
-    public function setVariables($variables)
-    {
-        $this->variables = $variables;
-    }
-
-    /**
-     * Generate and return the content from the view pointer file.
-     *
-     * The view pointer file is interpreted with access to the variables.
-     *
-     * @return string
+     * @return string Return the view output, or an empty string if no views
+     *                are attached.
      */
     public function render()
     {
-        if ($this->view_pointer) {
-            $view_filepath = self::viewFilepath($this->view_pointer);
-            $view = new View($view_filepath);
-            return $view->build($this->variables);
+        if ($this->view) {
+            return $this->view->render();
         } else {
             return '';
         }
-    }
-
-    /**
-     * Return the full path to a view pointer file
-     *
-     * @param string $view_pointer
-     *
-     * @return string
-     */
-    private static function viewFilepath($view_pointer)
-    {
-        $app_path = Configuration::$app_path;
-        return "{$app_path}/src/views/{$view_pointer}";
-    }
-
-    /**
-     * Return the content type associated to a view pointer file extension
-     *
-     * @param string $view_pointer
-     *
-     * @throws \Minz\Errors\ResponseError if the view pointer file extension is
-     *                                    not supported
-     *
-     * @return string
-     */
-    private static function contentTypeFromViewPointer($view_pointer)
-    {
-        $file_extension = pathinfo($view_pointer, PATHINFO_EXTENSION);
-        if (!isset(self::EXTENSION_TO_CONTENT_TYPE[$file_extension])) {
-            throw new Errors\ResponseError(
-                "{$file_extension} is not a supported view file extension."
-            );
-        }
-        return self::EXTENSION_TO_CONTENT_TYPE[$file_extension];
     }
 }
