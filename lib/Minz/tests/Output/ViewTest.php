@@ -1,8 +1,9 @@
 <?php
 
-namespace Minz;
+namespace Minz\Output;
 
 use PHPUnit\Framework\TestCase;
+use Minz\Errors;
 
 class ViewTest extends TestCase
 {

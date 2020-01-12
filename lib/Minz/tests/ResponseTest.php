@@ -39,7 +39,7 @@ class ResponseTest extends TestCase
 
     public function testConstructor()
     {
-        $view = new View('rabbits/items.phtml');
+        $view = new Output\View('rabbits/items.phtml');
         $response = new Response(200, $view);
 
         $this->assertSame(200, $response->code());
@@ -48,7 +48,7 @@ class ResponseTest extends TestCase
 
     public function testConstructorAdaptsTheContentTypeFromView()
     {
-        $view = new View('rabbits/items.txt');
+        $view = new Output\View('rabbits/items.txt');
         $response = new Response(200, $view);
 
         $this->assertSame(['Content-Type' => 'text/plain'], $response->headers());

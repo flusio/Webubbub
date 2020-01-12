@@ -6,8 +6,8 @@ namespace Minz;
  * The Response represents the answer given to a Request, and returned to the
  * user.
  *
- * A view can be attached to a Response. This view is destined to generate the
- * output to return to the user.
+ * An Output can be attached to a Response. This is destined to generate the
+ * content to return to the user.
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
@@ -25,7 +25,7 @@ class Response
     ];
 
     /**
-     * Create a successful response (HTTP 200) with a View.
+     * Create a successful response (HTTP 200) with a Output\View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -37,7 +37,7 @@ class Response
     public static function ok($view_pointer = '', $variables = [])
     {
         if ($view_pointer) {
-            $view = new View($view_pointer, $variables);
+            $view = new Output\View($view_pointer, $variables);
         } else {
             $view = null;
         }
@@ -45,7 +45,7 @@ class Response
     }
 
     /**
-     * Create an accepted response (HTTP 202) with a View.
+     * Create an accepted response (HTTP 202) with a Output\View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -57,7 +57,7 @@ class Response
     public static function accepted($view_pointer = '', $variables = [])
     {
         if ($view_pointer) {
-            $view = new View($view_pointer, $variables);
+            $view = new Output\View($view_pointer, $variables);
         } else {
             $view = null;
         }
@@ -65,7 +65,7 @@ class Response
     }
 
     /**
-     * Create a bad request response (HTTP 400) with a View.
+     * Create a bad request response (HTTP 400) with a Output\View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -77,7 +77,7 @@ class Response
     public static function badRequest($view_pointer = '', $variables = [])
     {
         if ($view_pointer) {
-            $view = new View($view_pointer, $variables);
+            $view = new Output\View($view_pointer, $variables);
         } else {
             $view = null;
         }
@@ -85,7 +85,7 @@ class Response
     }
 
     /**
-     * Create a not found response (HTTP 404) with a View.
+     * Create a not found response (HTTP 404) with a Output\View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -97,7 +97,7 @@ class Response
     public static function notFound($view_pointer = '', $variables = [])
     {
         if ($view_pointer) {
-            $view = new View($view_pointer, $variables);
+            $view = new Output\View($view_pointer, $variables);
         } else {
             $view = null;
         }
@@ -105,7 +105,7 @@ class Response
     }
 
     /**
-     * Create an internal server error response (HTTP 500) with a View.
+     * Create an internal server error response (HTTP 500) with a Output\View.
      *
      * @param string $view_pointer
      * @param mixed[] $variables
@@ -117,7 +117,7 @@ class Response
     public static function internalServerError($view_pointer = '', $variables = [])
     {
         if ($view_pointer) {
-            $view = new View($view_pointer, $variables);
+            $view = new Output\View($view_pointer, $variables);
         } else {
             $view = null;
         }
@@ -128,16 +128,16 @@ class Response
      * Create a Response from a HTTP status code.
      *
      * @param integer $code The HTTP code to set for the response
-     * @param \Minz\View $view The view to set to the response (optional)
+     * @param \Minz\Output\Output $output The output to set to the response (optional)
      *
      * @throws \Minz\Errors\ResponseError if the code is not a valid HTTP status code
      */
-    public function __construct($code, $view = null)
+    public function __construct($code, $output = null)
     {
         $this->setCode($code);
-        $this->setView($view);
-        if ($view) {
-            $content_type = $view->contentType();
+        $this->setOutput($output);
+        if ($output) {
+            $content_type = $output->contentType();
         } else {
             $content_type = 'text/plain';
         }
@@ -150,23 +150,23 @@ class Response
     /** @var string[] */
     private $headers = [];
 
-    /** @var \Minz\View */
-    private $view;
+    /** @var \Minz\Output\Output */
+    private $output;
 
     /**
-     * @return \Minz\View The current view
+     * @return \Minz\Output\Output The current output
      */
-    public function view()
+    public function output()
     {
-        return $this->view;
+        return $this->output;
     }
 
     /**
-     * @param \Minz\View $view
+     * @param \Minz\Output\Output $output
      */
-    public function setView($view)
+    public function setOutput($output)
     {
-        $this->view = $view;
+        $this->output = $output;
     }
 
     /**
@@ -215,15 +215,14 @@ class Response
     }
 
     /**
-     * Generate and return the content from the view.
+     * Generate and return the content of the output.
      *
-     * @return string Return the view output, or an empty string if no views
-     *                are attached.
+     * @return string Return the output, or an empty string if no outputs are attached.
      */
     public function render()
     {
-        if ($this->view) {
-            return $this->view->render();
+        if ($this->output) {
+            return $this->output->render();
         } else {
             return '';
         }

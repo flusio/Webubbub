@@ -1,6 +1,9 @@
 <?php
 
-namespace Minz;
+namespace Minz\Output;
+
+use Minz\Configuration;
+use Minz\Errors;
 
 /**
  * A View represents the (string) content to deliver to users.
@@ -11,7 +14,7 @@ namespace Minz;
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
  */
-class View
+class View implements Output
 {
     /** @var string[] */
     public const EXTENSION_TO_CONTENT_TYPE = [
