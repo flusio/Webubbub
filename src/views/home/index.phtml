@@ -17,7 +17,7 @@
 </p>
 
 <pre>
-<code>&lt;link href="<?= \Minz\Url::absoluteFor('requests#handle') ?>" rel="hub" /&gt;</code>
+<code>&lt;link href="<?= url_full('requests#handle') ?>" rel="hub" /&gt;</code>
 </pre>
 
 <p>
@@ -40,7 +40,7 @@
 </p>
 
 <pre>
-<code>curl -d "hub.mode=publish&amp;hub.topic=&lt;URL of your feed&gt;" -X POST <?= \Minz\Url::absoluteFor('requests#handle') ?></code>
+<code>curl -d "hub.mode=publish&amp;hub.topic=&lt;URL of your feed&gt;" -X POST <?= url_full('requests#handle') ?></code>
 </pre>
 
 <p>

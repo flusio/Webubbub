@@ -126,6 +126,8 @@ class View implements Output
             $$var_name = $var_value;
         }
 
+        include_once('ViewHelpers.php');
+
         ob_start();
         include $this->filepath;
         $output = ob_get_clean();
