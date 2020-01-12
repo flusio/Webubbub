@@ -131,9 +131,9 @@ class View implements Output
         $output = ob_get_clean();
 
         if ($this->template_name) {
-            $template_filepath = self::templateFilepath($this->template_name);
+            $template_pointer = "templates/{$this->template_name}";
             $this->template_variables['content'] = $output;
-            $view = new View($template_filepath, $this->template_variables);
+            $view = new View($template_pointer, $this->template_variables);
             $output = $view->render();
         }
 
