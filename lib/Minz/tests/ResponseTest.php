@@ -84,6 +84,28 @@ class ResponseTest extends TestCase
         $this->assertSame(202, $response->code());
     }
 
+    public function testFound()
+    {
+        $response = Response::found('https://example.com');
+
+        $this->assertSame(302, $response->code());
+        $headers = $response->headers();
+        $this->assertSame('https://example.com', $headers['Location']);
+    }
+
+    public function testRedirect()
+    {
+        $router = new Router();
+        $router->addRoute('get', '/rabbits', 'rabbits#items');
+        Url::setRouter($router);
+
+        $response = Response::redirect('rabbits#items');
+
+        $this->assertSame(302, $response->code());
+        $headers = $response->headers();
+        $this->assertSame('/rabbits', $headers['Location']);
+    }
+
     public function testBadRequest()
     {
         $response = Response::badRequest();

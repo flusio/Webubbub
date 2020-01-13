@@ -65,6 +65,34 @@ class Response
     }
 
     /**
+     * Create a found response (HTTP 302).
+     *
+     * @param string $url
+     *
+     * @return \Minz\Response
+     */
+    public static function found($url)
+    {
+        $response = new Response(302);
+        $response->setHeader('Location', $url);
+        return $response;
+    }
+
+    /**
+     * Create a found response (HTTP 302) with internal action pointer.
+     *
+     * @param string $action_pointer
+     * @param array $parameters
+     *
+     * @return \Minz\Response
+     */
+    public static function redirect($action_pointer, $parameters = [])
+    {
+        $url = Url::for($action_pointer, $parameters);
+        return self::found($url);
+    }
+
+    /**
      * Create a bad request response (HTTP 400) with a Output\View.
      *
      * @param string $view_pointer
