@@ -43,6 +43,20 @@ class View implements Output
     /** @var mixed[] */
     private $template_variables;
 
+    /** @var mixed[] */
+    private static $default_variables = [];
+
+    /**
+     * Declare default variables so they can be used without passing them
+     * explicitely when creating a View.
+     *
+     * @param mixed[] $variables
+     */
+    public static function declareDefaultVariables($variables)
+    {
+        self::$default_variables = $variables;
+    }
+
     /**
      * @param string $pointer
      * @param mixed[] $variables (optional)
@@ -122,6 +136,10 @@ class View implements Output
      */
     public function render()
     {
+        foreach (self::$default_variables as $var_name => $var_value) {
+            $$var_name = $var_value;
+        }
+
         foreach ($this->variables as $var_name => $var_value) {
             $$var_name = $var_value;
         }

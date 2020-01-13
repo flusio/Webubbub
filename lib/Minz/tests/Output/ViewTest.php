@@ -51,4 +51,15 @@ class ViewTest extends TestCase
         $this->assertStringContainsString("Clémentine", $output);
         $this->assertStringContainsString("Jean-Jean", $output);
     }
+
+    public function testDeclareDefaultVariables()
+    {
+        View::declareDefaultVariables([
+            'title' => 'Hello Rabbits!',
+        ]);
+
+        $view = new View('default_variable.phtml');
+        $output = $view->render();
+        $this->assertStringContainsString("<h1>Hello Rabbits!</h1>\n", $output);
+    }
 }
