@@ -103,6 +103,8 @@ class Model
 
             if (!in_array($declaration['type'], self::VALID_PROPERTY_TYPES)) {
                 throw new Errors\ModelPropertyError(
+                    $property,
+                    Errors\ModelPropertyError::PROPERTY_TYPE_INVALID,
                     "`{$declaration['type']}` is not a valid property type."
                 );
             }
@@ -112,6 +114,8 @@ class Model
                 !is_callable($declaration['validator'])
             ) {
                 throw new Errors\ModelPropertyError(
+                    $property,
+                    Errors\ModelPropertyError::PROPERTY_VALIDATOR_INVALID,
                     "`{$declaration['validator']}` validator cannot be called."
                 );
             }
@@ -175,6 +179,8 @@ class Model
                 !isset($values[$property])
             ) {
                 throw new Errors\ModelPropertyError(
+                    $property,
+                    Errors\ModelPropertyError::PROPERTY_REQUIRED,
                     "Required `{$property}` property is missing."
                 );
             }
@@ -183,6 +189,8 @@ class Model
         foreach ($values as $property => $value) {
             if (!isset($this->property_declarations[$property])) {
                 throw new Errors\ModelPropertyError(
+                    $property,
+                    Errors\ModelPropertyError::PROPERTY_UNDECLARED,
                     "`{$property}` property has not been declared."
                 );
             }
@@ -195,6 +203,8 @@ class Model
                     filter_var($value, FILTER_VALIDATE_INT) === false
                 ) {
                     throw new Errors\ModelPropertyError(
+                        $property,
+                        Errors\ModelPropertyError::VALUE_TYPE_INVALID,
                         "`{$property}` property must be an integer."
                     );
                 }
@@ -204,6 +214,8 @@ class Model
                     filter_var($value, FILTER_VALIDATE_INT) === false
                 ) {
                     throw new Errors\ModelPropertyError(
+                        $property,
+                        Errors\ModelPropertyError::VALUE_TYPE_INVALID,
                         "`{$property}` property must be a timestamp."
                     );
                 }
@@ -213,6 +225,8 @@ class Model
                     filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === null
                 ) {
                     throw new Errors\ModelPropertyError(
+                        $property,
+                        Errors\ModelPropertyError::VALUE_TYPE_INVALID,
                         "`{$property}` property must be a boolean."
                     );
                 }
@@ -249,6 +263,8 @@ class Model
     {
         if (!isset($this->property_declarations[$property])) {
             throw new Errors\ModelPropertyError(
+                $property,
+                Errors\ModelPropertyError::PROPERTY_UNDECLARED,
                 "`{$property}` property has not been declared."
             );
         }
@@ -257,6 +273,8 @@ class Model
 
         if ($declaration['required'] && $value === null) {
             throw new Errors\ModelPropertyError(
+                $property,
+                Errors\ModelPropertyError::PROPERTY_REQUIRED,
                 "Required `{$property}` property is missing."
             );
         }
@@ -270,7 +288,11 @@ class Model
                     $custom_message = ': ' . $validator_result;
                 }
                 $error_message = "`{$property}` property is invalid ({$value}){$custom_message}.";
-                throw new Errors\ModelPropertyError($error_message);
+                throw new Errors\ModelPropertyError(
+                    $property,
+                    Errors\ModelPropertyError::VALUE_INVALID,
+                    $error_message
+                );
             }
         }
 
