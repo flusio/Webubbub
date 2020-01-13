@@ -42,7 +42,7 @@ class Engine
             try {
                 $output = new Output\View('not_found.phtml', ['error' => $e]);
             } catch (Errors\ViewError $_) {
-                $output = new Output\Text($e->getMessage());
+                $output = new Output\Text((string)$e);
             }
             return new Response(404, $output);
         }
@@ -57,7 +57,7 @@ class Engine
                     ['error' => $e]
                 );
             } catch (Errors\ViewError $_) {
-                $output = new Output\Text($e->getMessage());
+                $output = new Output\Text((string)$e);
             }
             return new Response(500, $output);
         }
