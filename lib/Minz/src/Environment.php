@@ -21,6 +21,12 @@ class Environment
         $app_name = Configuration::$app_name;
         openlog($app_name, LOG_PERROR | LOG_PID, LOG_USER);
 
+        // Initialize the session
+        if (Configuration::$use_session) {
+            session_name($app_name);
+            session_start();
+        }
+
         // Configure error reporting
         $environment = Configuration::$environment;
         switch ($environment) {

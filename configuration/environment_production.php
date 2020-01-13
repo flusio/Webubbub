@@ -31,4 +31,5 @@ return [
     'database' => [
         'dsn' => "sqlite:{$database_path}",
     ],
+    'use_session' => false,
 ];

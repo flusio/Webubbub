@@ -62,6 +62,16 @@ class IntegrationTestCase extends TestCase
     }
 
     /**
+     * @after
+     */
+    public function resetSession()
+    {
+        if (\Minz\Configuration::$use_session) {
+            session_unset();
+        }
+    }
+
+    /**
      * Assert that a Response is matching the given conditions.
      *
      * @param \Minz\Response $response

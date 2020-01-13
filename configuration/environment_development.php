@@ -9,4 +9,5 @@ return [
     'database' => [
         'dsn' => "sqlite:{$app_path}/data/db.sqlite",
     ],
+    'use_session' => false,
 ];
