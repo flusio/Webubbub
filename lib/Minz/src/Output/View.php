@@ -128,6 +128,14 @@ class View implements Output
     }
 
     /**
+     * @return mixed[]
+     */
+    public function variables()
+    {
+        return $this->variables;
+    }
+
+    /**
      * Generate and return the content.
      *
      * Variables are passed and accessible in the view file.
