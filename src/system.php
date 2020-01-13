@@ -16,7 +16,6 @@ function init($request)
     $app_path = \Minz\Configuration::$app_path;
     $migrations_path = $app_path . '/src/migrations';
     $migrations_version_path = $app_path . '/data/migrations_version.txt';
-    $configuration_path = \Minz\Configuration::$configuration_path;
 
     if (file_exists($migrations_version_path)) {
         return Response::internalServerError('system/error.txt', [
@@ -24,7 +23,7 @@ function init($request)
         ]);
     }
 
-    $schema = file_get_contents($configuration_path . '/schema.sql');
+    $schema = file_get_contents($app_path . '/src/schema.sql');
     $database = \Minz\Database::get();
     $database->exec($schema);
 

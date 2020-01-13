@@ -29,8 +29,8 @@ class IntegrationTestCase extends TestCase
      */
     public static function loadSchema()
     {
-        $configuration_path = \Minz\Configuration::$configuration_path;
-        self::$schema = file_get_contents($configuration_path . '/schema.sql');
+        $app_path = \Minz\Configuration::$app_path;
+        self::$schema = file_get_contents($app_path . '/src/schema.sql');
     }
 
     /**
