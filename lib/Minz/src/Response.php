@@ -24,6 +24,10 @@ class Response
         500, 501, 502, 503, 504, 505,
     ];
 
+    public const DEFAULT_CSP = [
+        'default-src' => "'self'",
+    ];
+
     /**
      * Create a successful response (HTTP 200) with a Output\View.
      *
@@ -170,6 +174,7 @@ class Response
             $content_type = 'text/plain';
         }
         $this->setHeader('Content-Type', $content_type);
+        $this->setHeader('Content-Security-Policy', self::DEFAULT_CSP);
     }
 
     /** @var integer */
@@ -235,11 +240,30 @@ class Response
     }
 
     /**
+     * Return the headers as strings to be passed to the PHP header function.
+     *
+     * @param boolean $raw True to return the raw array (false by default)
+     *
      * @return string[] The list of actual headers
      */
-    public function headers()
+    public function headers($raw = false)
     {
-        return $this->headers;
+        if ($raw) {
+            return $this->headers;
+        }
+
+        $headers = [];
+        foreach ($this->headers as $header => $header_value) {
+            if (is_array($header_value)) {
+                $values = [];
+                foreach ($header_value as $key => $value) {
+                    $values[] = $key . ' ' . $value;
+                }
+                $header_value = implode('; ', $values);
+            }
+            $headers[] = "{$header}: {$header_value}";
+        }
+        return $headers;
     }
 
     /**

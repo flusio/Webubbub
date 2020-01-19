@@ -25,7 +25,7 @@ $response = $application->run($request);
 // Generate the HTTP headers and output. All the side effects must be contained
 // here.
 http_response_code($response->code());
-foreach ($response->headers() as $header => $value) {
-    header("{$header}: {$value}");
+foreach ($response->headers() as $header) {
+    header($header);
 }
 echo $response->render();

@@ -22,7 +22,12 @@ class ActionControllerTest extends TestCase
         $response = $action_controller->execute($request);
 
         $this->assertSame(200, $response->code());
-        $this->assertSame(['Content-Type' => 'text/html'], $response->headers());
+        $this->assertSame([
+            'Content-Type' => 'text/html',
+            'Content-Security-Policy' => [
+                'default-src' => "'self'",
+            ],
+        ], $response->headers(true));
         $this->assertSame('rabbits/items.phtml', $response->output()->pointer());
     }
 

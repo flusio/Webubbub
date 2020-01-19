@@ -90,7 +90,7 @@ class IntegrationTestCase extends TestCase
         if ($headers !== null) {
             // I would use assertArraySubset, but it's deprecated in PHPUnit 8
             // and will be removed in PHPUnit 9.
-            $response_headers = $response->headers();
+            $response_headers = $response->headers(true);
             foreach ($headers as $header => $value) {
                 $this->assertArrayHasKey($header, $response_headers);
                 $this->assertSame($value, $response_headers[$header]);
