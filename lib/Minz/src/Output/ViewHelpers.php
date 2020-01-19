@@ -43,3 +43,13 @@ function url_static($filename)
     }
     return $path . $filename;
 }
+
+/**
+ * Return a CSRF token
+ *
+ * @return string
+ */
+function csrf_token()
+{
+    return (new \Minz\CSRF())->generateToken();
+}
