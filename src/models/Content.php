@@ -82,8 +82,7 @@ class Content extends \Minz\Model
         $this->setProperty('type', $type);
         $this->setProperty('links', $links);
 
-        $fetched_at = new \DateTime();
-        $fetched_at->setTimestamp(\Minz\Time::now());
+        $fetched_at = \Minz\Time::now();
         $this->setProperty('fetched_at', $fetched_at);
         $this->setProperty('status', 'fetched');
     }

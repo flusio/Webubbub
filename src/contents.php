@@ -77,7 +77,7 @@ function fetch($request)
                 $content->id
             );
             $values = $content_delivery->toValues();
-            $values['created_at'] = \Minz\Time::now();
+            $values['created_at'] = \Minz\Time::now()->getTimestamp();
             $content_deliveries_values[] = $values;
         }
         $content_delivery_dao->createList($content_deliveries_values);
@@ -109,7 +109,7 @@ function deliver($request)
 
         foreach ($content_deliveries_values as $content_delivery_values) {
             $content_delivery = new models\ContentDelivery($content_delivery_values);
-            if ($content_delivery->try_at->getTimestamp() > \Minz\Time::now()) {
+            if ($content_delivery->try_at > \Minz\Time::now()) {
                 // delivery is marked to be delivered later, just pass to the next.
                 continue;
             }

@@ -51,7 +51,7 @@ class ContentDelivery extends \Minz\Model
         return new self([
             'subscription_id' => $subscription_id,
             'content_id' => $content_id,
-            'try_at' => \Minz\Time::now(),
+            'try_at' => \Minz\Time::now()->getTimestamp(),
             'tries_count' => 0,
         ]);
     }
@@ -85,8 +85,9 @@ class ContentDelivery extends \Minz\Model
         }
 
         $tries_count = $this->tries_count + 1;
-        $try_at = new \DateTime();
-        $try_at->setTimestamp(\Minz\Time::now() + pow(5, $tries_count));
+        $interval_seconds = pow(5, $tries_count);
+        $try_at = \Minz\Time::now();
+        $try_at->modify("+{$interval_seconds} seconds");
 
         $this->setProperty('try_at', $try_at);
         $this->setProperty('tries_count', $tries_count);

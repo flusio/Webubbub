@@ -200,9 +200,7 @@ class Subscription extends \Minz\Model
         $this->setProperty('status', 'verified');
         $this->setProperty('pending_request', null);
 
-        $expired_at_timestamp = \Minz\Time::fromNow($this->lease_seconds);
-        $expired_at = new \DateTime();
-        $expired_at->setTimestamp($expired_at_timestamp);
+        $expired_at = \Minz\Time::fromNow($this->lease_seconds);
         $this->setProperty('expired_at', $expired_at);
 
         if ($this->pending_lease_seconds) {
@@ -237,7 +235,7 @@ class Subscription extends \Minz\Model
     public function shouldExpire()
     {
         if ($this->expired_at) {
-            return $this->expired_at->getTimestamp() <= \Minz\Time::now();
+            return $this->expired_at <= \Minz\Time::now();
         } else {
             return false;
         }
