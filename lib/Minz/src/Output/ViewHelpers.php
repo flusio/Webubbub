@@ -53,3 +53,49 @@ function csrf_token()
 {
     return (new \Minz\CSRF())->generateToken();
 }
+
+/**
+ * Return a formatted datetime
+ *
+ *
+ * @see https://www.php.net/manual/en/function.strftime
+ *
+ * @param \DateTime $date The datetime to format
+ * @param string $format Default is `%A %e %B`
+ *
+ * @return string
+ */
+function _d($date, $format = '%A %e %B')
+{
+    return strftime($format, $date->getTimestamp());
+}
+
+/**
+ * Return a translated and formatted message
+ *
+ * @see https://www.php.net/manual/en/function.gettext
+ * @see https://www.php.net/manual/en/function.vsprintf.php
+ *
+ * @param string $message
+ * @param mixed $args,... Arguments to pass to the vsprintf function
+ *
+ * @return string
+ */
+function _f($message, ...$args)
+{
+    return vsprintf(gettext($message), $args);
+}
+
+/**
+ * Alias for ngettext
+ *
+ * @see https://www.php.net/manual/en/function.ngettext
+ *
+ * @param string $message1
+ * @param string $message2
+ * @param integer $n
+ */
+function _n($message1, $message2, $n)
+{
+    return ngettext($message1, $message2, $n);
+}
