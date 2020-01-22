@@ -29,28 +29,34 @@ class Time
     /**
      * Return a timestamp from the future.
      *
-     * @param integer $seconds
+     * @see https://www.php.net/manual/en/datetime.formats.relative.php
+     *
+     * @param integer $number
+     * @param string $unit
      *
      * @return \DateTime
      */
-    public static function fromNow($seconds)
+    public static function fromNow($number, $unit)
     {
         $from_now = self::now();
-        $from_now->modify("+{$seconds} seconds");
+        $from_now->modify("+{$number} {$unit}");
         return $from_now;
     }
 
     /**
      * Return a timestamp from the past.
      *
-     * @param integer $seconds
+     * @see https://www.php.net/manual/en/datetime.formats.relative.php
+     *
+     * @param integer $number
+     * @param string $unit
      *
      * @return \DateTime
      */
-    public static function ago($seconds)
+    public static function ago($number, $unit)
     {
         $ago = self::now();
-        $ago->modify("-{$seconds} seconds");
+        $ago->modify("-{$number} {$unit}");
         return $ago;
     }
 

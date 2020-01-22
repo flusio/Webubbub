@@ -200,7 +200,7 @@ class Subscription extends \Minz\Model
         $this->setProperty('status', 'verified');
         $this->setProperty('pending_request', null);
 
-        $expired_at = \Minz\Time::fromNow($this->lease_seconds);
+        $expired_at = \Minz\Time::fromNow($this->lease_seconds, 'seconds');
         $this->setProperty('expired_at', $expired_at);
 
         if ($this->pending_lease_seconds) {
