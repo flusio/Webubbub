@@ -145,10 +145,16 @@ class View implements Output
     public function render()
     {
         foreach (self::$default_variables as $var_name => $var_value) {
+            if (is_string($var_value)) {
+                $var_value = htmlspecialchars($var_value, ENT_COMPAT, 'UTF-8');
+            }
             $$var_name = $var_value;
         }
 
         foreach ($this->variables as $var_name => $var_value) {
+            if (is_string($var_value)) {
+                $var_value = htmlspecialchars($var_value, ENT_COMPAT, 'UTF-8');
+            }
             $$var_name = $var_value;
         }
 
@@ -196,6 +202,24 @@ class View implements Output
 
         $this->template_name = $template_name;
         $this->template_variables = $template_variables;
+    }
+
+    /**
+     * Return the value of a variable without escaping its content.
+     *
+     * @param string $variable_name
+     *
+     * @throws \Minz\Errors\ViewError if the variable doesn't exist
+     *
+     * @return mixed
+     */
+    private function safe($variable_name)
+    {
+        if (!isset($this->variables[$variable_name])) {
+            throw new Errors\ViewError("{$variable_name} variable does not exist.");
+        }
+
+        return $this->variables[$variable_name];
     }
 
     /**
