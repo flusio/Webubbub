@@ -144,14 +144,8 @@ class View implements Output
      */
     public function render()
     {
-        foreach (self::$default_variables as $var_name => $var_value) {
-            if (is_string($var_value)) {
-                $var_value = htmlspecialchars($var_value, ENT_COMPAT, 'UTF-8');
-            }
-            $$var_name = $var_value;
-        }
-
-        foreach ($this->variables as $var_name => $var_value) {
+        $variables = array_merge(self::$default_variables, $this->variables);
+        foreach ($variables as $var_name => $var_value) {
             if (is_string($var_value)) {
                 $var_value = htmlspecialchars($var_value, ENT_COMPAT, 'UTF-8');
             }
@@ -215,11 +209,12 @@ class View implements Output
      */
     private function safe($variable_name)
     {
-        if (!isset($this->variables[$variable_name])) {
+        $variables = array_merge(self::$default_variables, $this->variables);
+        if (!isset($variables[$variable_name])) {
             throw new Errors\ViewError("{$variable_name} variable does not exist.");
         }
 
-        return $this->variables[$variable_name];
+        return $variables[$variable_name];
     }
 
     /**
