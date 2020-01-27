@@ -240,6 +240,17 @@ class Response
     }
 
     /**
+     * Helper to change CSP header
+     *
+     * @param string $directive
+     * @param string $sources
+     */
+    public function setContentSecurityPolicy($directive, $sources)
+    {
+        $this->headers['Content-Security-Policy'][$directive] = $sources;
+    }
+
+    /**
      * Return the headers as strings to be passed to the PHP header function.
      *
      * @param boolean $raw True to return the raw array (false by default)

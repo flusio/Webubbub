@@ -35,6 +35,18 @@ class ResponseTest extends TestCase
         $this->assertSame('application/xml', $headers['Content-Type']);
     }
 
+    public function testSetContentSecurityPolicy()
+    {
+        $response = new Response(200, '');
+
+        $response->setContentSecurityPolicy('script-src', "'self' 'unsafe-eval'");
+
+        $headers = $response->headers(true);
+        $csp = $headers['Content-Security-Policy'];
+        $this->assertArrayHasKey('script-src', $csp);
+        $this->assertSame("'self' 'unsafe-eval'", $csp['script-src']);
+    }
+
     public function testConstructor()
     {
         $view = new Output\View('rabbits/items.phtml');
