@@ -94,8 +94,25 @@ function _f($message, ...$args)
  * @param string $message1
  * @param string $message2
  * @param integer $n
+ *
+ * @return string
  */
 function _n($message1, $message2, $n)
 {
     return ngettext($message1, $message2, $n);
+}
+
+/**
+ * Combine _n and _f functions
+ *
+ * @param string $message1
+ * @param string $message2
+ * @param integer $n
+ * @param mixed $args,... Arguments to pass to the vsprintf function
+ *
+ * @return string
+ */
+function _nf($message1, $message2, $n, ...$args)
+{
+    return _f(_n($message1, $message2, $n), ...$args);
 }
