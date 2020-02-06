@@ -49,6 +49,26 @@ class Response
     }
 
     /**
+     * Create a created response (HTTP 201) with a Output\View.
+     *
+     * @param string $view_pointer
+     * @param mixed[] $variables
+     *
+     * @throws \Minz\Errors\ViewError
+     *
+     * @return \Minz\Response
+     */
+    public static function created($view_pointer = '', $variables = [])
+    {
+        if ($view_pointer) {
+            $view = new Output\View($view_pointer, $variables);
+        } else {
+            $view = null;
+        }
+        return new Response(201, $view);
+    }
+
+    /**
      * Create an accepted response (HTTP 202) with a Output\View.
      *
      * @param string $view_pointer

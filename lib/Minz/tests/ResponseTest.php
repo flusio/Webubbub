@@ -126,6 +126,13 @@ class ResponseTest extends TestCase
         $this->assertSame(200, $response->code());
     }
 
+    public function testCreated()
+    {
+        $response = Response::created();
+
+        $this->assertSame(201, $response->code());
+    }
+
     public function testAccepted()
     {
         $response = Response::accepted();
