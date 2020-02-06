@@ -133,4 +133,26 @@ class DatabaseFactory
     {
         return self::$factories;
     }
+
+    /**
+     * Return a callable function that generates a sequence of values.
+     *
+     * @param integer|string $start_n Default is 1
+     * @param callable $callback This optional function can be called to
+     *                           transform the "n" value.
+     *
+     * @return integer|string
+     */
+    public static function sequence($start_n = 1, $callback = null)
+    {
+        $current_n = $start_n;
+        return function () use (&$current_n, $callback) {
+            $n = $current_n;
+            if (is_callable($callback)) {
+                $n = $callback($n);
+            }
+            $current_n++;
+            return $n;
+        };
+    }
 }
