@@ -24,11 +24,6 @@ class Subscription extends \Minz\DatabaseModel
         $sql = "SELECT * FROM {$this->table_name} WHERE pending_request IS NOT NULL";
 
         $statement = $this->query($sql);
-        $result = $statement->fetchAll();
-        if ($result !== false) {
-            return $result;
-        } else {
-            throw self::sqlStatementError($statement);
-        }
+        return $statement->fetchAll();
     }
 }

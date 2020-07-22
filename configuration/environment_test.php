@@ -2,12 +2,16 @@
 
 return [
     'app_name' => 'Webubbub',
+
+    'secret_key' => 'change-me',
+
     'url_options' => [
         'host' => 'localhost',
     ],
+
     'database' => [
         'dsn' => 'sqlite::memory:',
     ],
-    'use_session' => false,
+
     'no_syslog' => !getenv('APP_SYSLOG_ENABLED'),
 ];

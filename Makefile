@@ -18,7 +18,7 @@ stop: ## Stop and clean Docker server
 	docker-compose -f docker/docker-compose.yml down
 
 .PHONY: init
-init: ## Initialize the application
+init: .env ## Initialize the application
 	$(PHP) ./webubbub --request /system/init
 
 .PHONY: create-migration
@@ -37,18 +37,17 @@ migrate: ## Apply pending migrations
 test: ## Run the tests suite
 	$(PHP) ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
 
-.PHONY: test-minz
-test-minz: ## Run the tests suite for the Minz lib
-	$(PHP) ./bin/phpunit --bootstrap ./lib/Minz/tests/bootstrap.php ./lib/Minz/tests
-
 .PHONY: lint
 lint: ## Run the linter on the PHP files
-	$(PHP) ./bin/phpcs --standard=PSR12 ./src ./tests ./lib/Minz
+	$(PHP) ./bin/phpcs --standard=PSR12 ./src ./tests
 
 .PHONY: lint-fix
 lint-fix: ## Fix the errors raised by the linter
-	$(PHP) ./bin/phpcbf --standard=PSR12 ./src ./tests ./lib/Minz
+	$(PHP) ./bin/phpcbf --standard=PSR12 ./src ./tests
 
 .PHONY: help
 help:
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.env:
+	@cp env.sample .env

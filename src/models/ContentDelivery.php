@@ -25,10 +25,14 @@ class ContentDelivery extends \Minz\Model
             'required' => true,
         ],
 
-        'created_at' => 'datetime',
+        'created_at' => [
+            'type' => 'datetime',
+            'format' => 'U',
+        ],
 
         'try_at' => [
             'type' => 'datetime',
+            'format' => 'U',
             'required' => true,
         ],
 
@@ -51,22 +55,9 @@ class ContentDelivery extends \Minz\Model
         return new self([
             'subscription_id' => $subscription_id,
             'content_id' => $content_id,
-            'try_at' => \Minz\Time::now()->getTimestamp(),
+            'try_at' => \Minz\Time::now(),
             'tries_count' => 0,
         ]);
-    }
-
-    /**
-     * Initialize a ContentDelivery from values (usually from database).
-     *
-     * @param array $values
-     *
-     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
-     */
-    public function __construct($values)
-    {
-        parent::__construct(self::PROPERTIES);
-        $this->fromValues($values);
     }
 
     /**
@@ -89,7 +80,7 @@ class ContentDelivery extends \Minz\Model
         $try_at = \Minz\Time::now();
         $try_at->modify("+{$interval_seconds} seconds");
 
-        $this->setProperty('try_at', $try_at);
-        $this->setProperty('tries_count', $tries_count);
+        $this->try_at = $try_at;
+        $this->tries_count = $tries_count;
     }
 }

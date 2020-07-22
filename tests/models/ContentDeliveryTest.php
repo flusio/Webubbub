@@ -6,14 +6,11 @@ use PHPUnit\Framework\TestCase;
 
 class ContentDeliveryTest extends TestCase
 {
-    public function tearDown(): void
-    {
-        \Minz\Time::unfreeze();
-    }
+    use \Minz\Tests\TimeHelper;
 
     public function testNew()
     {
-        \Minz\Time::freeze(1000);
+        $this->freeze(1000);
 
         $subscription_id = 2;
         $content_id = 3;
@@ -50,12 +47,11 @@ class ContentDeliveryTest extends TestCase
      */
     public function testConstructorFailsIfRequiredValueIsMissing($values, $missing_value_name)
     {
-        $this->expectException(\Minz\Errors\ModelPropertyError::class);
-        $this->expectExceptionMessage(
-            "Required `{$missing_value_name}` property is missing."
-        );
+        $content_delivery = new ContentDelivery($values);
 
-        new ContentDelivery($values);
+        $errors = $content_delivery->validate();
+
+        $this->assertArrayHasKey($missing_value_name, $errors);
     }
 
     /**
@@ -63,7 +59,7 @@ class ContentDeliveryTest extends TestCase
      */
     public function testRetryLater($initial_tries, $delay)
     {
-        \Minz\Time::freeze(2000);
+        $this->freeze(2000);
 
         $content = new ContentDelivery([
             'subscription_id' => 1,

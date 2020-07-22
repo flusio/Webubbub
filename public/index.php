@@ -4,11 +4,7 @@ $app_path = realpath(__DIR__ . '/..');
 
 include $app_path . '/autoload.php';
 
-$environment = getenv('APP_ENVIRONMENT');
-if (!$environment) {
-    $environment = 'development';
-}
-\Minz\Configuration::load($environment, $app_path);
+\Minz\Configuration::load('dotenv', $app_path);
 \Minz\Environment::initialize();
 
 // Get the http information and create a proper Request
