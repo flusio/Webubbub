@@ -29,7 +29,7 @@ First, download [the latest version](https://github.com/flusio/Webubbub/releases
 of the code with Git:
 
 ```console
-$ git clone https://github.com/flusio/Webubbub.git
+$ git clone --recurse-submodules https://github.com/flusio/Webubbub.git
 $ cd Webubbub
 $ git checkout <latest version tag>
 ```
@@ -37,6 +37,16 @@ $ git checkout <latest version tag>
 It’s best to use Git since it’ll allow easy update later (mainly a `git pull`).
 It also allows you to keep track of the changes you made on your server
 (**which you never should do!**)
+
+Then, you must create a `.env` file:
+
+```console
+$ cp env.sample .env
+$ vim .env # or edit with nano or whatever editor you prefer
+```
+
+The environment file is commented so it should not be too complicated to setup
+correctly.
 
 Then, you have to initialize the database:
 

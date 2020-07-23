@@ -2,12 +2,15 @@
 
 return [
     'app_name' => 'Webubbub',
+
+    'secret_key' => $dotenv->pop('APP_SECRET_KEY'),
+
     'url_options' => [
-        'host' => 'localhost',
-        'port' => 8000,
+        'host' => $dotenv->pop('APP_HOST'),
+        'port' => intval($dotenv->pop('APP_PORT')),
     ],
+
     'database' => [
-        'dsn' => "sqlite:{$app_path}/data/db.sqlite",
+        'dsn' => 'sqlite:' . $dotenv->pop('DB_PATH', "{$app_path}/data/db.sqlite"),
     ],
-    'use_session' => false,
 ];

@@ -1,26 +1,27 @@
 <?php
 
-namespace Webubbub\controllers\contents;
+namespace Webubbub;
 
-use Minz\Tests\IntegrationTestCase;
-use Webubbub\models;
-
-class ContentsTest extends IntegrationTestCase
+class ContentsTest extends \PHPUnit\Framework\TestCase
 {
+    use \Minz\Tests\InitializerHelper;
+    use \Minz\Tests\ApplicationHelper;
+    use \Minz\Tests\FactoriesHelper;
+    use \Minz\Tests\TimeHelper;
+    use \Minz\Tests\ResponseAsserts;
+
     public function tearDown(): void
     {
-        \Minz\Time::unfreeze();
         \Webubbub\services\Curl::resetMock();
     }
 
     public function testFetch()
     {
         $dao = new models\dao\Content();
-        $id = self::$factories['contents']->create([
+        $id = $this->create('contents', [
             'url' => 'https://some.site.fr/feed',
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
 
         \Webubbub\services\Curl::mock(
             '<some>xml</some>',
@@ -34,7 +35,7 @@ class ContentsTest extends IntegrationTestCase
             ]
         );
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
         $expected_links = '<https://my-hub.com>; rel="hub", '
@@ -51,20 +52,19 @@ class ContentsTest extends IntegrationTestCase
         $topic_url = 'https://some.site.fr/feed';
 
         $content_delivery_dao = new models\dao\ContentDelivery();
-        $subscription_id = self::$factories['subscriptions']->create([
+        $subscription_id = $this->create('subscriptions', [
             'topic' => $topic_url,
             'status' => 'verified',
         ]);
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'url' => $topic_url,
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
         \Webubbub\services\Curl::mock('<some>xml</some>');
 
         $this->assertSame(0, $content_delivery_dao->count());
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $content_delivery_dao->count());
@@ -79,18 +79,17 @@ class ContentsTest extends IntegrationTestCase
 
         $topic_url = 'https://some.site.fr/feed';
 
-        $subscription_id = self::$factories['subscriptions']->create([
+        $subscription_id = $this->create('subscriptions', [
             'topic' => $topic_url,
             'status' => 'new',
         ]);
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'url' => $topic_url,
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
         \Webubbub\services\Curl::mock('<some>xml</some>');
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $this->assertResponse($response, 200);
         $this->assertSame(0, $content_delivery_dao->count());
@@ -99,11 +98,10 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithNoLinks()
     {
         $dao = new models\dao\Content();
-        $id = self::$factories['contents']->create([
+        $id = $this->create('contents', [
             'url' => 'https://some.site.fr/feed',
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
 
         \Webubbub\services\Curl::mock(
             '<some>xml</some>',
@@ -111,7 +109,7 @@ class ContentsTest extends IntegrationTestCase
             ['content-type' => ['application/rss+xml']]
         );
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
         $expected_links = '<http://localhost/>; rel="hub", '
@@ -123,11 +121,10 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithMissingSelfLink()
     {
         $dao = new models\dao\Content();
-        $id = self::$factories['contents']->create([
+        $id = $this->create('contents', [
             'url' => 'https://some.site.fr/feed',
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
 
         \Webubbub\services\Curl::mock(
             '<some>xml</some>',
@@ -140,7 +137,7 @@ class ContentsTest extends IntegrationTestCase
             ]
         );
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
         $expected_links = '<https://my-hub.com>; rel="hub", '
@@ -152,11 +149,10 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithMissingHubLink()
     {
         $dao = new models\dao\Content();
-        $id = self::$factories['contents']->create([
+        $id = $this->create('contents', [
             'url' => 'https://some.site.fr/feed',
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
 
         \Webubbub\services\Curl::mock(
             '<some>xml</some>',
@@ -169,7 +165,7 @@ class ContentsTest extends IntegrationTestCase
             ]
         );
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
         $expected_links = '<https://some.site.fr/feed.xml>; rel="self", '
@@ -180,10 +176,9 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithMissingContentType()
     {
         $dao = new models\dao\Content();
-        $id = self::$factories['contents']->create([
+        $id = $this->create('contents', [
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
 
         \Webubbub\services\Curl::mock(
             '<some>xml</some>',
@@ -196,7 +191,7 @@ class ContentsTest extends IntegrationTestCase
             ]
         );
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -206,10 +201,9 @@ class ContentsTest extends IntegrationTestCase
     public function testFetchWithErrorHttpCode()
     {
         $dao = new models\dao\Content();
-        $id = self::$factories['contents']->create([
+        $id = $this->create('contents', [
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/fetch');
 
         \Webubbub\services\Curl::mock(
             'Oops, not found',
@@ -217,7 +211,7 @@ class ContentsTest extends IntegrationTestCase
             ['content-type' => ['text/html']]
         );
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -232,17 +226,16 @@ class ContentsTest extends IntegrationTestCase
         $content_dao = new models\dao\Content();
         $content_delivery_dao = new models\dao\ContentDelivery();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
         ]);
-        $content_delivery_id = self::$factories['content_deliveries']->create([
+        $content_delivery_id = $this->create('content_deliveries', [
             'content_id' => $content_id,
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock();
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
@@ -255,14 +248,13 @@ class ContentsTest extends IntegrationTestCase
     {
         $content_dao = new models\dao\Content();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock();
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $this->assertResponse($response, 200);
@@ -271,23 +263,22 @@ class ContentsTest extends IntegrationTestCase
 
     public function testDeliverWithTryAtInFuture()
     {
-        \Minz\Time::freeze(1000);
+        $this->freeze(1000);
 
         $content_dao = new models\dao\Content();
         $content_delivery_dao = new models\dao\ContentDelivery();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
         ]);
-        $content_delivery_id = self::$factories['content_deliveries']->create([
+        $content_delivery_id = $this->create('content_deliveries', [
             'content_id' => $content_id,
             'try_at' => 2000,
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock();
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
@@ -300,14 +291,13 @@ class ContentsTest extends IntegrationTestCase
     {
         $content_dao = new models\dao\Content();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock();
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $this->assertResponse($response, 200);
@@ -316,27 +306,29 @@ class ContentsTest extends IntegrationTestCase
 
     public function testDeliverWithSecret()
     {
+        $this->freeze(2000);
+
         $content_dao = new models\dao\Content();
 
         $content_content = 'some content';
         $subscription_secret = 'a very secure secret';
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
             'content' => $content_content,
         ]);
-        $subscription_id = self::$factories['subscriptions']->create([
+        $subscription_id = $this->create('subscriptions', [
             'secret' => $subscription_secret,
         ]);
-        $content_delivery_id = self::$factories['content_deliveries']->create([
+        $content_delivery_id = $this->create('content_deliveries', [
             'content_id' => $content_id,
+            'try_at' => 1000,
             'subscription_id' => $subscription_id,
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         $mock = \Webubbub\services\Curl::mock();
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $expected_signature = 'sha256=' . hash_hmac(
@@ -351,24 +343,23 @@ class ContentsTest extends IntegrationTestCase
 
     public function testDeliverWithErrorHttpCode()
     {
-        \Minz\Time::freeze(2000);
+        $this->freeze(2000);
 
         $content_dao = new models\dao\Content();
         $content_delivery_dao = new models\dao\ContentDelivery();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
         ]);
-        $content_delivery_id = self::$factories['content_deliveries']->create([
+        $content_delivery_id = $this->create('content_deliveries', [
             'content_id' => $content_id,
             'try_at' => 1000,
             'tries_count' => 0,
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock('', 500);
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
@@ -380,24 +371,23 @@ class ContentsTest extends IntegrationTestCase
 
     public function testDeliverWithErrorHttpCodeAndMaxTriesReached()
     {
-        \Minz\Time::freeze(2000);
+        $this->freeze(2000);
 
         $content_dao = new models\dao\Content();
         $content_delivery_dao = new models\dao\ContentDelivery();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
         ]);
-        $content_delivery_id = self::$factories['content_deliveries']->create([
+        $content_delivery_id = $this->create('content_deliveries', [
             'content_id' => $content_id,
             'try_at' => 1000,
             'tries_count' => models\ContentDelivery::MAX_TRIES_COUNT,
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock('', 500);
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
@@ -408,23 +398,25 @@ class ContentsTest extends IntegrationTestCase
 
     public function testDeliverWith410HttpCode()
     {
+        $this->freeze(2000);
+
         $content_dao = new models\dao\Content();
         $subscription_dao = new models\dao\Subscription();
         $content_delivery_dao = new models\dao\ContentDelivery();
 
-        $content_id = self::$factories['contents']->create([
+        $content_id = $this->create('contents', [
             'status' => 'fetched',
         ]);
-        $subscription_id = self::$factories['subscriptions']->create();
-        $content_delivery_id = self::$factories['content_deliveries']->create([
+        $subscription_id = $this->create('subscriptions');
+        $content_delivery_id = $this->create('content_deliveries', [
             'content_id' => $content_id,
+            'try_at' => 1000,
             'subscription_id' => $subscription_id,
         ]);
-        $request = new \Minz\Request('CLI', '/contents/deliver');
 
         \Webubbub\services\Curl::mock('', 410);
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
         $subscription = $subscription_dao->find($subscription_id);
@@ -438,12 +430,11 @@ class ContentsTest extends IntegrationTestCase
     public function testItems()
     {
         $dao = new models\dao\Content();
-        self::$factories['contents']->create([
+        $this->create('contents', [
             'url' => 'https://some.site.fr/feed.xml',
         ]);
-        $request = new \Minz\Request('CLI', '/contents');
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/contents');
 
         $output = $response->render();
         $this->assertResponse($response, 200);

@@ -20,9 +20,15 @@ class Content extends \Minz\Model
     public const PROPERTIES = [
         'id' => 'integer',
 
-        'created_at' => 'datetime',
+        'created_at' => [
+            'type' => 'datetime',
+            'format' => 'U',
+        ],
 
-        'fetched_at' => 'datetime',
+        'fetched_at' => [
+            'type' => 'datetime',
+            'format' => 'U',
+        ],
 
         'status' => [
             'type' => 'string',
@@ -57,19 +63,6 @@ class Content extends \Minz\Model
     }
 
     /**
-     * Initialize a Content from values (usually from database).
-     *
-     * @param array $values
-     *
-     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
-     */
-    public function __construct($values)
-    {
-        parent::__construct(self::PROPERTIES);
-        $this->fromValues($values);
-    }
-
-    /**
      * Mark a content as fetched, setting the given values
      *
      * @param string $content
@@ -78,13 +71,13 @@ class Content extends \Minz\Model
      */
     public function fetch($content, $type, $links)
     {
-        $this->setProperty('content', $content);
-        $this->setProperty('type', $type);
-        $this->setProperty('links', $links);
+        $this->content = $content;
+        $this->type = $type;
+        $this->links = $links;
 
         $fetched_at = \Minz\Time::now();
-        $this->setProperty('fetched_at', $fetched_at);
-        $this->setProperty('status', 'fetched');
+        $this->fetched_at = $fetched_at;
+        $this->status = 'fetched';
     }
 
     /**
@@ -98,7 +91,7 @@ class Content extends \Minz\Model
             );
         }
 
-        $this->setProperty('status', 'delivered');
+        $this->status = 'delivered';
     }
 
     /**

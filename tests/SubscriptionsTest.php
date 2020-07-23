@@ -1,12 +1,14 @@
 <?php
 
-namespace Webubbub\controllers\subscriptions;
+namespace Webubbub;
 
-use Minz\Tests\IntegrationTestCase;
-use Webubbub\models;
-
-class SubscriptionsTest extends IntegrationTestCase
+class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 {
+    use \Minz\Tests\InitializerHelper;
+    use \Minz\Tests\ApplicationHelper;
+    use \Minz\Tests\FactoriesHelper;
+    use \Minz\Tests\ResponseAsserts;
+
     public static $challenge;
 
     public function setUp(): void
@@ -23,14 +25,12 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithSubscribePendingRequest()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'new',
             'pending_request' => 'subscribe',
         ]);
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -40,13 +40,11 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithUnsubscribePendingRequest()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'pending_request' => 'unsubscribe',
         ]);
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -56,14 +54,12 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithoutPendingRequest()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'new',
             'pending_request' => null,
         ]);
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -73,7 +69,7 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithSubscribeAndPendingSecretAndLeaseSeconds()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'verified',
             'lease_seconds' => models\Subscription::DEFAULT_LEASE_SECONDS,
             'secret' => 'a secret',
@@ -82,9 +78,7 @@ class SubscriptionsTest extends IntegrationTestCase
             'pending_secret' => 'another secret',
         ]);
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -100,16 +94,14 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithSubscribeAndUnmatchingChallenge()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'new',
             'pending_request' => 'subscribe',
         ]);
 
         \Webubbub\services\Curl::mock('not the correct challenge');
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -120,16 +112,14 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithUnsubscribeAndUnmatchingChallenge()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'new',
             'pending_request' => 'unsubscribe',
         ]);
 
         \Webubbub\services\Curl::mock('not the correct challenge');
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -143,16 +133,14 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithSubscribeAndNonSuccessHttpCode($http_code)
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'new',
             'pending_request' => 'subscribe',
         ]);
 
         \Webubbub\services\Curl::mock(self::$challenge, $http_code);
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -166,16 +154,14 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testVerifyWithUnsubscribeAndNonSuccessHttpCode($http_code)
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'status' => 'new',
             'pending_request' => 'unsubscribe',
         ]);
 
         \Webubbub\services\Curl::mock(self::$challenge, $http_code);
 
-        $request = new \Minz\Request('CLI', '/subscriptions/verify');
-
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -186,13 +172,12 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testExpire()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'expired_at' => time(),
             'status' => 'verified',
         ]);
-        $request = new \Minz\Request('CLI', '/subscriptions/expire');
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/expire');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -202,13 +187,12 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testExpireWithExpiredDateInFuture()
     {
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'expired_at' => time() + 1000,
             'status' => 'verified',
         ]);
-        $request = new \Minz\Request('CLI', '/subscriptions/expire');
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions/expire');
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
@@ -218,13 +202,12 @@ class SubscriptionsTest extends IntegrationTestCase
     public function testItems()
     {
         $dao = new models\dao\Subscription();
-        self::$factories['subscriptions']->create([
+        $this->create('subscriptions', [
             'callback' => 'https://subscriber.com/callback',
             'topic' => 'https://some.site.fr/feed.xml',
         ]);
-        $request = new \Minz\Request('CLI', '/subscriptions');
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/subscriptions');
 
         $output = $response->render();
         $this->assertResponse($response, 200);

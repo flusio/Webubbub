@@ -58,9 +58,15 @@ class Subscription extends \Minz\Model
     public const PROPERTIES = [
         'id' => 'integer',
 
-        'created_at' => 'datetime',
+        'created_at' => [
+            'type' => 'datetime',
+            'format' => 'U',
+        ],
 
-        'expired_at' => 'datetime',
+        'expired_at' => [
+            'type' => 'datetime',
+            'format' => 'U',
+        ],
 
         'status' => [
             'type' => 'string',
@@ -130,19 +136,6 @@ class Subscription extends \Minz\Model
     }
 
     /**
-     * Initialize a Subscription from values (usually from database).
-     *
-     * @param array $values
-     *
-     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
-     */
-    public function __construct($values)
-    {
-        parent::__construct(self::PROPERTIES);
-        $this->fromValues($values);
-    }
-
-    /**
      * Return the callback to use to verify subscriber intent.
      *
      * @param string $challenge The challenge string to be verified with the subscriber
@@ -197,19 +190,19 @@ class Subscription extends \Minz\Model
             );
         }
 
-        $this->setProperty('status', 'verified');
-        $this->setProperty('pending_request', null);
+        $this->status = 'verified';
+        $this->pending_request = null;
 
         $expired_at = \Minz\Time::fromNow($this->lease_seconds, 'seconds');
-        $this->setProperty('expired_at', $expired_at);
+        $this->expired_at = $expired_at;
 
         if ($this->pending_lease_seconds) {
-            $this->setProperty('lease_seconds', $this->pending_lease_seconds);
-            $this->setProperty('pending_lease_seconds', null);
+            $this->lease_seconds = $this->pending_lease_seconds;
+            $this->pending_lease_seconds = null;
         }
         if ($this->pending_secret) {
-            $this->setProperty('secret', $this->pending_secret);
-            $this->setProperty('pending_secret', null);
+            $this->secret = $this->pending_secret;
+            $this->pending_secret = null;
         }
     }
 
@@ -224,9 +217,9 @@ class Subscription extends \Minz\Model
      */
     public function renew($lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
     {
-        $this->setProperty('pending_lease_seconds', self::boundLeaseSeconds($lease_seconds));
-        $this->setProperty('pending_secret', $secret);
-        $this->setProperty('pending_request', 'subscribe');
+        $this->pending_lease_seconds = self::boundLeaseSeconds($lease_seconds);
+        $this->pending_secret = $secret;
+        $this->pending_request = 'subscribe';
     }
 
     /**
@@ -261,7 +254,7 @@ class Subscription extends \Minz\Model
             );
         }
 
-        $this->setProperty('status', 'expired');
+        $this->status = 'expired';
     }
 
     /**
@@ -269,7 +262,7 @@ class Subscription extends \Minz\Model
      */
     public function requestUnsubscription()
     {
-        $this->setProperty('pending_request', 'unsubscribe');
+        $this->pending_request = 'unsubscribe';
     }
 
     /**
@@ -277,9 +270,9 @@ class Subscription extends \Minz\Model
      */
     public function cancelRequest()
     {
-        $this->setProperty('pending_request', null);
-        $this->setProperty('pending_lease_seconds', null);
-        $this->setProperty('pending_secret', null);
+        $this->pending_request = null;
+        $this->pending_lease_seconds = null;
+        $this->pending_secret = null;
     }
 
     /**
@@ -377,10 +370,6 @@ class Subscription extends \Minz\Model
      */
     public static function validateSecret($secret)
     {
-        if ($secret === '') {
-            return 'must either be not given or be a cryptographically random unique secret string';
-        }
-
         if (strlen($secret) > self::MAX_SECRET_LENGTH) {
             return 'must be equal or less than 200 bytes in length';
         }

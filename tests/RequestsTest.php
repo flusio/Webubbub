@@ -1,24 +1,24 @@
 <?php
 
-namespace Webubbub\controllers\requests;
+namespace Webubbub;
 
-use Minz\Tests\IntegrationTestCase;
-use Webubbub\models;
-
-class RequestsTest extends IntegrationTestCase
+class RequestsTest extends \PHPUnit\Framework\TestCase
 {
+    use \Minz\Tests\InitializerHelper;
+    use \Minz\Tests\ApplicationHelper;
+    use \Minz\Tests\FactoriesHelper;
+    use \Minz\Tests\ResponseAsserts;
+
     /**
      * @dataProvider invalidModeProvider
      */
     public function testHandleFailsIfModeIsInvalid($invalidMode)
     {
-        $request = new \Minz\Request('POST', '/', [
+        $response = $this->appRun('post', '/', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => 'https://some.site.fr/feed.xml',
             'hub_mode' => $invalidMode,
         ]);
-
-        $response = self::$application->run($request);
 
         $this->assertResponse(
             $response,
@@ -30,14 +30,12 @@ class RequestsTest extends IntegrationTestCase
 
     public function testSubscribe()
     {
-        $request = new \Minz\Request('CLI', '/requests/subscribe', [
+        $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => 'https://some.site.fr/feed.xml',
             'hub_lease_seconds' => 432000,
             'hub_secret' => 'a cryptographically random unique secret string',
         ]);
-
-        $response = self::$application->run($request);
 
         $dao = new models\dao\Subscription();
         $this->assertSame(1, $dao->count());
@@ -59,23 +57,21 @@ class RequestsTest extends IntegrationTestCase
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'callback' => $callback,
             'topic' => $topic,
             'secret' => null,
             'lease_seconds' => 432000,
             'pending_request' => null,
         ]);
-        $request = new \Minz\Request('CLI', '/requests/subscribe', [
+        $this->assertSame(1, $dao->count());
+
+        $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => $callback,
             'hub_topic' => $topic,
             'hub_lease_seconds' => 543000,
             'hub_secret' => 'a secret string',
         ]);
-
-        $this->assertSame(1, $dao->count());
-
-        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertSame(1, $dao->count());
@@ -92,17 +88,15 @@ class RequestsTest extends IntegrationTestCase
      */
     public function testSubscribeFailsIfCallbackIsInvalid($invalid_url)
     {
-        $request = new \Minz\Request('CLI', '/requests/subscribe', [
+        $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => $invalid_url,
             'hub_topic' => 'https://some.site.fr/feed.xml',
         ]);
 
-        $response = self::$application->run($request);
-
         $this->assertResponse(
             $response,
             400,
-            "`callback` property is invalid ({$invalid_url}).\n",
+            '`callback` property is',
             ['Content-Type' => 'text/plain']
         );
     }
@@ -112,17 +106,15 @@ class RequestsTest extends IntegrationTestCase
      */
     public function testSubscribeFailsIfTopicIsInvalid($invalid_url)
     {
-        $request = new \Minz\Request('CLI', '/requests/subscribe', [
+        $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => $invalid_url,
         ]);
 
-        $response = self::$application->run($request);
-
         $this->assertResponse(
             $response,
             400,
-            "`topic` property is invalid ({$invalid_url}).\n",
+            '`topic` property is',
             ['Content-Type' => 'text/plain']
         );
     }
@@ -131,27 +123,25 @@ class RequestsTest extends IntegrationTestCase
     {
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'callback' => $callback,
             'topic' => $topic,
             'secret' => null,
             'lease_seconds' => 432000,
             'pending_request' => null,
         ]);
-        $request = new \Minz\Request('CLI', '/requests/subscribe', [
+
+        $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => $callback,
             'hub_topic' => $topic,
             'hub_lease_seconds' => 543000,
             'hub_secret' => '',
         ]);
 
-        $response = self::$application->run($request);
-
         $this->assertResponse(
             $response,
             400,
-            '`pending_secret` property is invalid (): must either be not given or be a '
-            . "cryptographically random unique secret string.\n",
+            'secret must either be not given or be a cryptographically random unique secret string.',
             ['Content-Type' => 'text/plain']
         );
     }
@@ -161,19 +151,17 @@ class RequestsTest extends IntegrationTestCase
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
         $dao = new models\dao\Subscription();
-        $id = self::$factories['subscriptions']->create([
+        $id = $this->create('subscriptions', [
             'callback' => $callback,
             'topic' => $topic,
             'status' => 'new',
             'pending_request' => null,
         ]);
 
-        $request = new \Minz\Request('CLI', '/requests/unsubscribe', [
+        $response = $this->appRun('cli', '/requests/unsubscribe', [
             'hub_callback' => $callback,
             'hub_topic' => $topic,
         ]);
-
-        $response = self::$application->run($request);
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 202);
@@ -183,12 +171,10 @@ class RequestsTest extends IntegrationTestCase
 
     public function testUnsubscribeWithUnknownSubscription()
     {
-        $request = new \Minz\Request('CLI', '/requests/unsubscribe', [
+        $response = $this->appRun('cli', '/requests/unsubscribe', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => 'https://some.site.fr/feed.xml',
         ]);
-
-        $response = self::$application->run($request);
 
         $dao = new models\dao\Subscription();
         $this->assertResponse($response, 400, "Unknown subscription.\n");
@@ -199,13 +185,11 @@ class RequestsTest extends IntegrationTestCase
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
-        $request = new \Minz\Request('CLI', '/requests/publish', [
-            'hub_url' => $url,
-        ]);
-
         $this->assertSame(0, $dao->count());
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/requests/publish', [
+            'hub_url' => $url,
+        ]);
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $dao->count());
@@ -217,13 +201,11 @@ class RequestsTest extends IntegrationTestCase
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
-        $request = new \Minz\Request('CLI', '/requests/publish', [
-            'hub_topic' => $url,
-        ]);
-
         $this->assertSame(0, $dao->count());
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/requests/publish', [
+            'hub_topic' => $url,
+        ]);
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $dao->count());
@@ -235,17 +217,15 @@ class RequestsTest extends IntegrationTestCase
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
-        self::$factories['contents']->create([
+        $this->create('contents', [
             'url' => $url,
             'status' => 'new',
         ]);
-        $request = new \Minz\Request('CLI', '/requests/publish', [
-            'hub_url' => $url,
-        ]);
-
         $this->assertSame(1, $dao->count());
 
-        $response = self::$application->run($request);
+        $response = $this->appRun('cli', '/requests/publish', [
+            'hub_url' => $url,
+        ]);
 
         $this->assertResponse($response, 200);
         $this->assertSame(1, $dao->count());
@@ -255,17 +235,15 @@ class RequestsTest extends IntegrationTestCase
     {
         $dao = new models\dao\Content();
         $url = 'https://some.site.fr/feed.xml';
-        self::$factories['contents']->create([
+        $this->create('contents', [
             'url' => $url,
             'status' => 'fetched',
         ]);
-        $request = new \Minz\Request('CLI', '/requests/publish', [
-            'hub_url' => $url,
-        ]);
-
         $this->assertSame(1, $dao->count());
 
-        $response = publish($request);
+        $response = $this->appRun('cli', '/requests/publish', [
+            'hub_url' => $url,
+        ]);
 
         $this->assertResponse($response, 200);
         $this->assertSame(2, $dao->count());
@@ -276,18 +254,16 @@ class RequestsTest extends IntegrationTestCase
      */
     public function testPublishFailsIfUrlIsInvalid($invalid_url)
     {
-        $request = new \Minz\Request('CLI', '/requests/publish', [
+        $response = $this->appRun('cli', '/requests/publish', [
             'hub_url' => $invalid_url,
         ]);
-
-        $response = self::$application->run($request);
 
         $dao = new models\dao\Content();
         $this->assertSame(0, $dao->count());
         $this->assertResponse(
             $response,
             400,
-            "`url` property is invalid ({$invalid_url}).\n",
+            '`url` property is',
             ['Content-Type' => 'text/plain']
         );
     }

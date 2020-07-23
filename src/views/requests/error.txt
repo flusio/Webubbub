@@ -1,2 +1,4 @@
+<?php foreach ($errors as $error): ?>
 <?= $error ?>
 
+<?php endforeach; ?>

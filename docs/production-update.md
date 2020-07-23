@@ -16,7 +16,7 @@ Once you know what are the additional steps, you can proceed to the update.
 First, fetch the new code with Git:
 
 ```console
-$ git fetch
+$ git fetch --recurse-submodules
 $ git fetch --tags
 ```
 

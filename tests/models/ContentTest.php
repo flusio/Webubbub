@@ -6,10 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class ContentTest extends TestCase
 {
-    public function tearDown(): void
-    {
-        \Minz\Time::unfreeze();
-    }
+    use \Minz\Tests\TimeHelper;
 
     public function testNew()
     {
@@ -38,15 +35,16 @@ class ContentTest extends TestCase
      */
     public function testNewFailsIfUrlIsInvalid($invalid_url)
     {
-        $this->expectException(\Minz\Errors\ModelPropertyError::class);
-        $this->expectExceptionMessage("`url` property is invalid ({$invalid_url}).");
+        $content = Content::new($invalid_url);
 
-        Content::new($invalid_url);
+        $errors = $content->validate();
+
+        $this->assertArrayHasKey('url', $errors);
     }
 
     public function testFetch()
     {
-        \Minz\Time::freeze(1000);
+        $this->freeze(1000);
 
         $url = 'https://some.site.fr/feed';
         $links = 'https://some.site.fr/feed.xml';
@@ -107,12 +105,11 @@ class ContentTest extends TestCase
      */
     public function testConstructorFailsIfRequiredValueIsMissing($values, $missing_value_name)
     {
-        $this->expectException(\Minz\Errors\ModelPropertyError::class);
-        $this->expectExceptionMessage(
-            "Required `{$missing_value_name}` property is missing."
-        );
+        $content = new Content($values);
 
-        new Content($values);
+        $errors = $content->validate();
+
+        $this->assertArrayHasKey($missing_value_name, $errors);
     }
 
     public function invalidUrlProvider()
