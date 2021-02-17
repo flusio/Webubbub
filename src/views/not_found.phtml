@@ -1,4 +1,4 @@
-<?php $this->template('base.phtml', ['title' => 'Page not found!']); ?>
+<?php $this->layout('base.phtml', ['title' => 'Page not found!']); ?>
 
 <h1>Page not found!</h1>
 
@@ -7,5 +7,5 @@
 </p>
 
 <p>
-    <a href="<?= url('home#index') ?>">Go home</a>
+    <a href="<?= url('Home#index') ?>">Go home</a>
 </p>

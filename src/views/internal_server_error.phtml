@@ -1,4 +1,4 @@
-<?php $this->template('base.phtml', ['title' => 'Internal server error!']); ?>
+<?php $this->layout('base.phtml', ['title' => 'Internal server error!']); ?>
 
 <h1>Internal server error!</h1>
 
@@ -7,5 +7,5 @@
 </p>
 
 <p>
-    <a href="<?= url('home#index') ?>">Go home</a>
+    <a href="<?= url('Home#index') ?>">Go home</a>
 </p>
