@@ -25,23 +25,6 @@ class SubscriptionTest extends TestCase
         $this->assertSame('subscribe', $subscription->pending_request);
     }
 
-    public function testNewDecodesUrls()
-    {
-        $callback = 'https://subscriber.com/callback?foo%2Bbar';
-        $topic = 'https://some.site.fr/feed.xml?foo%2Bbar';
-
-        $subscription = Subscription::new($callback, $topic);
-
-        $this->assertSame(
-            'https://subscriber.com/callback?foo+bar',
-            $subscription->callback
-        );
-        $this->assertSame(
-            'https://some.site.fr/feed.xml?foo+bar',
-            $subscription->topic
-        );
-    }
-
     public function testNewWithLeaseSeconds()
     {
         $lease_seconds = Subscription::DEFAULT_LEASE_SECONDS / 2;

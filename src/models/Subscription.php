@@ -126,8 +126,8 @@ class Subscription extends \Minz\Model
     public static function new($callback, $topic, $lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
     {
         return new Subscription([
-            'callback' => urldecode($callback),
-            'topic' => urldecode($topic),
+            'callback' => $callback,
+            'topic' => $topic,
             'lease_seconds' => self::boundLeaseSeconds($lease_seconds),
             'secret' => $secret,
             'status' => 'new',
