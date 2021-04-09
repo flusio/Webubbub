@@ -24,8 +24,26 @@ class Subscriptions
         $results = [];
         foreach ($subscriptions_values as $subscription_values) {
             $subscription = new models\Subscription($subscription_values);
-            $subscription->status = 'validated';
-            $dao->update($subscription->id, $subscription->toValues());
+
+            if ($subscription->isAllowed()) {
+                $results[] = "subscription #{$subscription->id}: validated";
+
+                $subscription->status = 'validated';
+                $dao->update($subscription->id, $subscription->toValues());
+            } else {
+                $results[] = "subscription #{$subscription->id}: not valited (not allowed)";
+
+                $deny_callback = $subscription->denyCallback('The topic is not allowed on this hub (private hub)');
+                $curl_response = services\Curl::get($deny_callback);
+
+                $http_code_successful = (
+                    $curl_response->http_code >= 200 &&
+                    $curl_response->http_code < 300
+                );
+                if ($http_code_successful || $subscription->created_at <= \Minz\Time::ago(1, 'day')) {
+                    $dao->delete($subscription->id);
+                }
+            }
         }
 
         return Response::ok('subscriptions/validate.txt', [

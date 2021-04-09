@@ -1,0 +1,4 @@
+<?php foreach ($results as $result): ?>
+<?= $result ?>
+
+<?php endforeach; ?>
