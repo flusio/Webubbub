@@ -136,6 +136,30 @@ class Subscription extends \Minz\Model
     }
 
     /**
+     * Return wheter a subscription is allowed on the hub or not.
+     *
+     * @return boolean
+     */
+    public function isAllowed()
+    {
+        $allowed_topic_origins = explode(',', \Minz\Configuration::$application['allowed_topic_origins']);
+        if (!$allowed_topic_origins) {
+            // Empty value means open hub
+            return true;
+        }
+
+        foreach ($allowed_topic_origins as $allowed_origin) {
+            $allowed_origin = trim($allowed_origin);
+
+            $origin_length = strlen($allowed_origin);
+            if (substr($this->topic, 0, $origin_length) === $allowed_origin) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return the callback to use to verify subscriber intent.
      *
      * @param string $challenge The challenge string to be verified with the subscriber
@@ -175,6 +199,34 @@ class Subscription extends \Minz\Model
         }
 
         return $intent_callback;
+    }
+
+    /**
+     * Return the callback to use to deny subscriber.
+     *
+     * @return string The reason of the deny
+     *
+     * @return string The callback with additional parameters appended
+     */
+    public function denyCallback($reason)
+    {
+        if (strpos($this->callback, "?")) {
+            $query_char = '&';
+        } else {
+            $query_char = '?';
+        }
+
+        if (!$reason) {
+            $reason = 'Topic denied';
+        }
+
+        $reason = urlencode($reason);
+        $deny_callback = $this->callback . $query_char
+                       . "hub.mode=denied"
+                       . "&hub.topic={$this->topic}"
+                       . "&hub.reason={$reason}";
+
+        return $deny_callback;
     }
 
     /**

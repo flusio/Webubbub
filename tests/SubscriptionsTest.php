@@ -22,11 +22,112 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         \Webubbub\services\Curl::resetMock();
     }
 
-    public function testVerifyWithSubscribePendingRequest()
+    public function testValidate()
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
             'status' => 'new',
+            'pending_request' => 'subscribe',
+        ]);
+
+        $response = $this->appRun('cli', '/subscriptions/validate');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('validated', $subscription['status']);
+    }
+
+    public function testValidateWithAllowedTopic()
+    {
+        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'new',
+            'pending_request' => 'subscribe',
+            'topic' => 'https://allowed.2.com',
+        ]);
+
+        $response = $this->appRun('cli', '/subscriptions/validate');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('validated', $subscription['status']);
+
+        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+    }
+
+    public function testValidateWithNotAllowedTopic()
+    {
+        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'new',
+            'pending_request' => 'subscribe',
+            'topic' => 'https://not.allowed.com',
+        ]);
+
+        $response = $this->appRun('cli', '/subscriptions/validate');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertNull($subscription);
+
+        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+    }
+
+    /**
+     * @dataProvider failingHttpCodeProvider
+     */
+    public function testValidateWithNotAllowedTopicAndRecentSubscriptionAndFailingResponse($http_code)
+    {
+        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'new',
+            'pending_request' => 'subscribe',
+            'topic' => 'https://not.allowed.com',
+            'created_at' => \Minz\Time::ago(12, 'hours')->getTimestamp(),
+        ]);
+        \Webubbub\services\Curl::mock('Failing response', $http_code);
+
+        $response = $this->appRun('cli', '/subscriptions/validate');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('new', $subscription['status']);
+
+        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+    }
+
+    /**
+     * @dataProvider failingHttpCodeProvider
+     */
+    public function testValidateWithNotAllowedTopicAndOldSubscriptionAndFailingResponse($http_code)
+    {
+        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'new',
+            'pending_request' => 'subscribe',
+            'topic' => 'https://not.allowed.com',
+            'created_at' => \Minz\Time::ago(26, 'hours')->getTimestamp(),
+        ]);
+        \Webubbub\services\Curl::mock('Failing response', $http_code);
+
+        $response = $this->appRun('cli', '/subscriptions/validate');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertNull($subscription);
+
+        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+    }
+
+    public function testVerifyWithSubscribePendingRequest()
+    {
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'validated',
             'pending_request' => 'subscribe',
         ]);
 
@@ -41,6 +142,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
+            'status' => 'verified',
             'pending_request' => 'unsubscribe',
         ]);
 
@@ -55,7 +157,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
-            'status' => 'new',
+            'status' => 'validated',
             'pending_request' => null,
         ]);
 
@@ -63,7 +165,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('validated', $subscription['status']);
     }
 
     public function testVerifyWithSubscribeAndPendingSecretAndLeaseSeconds()
@@ -91,11 +193,43 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($subscription['pending_secret']);
     }
 
-    public function testVerifyWithSubscribeAndUnmatchingChallenge()
+    public function testVerifyWithSubscribeAndNewStatus()
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
             'status' => 'new',
+            'pending_request' => 'subscribe',
+        ]);
+
+        $response = $this->appRun('cli', '/subscriptions/verify');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('subscribe', $subscription['pending_request']);
+    }
+
+    public function testVerifyWithUnsubscribeAndNewStatus()
+    {
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'new',
+            'pending_request' => 'unsubscribe',
+        ]);
+
+        $response = $this->appRun('cli', '/subscriptions/verify');
+
+        $subscription = $dao->find($id);
+        $this->assertResponse($response, 200);
+        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('unsubscribe', $subscription['pending_request']);
+    }
+
+    public function testVerifyWithSubscribeAndUnmatchingChallenge()
+    {
+        $dao = new models\dao\Subscription();
+        $id = $this->create('subscriptions', [
+            'status' => 'validated',
             'pending_request' => 'subscribe',
         ]);
 
@@ -105,7 +239,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
 
@@ -113,7 +247,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
-            'status' => 'new',
+            'status' => 'validated',
             'pending_request' => 'unsubscribe',
         ]);
 
@@ -123,7 +257,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
 
@@ -134,7 +268,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
-            'status' => 'new',
+            'status' => 'validated',
             'pending_request' => 'subscribe',
         ]);
 
@@ -144,7 +278,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
 
@@ -155,7 +289,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
     {
         $dao = new models\dao\Subscription();
         $id = $this->create('subscriptions', [
-            'status' => 'new',
+            'status' => 'validated',
             'pending_request' => 'unsubscribe',
         ]);
 
@@ -165,7 +299,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $subscription = $dao->find($id);
         $this->assertResponse($response, 200);
-        $this->assertSame('new', $subscription['status']);
+        $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
 

@@ -9,6 +9,10 @@ return [
         'host' => 'localhost',
     ],
 
+    'application' => [
+        'allowed_topic_origins' => '',
+    ],
+
     'database' => [
         'dsn' => 'sqlite::memory:',
     ],

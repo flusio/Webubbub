@@ -6,10 +6,15 @@
     Webubbub is a <a href="https://www.w3.org/TR/websub/">Websub</a> hub.
 </p>
 
-<p>
-    <strong>Important: the hub is actually opened and doesn't require to register.
-    It’ll probably change in the future so don't use it in production.</strong>
-</p>
+<?php if ($is_public_hub): ?>
+    <p>
+        <strong>Important: this hub is public and doesn't require any registration.</strong>
+    </p>
+<?php else: ?>
+    <p>
+        <strong>Important: this hub is private and you can’t use it to distribute content.</strong>
+    </p>
+<?php endif; ?>
 
 <p>
     If you have a blog, you can configure your <abbr>RSS</abbr> or Atom feed by
