@@ -8,7 +8,10 @@ class Home
 {
     public function index($request)
     {
-        return Response::ok('home/index.phtml');
+        $is_public_hub = \Minz\Configuration::$application['allowed_topic_origins'] === '';
+        return Response::ok('home/index.phtml', [
+            'is_public_hub' => $is_public_hub,
+        ]);
     }
 
     public function dummySubscriber($request)
