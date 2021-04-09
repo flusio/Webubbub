@@ -7,6 +7,33 @@ use Minz\Response;
 class Subscriptions
 {
     /**
+     * Validate subscriptions based on allowed topics.
+     *
+     * @param \Minz\Request $request
+     *
+     * @return \Minz\Response
+     */
+    public function validate($request)
+    {
+        $dao = new models\dao\Subscription();
+
+        $subscriptions_values = $dao->listBy([
+            'status' => 'new',
+        ]);
+
+        $results = [];
+        foreach ($subscriptions_values as $subscription_values) {
+            $subscription = new models\Subscription($subscription_values);
+            $subscription->status = 'validated';
+            $dao->update($subscription->id, $subscription->toValues());
+        }
+
+        return Response::ok('subscriptions/validate.txt', [
+            'results' => $results,
+        ]);
+    }
+
+    /**
      * Verify intents of subscriptions with pending request;
      *
      * @param \Minz\Request $request

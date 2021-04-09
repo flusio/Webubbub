@@ -21,7 +21,9 @@ class Subscription extends \Minz\DatabaseModel
      */
     public function listWherePendingRequests()
     {
-        $sql = "SELECT * FROM {$this->table_name} WHERE pending_request IS NOT NULL";
+        $sql = "SELECT * FROM {$this->table_name} "
+             . "WHERE pending_request IS NOT NULL "
+             . "AND status != 'new';";
 
         $statement = $this->query($sql);
         return $statement->fetchAll();
