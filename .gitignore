@@ -1,4 +1,7 @@
 /bin/.phpunit.result.cache
+/bin/phpcbf
+/bin/phpcs
+/bin/phpunit
 
 /.env
 
