@@ -20,12 +20,9 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_mode' => $invalidMode,
         ]);
 
-        $this->assertResponse(
-            $response,
-            400,
-            "{$invalidMode} mode is invalid.\n",
-            ['Content-Type' => 'text/plain']
-        );
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseEquals($response, "{$invalidMode} mode is invalid.\n");
+        $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
     }
 
     public function testSubscribe()
@@ -39,7 +36,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
 
         $dao = new models\dao\Subscription();
         $this->assertSame(1, $dao->count());
-        $this->assertResponse($response, 202);
+        $this->assertResponseCode($response, 202);
 
         $subscription = $dao->listAll()[0];
         $this->assertSame('https://subscriber.com/callback', $subscription['callback']);
@@ -75,7 +72,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
 
         $subscription = $dao->find($id);
         $this->assertSame(1, $dao->count());
-        $this->assertResponse($response, 202);
+        $this->assertResponseCode($response, 202);
         $this->assertSame('432000', $subscription['lease_seconds']);
         $this->assertNull($subscription['secret']);
         $this->assertSame('543000', $subscription['pending_lease_seconds']);
@@ -93,12 +90,9 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_topic' => 'https://some.site.fr/feed.xml',
         ]);
 
-        $this->assertResponse(
-            $response,
-            400,
-            '`callback` property is',
-            ['Content-Type' => 'text/plain']
-        );
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseContains($response, "`callback` property is");
+        $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
     }
 
     /**
@@ -111,12 +105,9 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_topic' => $invalid_url,
         ]);
 
-        $this->assertResponse(
-            $response,
-            400,
-            '`topic` property is',
-            ['Content-Type' => 'text/plain']
-        );
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseContains($response, "`topic` property is");
+        $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
     }
 
     public function testSubscribeWithExistingSubscriptionFailsIfSecretIsInvalid()
@@ -138,12 +129,12 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_secret' => '',
         ]);
 
-        $this->assertResponse(
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseEquals(
             $response,
-            400,
-            'secret must either be not given or be a cryptographically random unique secret string.',
-            ['Content-Type' => 'text/plain']
+            "secret must either be not given or be a cryptographically random unique secret string.\n"
         );
+        $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
     }
 
     public function testUnsubscribe()
@@ -164,7 +155,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 202);
+        $this->assertResponseCode($response, 202);
         $this->assertSame('new', $subscription['status']);
         $this->assertSame('unsubscribe', $subscription['pending_request']);
     }
@@ -177,7 +168,8 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $dao = new models\dao\Subscription();
-        $this->assertResponse($response, 400, "Unknown subscription.\n");
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseEquals($response, "Unknown subscription.\n");
         $this->assertSame(0, $dao->count());
     }
 
@@ -191,7 +183,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_url' => $url,
         ]);
 
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(1, $dao->count());
         $content = $dao->listAll()[0];
         $this->assertSame($url, $content['url']);
@@ -207,7 +199,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_topic' => $url,
         ]);
 
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(1, $dao->count());
         $content = $dao->listAll()[0];
         $this->assertSame($url, $content['url']);
@@ -227,7 +219,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_url' => $url,
         ]);
 
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(1, $dao->count());
     }
 
@@ -245,7 +237,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
             'hub_url' => $url,
         ]);
 
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(2, $dao->count());
     }
 
@@ -260,12 +252,9 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
 
         $dao = new models\dao\Content();
         $this->assertSame(0, $dao->count());
-        $this->assertResponse(
-            $response,
-            400,
-            '`url` property is',
-            ['Content-Type' => 'text/plain']
-        );
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseContains($response, '`url` property is');
+        $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
     }
 
     public function invalidUrlProvider()

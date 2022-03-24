@@ -40,7 +40,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $content = $dao->find($id);
         $expected_links = '<https://my-hub.com>; rel="hub", '
                         . '<https://some.site.fr/feed.xml>; rel="self"';
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('fetched', $content['status']);
         $this->assertSame('<some>xml</some>', $content['content']);
         $this->assertSame('application/rss+xml', $content['type']);
@@ -66,7 +66,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->appRun('cli', '/contents/fetch');
 
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(1, $content_delivery_dao->count());
         $content_delivery = $content_delivery_dao->listAll()[0];
         $this->assertSame($subscription_id, intval($content_delivery['subscription_id']));
@@ -91,7 +91,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->appRun('cli', '/contents/fetch');
 
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(0, $content_delivery_dao->count());
     }
 
@@ -114,7 +114,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $content = $dao->find($id);
         $expected_links = '<http://localhost/>; rel="hub", '
                         . '<https://some.site.fr/feed>; rel="self"';
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame($expected_links, $content['links']);
     }
 
@@ -142,7 +142,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $content = $dao->find($id);
         $expected_links = '<https://my-hub.com>; rel="hub", '
                         . '<https://some.site.fr/feed>; rel="self"';
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame($expected_links, $content['links']);
     }
 
@@ -194,7 +194,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('application/octet-stream', $content['type']);
     }
 
@@ -214,7 +214,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/contents/fetch');
 
         $content = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('new', $content['status']);
         $this->assertNull($content['content']);
         $this->assertNull($content['type']);
@@ -239,7 +239,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('delivered', $content['status']);
         $this->assertNull($content_delivery);
     }
@@ -257,7 +257,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('new', $content['status']);
     }
 
@@ -282,7 +282,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('fetched', $content['status']);
         $this->assertNotNull($content_delivery);
     }
@@ -300,7 +300,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/contents/deliver');
 
         $content = $content_dao->find($content_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('delivered', $content['status']);
     }
 
@@ -336,7 +336,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
             $content_content,
             $subscription_secret
         );
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('delivered', $content['status']);
         $this->assertSame($expected_signature, $mock->received_headers['X-Hub-Signature']);
     }
@@ -363,7 +363,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('fetched', $content['status']);
         $this->assertSame(2005, intval($content_delivery['try_at']));
         $this->assertSame(1, intval($content_delivery['tries_count']));
@@ -391,7 +391,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
 
         $content = $content_dao->find($content_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('delivered', $content['status']);
         $this->assertNull($content_delivery);
     }
@@ -421,7 +421,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $content = $content_dao->find($content_id);
         $subscription = $subscription_dao->find($subscription_id);
         $content_delivery = $content_delivery_dao->find($content_delivery_id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('delivered', $content['status']);
         $this->assertNull($subscription);
         $this->assertNull($content_delivery);
@@ -437,7 +437,7 @@ class ContentsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/contents');
 
         $output = $response->render();
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertStringContainsString('https://some.site.fr/feed.xml', $output);
     }
 }

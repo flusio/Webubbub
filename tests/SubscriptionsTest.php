@@ -33,7 +33,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/validate');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
     }
 
@@ -50,7 +50,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/validate');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
 
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
@@ -69,7 +69,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/validate');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertNull($subscription);
 
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
@@ -93,7 +93,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/validate');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('new', $subscription['status']);
 
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
@@ -117,7 +117,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/validate');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertNull($subscription);
 
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
@@ -134,7 +134,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('verified', $subscription['status']);
     }
 
@@ -149,7 +149,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertNull($subscription);
     }
 
@@ -164,7 +164,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
     }
 
@@ -183,7 +183,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame(
             models\Subscription::MIN_LEASE_SECONDS,
             intval($subscription['lease_seconds'])
@@ -204,7 +204,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('new', $subscription['status']);
         $this->assertSame('subscribe', $subscription['pending_request']);
     }
@@ -220,7 +220,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('new', $subscription['status']);
         $this->assertSame('unsubscribe', $subscription['pending_request']);
     }
@@ -238,7 +238,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
@@ -256,7 +256,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
@@ -277,7 +277,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
@@ -298,7 +298,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/verify');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('validated', $subscription['status']);
         $this->assertNull($subscription['pending_request']);
     }
@@ -314,7 +314,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/expire');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('expired', $subscription['status']);
     }
 
@@ -329,7 +329,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions/expire');
 
         $subscription = $dao->find($id);
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertSame('verified', $subscription['status']);
     }
 
@@ -344,7 +344,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/subscriptions');
 
         $output = $response->render();
-        $this->assertResponse($response, 200);
+        $this->assertResponseCode($response, 200);
         $this->assertStringContainsString('https://subscriber.com/callback', $output);
         $this->assertStringContainsString('https://some.site.fr/feed.xml', $output);
     }
