@@ -46,7 +46,10 @@ class Requests
     {
         $callback = $request->param('hub_callback', '');
         $topic = $request->param('hub_topic', '');
-        $lease_seconds = $request->param('hub_lease_seconds');
+        $lease_seconds = $request->paramInteger(
+            'hub_lease_seconds',
+            models\Subscription::DEFAULT_LEASE_SECONDS
+        );
         $secret = $request->param('hub_secret');
 
         if ($secret === '') {

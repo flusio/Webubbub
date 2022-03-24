@@ -30,7 +30,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => 'https://subscriber.com/callback',
             'hub_topic' => 'https://some.site.fr/feed.xml',
-            'hub_lease_seconds' => 432000,
+            'hub_lease_seconds' => '432000',
             'hub_secret' => 'a cryptographically random unique secret string',
         ]);
 
@@ -66,7 +66,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $response = $this->appRun('cli', '/requests/subscribe', [
             'hub_callback' => $callback,
             'hub_topic' => $topic,
-            'hub_lease_seconds' => 543000,
+            'hub_lease_seconds' => '543000',
             'hub_secret' => 'a secret string',
         ]);
 
@@ -78,6 +78,32 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('543000', $subscription['pending_lease_seconds']);
         $this->assertSame('a secret string', $subscription['pending_secret']);
         $this->assertSame('subscribe', $subscription['pending_request']);
+    }
+
+    public function testSubscribeWithNoLeaseSeconds()
+    {
+        $response = $this->appRun('cli', '/requests/subscribe', [
+            'hub_callback' => 'https://subscriber.com/callback',
+            'hub_topic' => 'https://some.site.fr/feed.xml',
+            'hub_secret' => 'a cryptographically random unique secret string',
+        ]);
+
+        $dao = new models\dao\Subscription();
+        $this->assertSame(1, $dao->count());
+        $this->assertResponseCode($response, 202);
+
+        $subscription = $dao->listAll()[0];
+        $this->assertSame('https://subscriber.com/callback', $subscription['callback']);
+        $this->assertSame('https://some.site.fr/feed.xml', $subscription['topic']);
+        $this->assertSame(
+            models\Subscription::DEFAULT_LEASE_SECONDS,
+            intval($subscription['lease_seconds'])
+        );
+        $this->assertSame(
+            'a cryptographically random unique secret string',
+            $subscription['secret']
+        );
+        $this->assertSame('new', $subscription['status']);
     }
 
     /**
