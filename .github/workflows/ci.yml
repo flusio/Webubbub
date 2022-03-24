@@ -1,0 +1,36 @@
+name: Continuous Integration
+
+on:
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
+
+jobs:
+    build:
+        name: PHP ${{ matrix.php-versions }} CI on ${{ matrix.operating-system }}
+
+        runs-on: ${{ matrix.operating-system }}
+
+        strategy:
+            matrix:
+                operating-system: [ubuntu-latest]
+                php-versions: ['7.3', '7.4', '8.0']
+
+        steps:
+        - uses: actions/checkout@v2
+          with:
+              submodules: true
+
+        - name: Setup PHP
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: ${{ matrix.php-versions }}
+              coverage: xdebug
+              extensions: pdo, pdo_pgsql
+
+        - name: Run the linters
+          run: make lint
+
+        - name: Run the test suite
+          run: make test
