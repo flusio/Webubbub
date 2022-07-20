@@ -3,7 +3,7 @@
 First, download Webubbub:
 
 ```console
-$ git clone https://github.com/flusio/Webubbub.git
+$ git clone --recurse-submodules https://github.com/flusio/Webubbub.git
 $ cd Webubbub
 ```
 
@@ -16,7 +16,7 @@ configuration and to allow developers to be quickly efficient. You don’t need
 to know about Docker to develop, but you should install it on your PC, along
 with docker-compose:
 
-- [Instructions for Docker](https://docs.docker.com/install/)
+- [Instructions for Docker](https://docs.docker.com/engine/install/)
 - [Instructions for Docker Compose](https://docs.docker.com/compose/install/)
 
 You can start the application with this `make` command:
