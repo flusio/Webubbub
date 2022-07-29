@@ -97,4 +97,46 @@ class System
 
         return Response::ok('system/migrate/results.txt', ['results' => $results]);
     }
+
+    /**
+     * Clean expired data from the database.
+     *
+     * @param \Minz\Request $request
+     *
+     * @return \Minz\Response
+     */
+    public function clean($request)
+    {
+        $subscription_dao = new models\dao\Subscription();
+        $content_dao = new models\dao\Content();
+
+        $two_weeks_ago = \Minz\Time::ago(2, 'weeks');
+        $db_subscriptions = $subscription_dao->listBy([
+            'status' => ['new', 'validated', 'expired'],
+        ]);
+        $subscription_ids_to_delete = [];
+        foreach ($db_subscriptions as $db_subscription) {
+            $subscription = new models\Subscription($db_subscription);
+            if (
+                $subscription->status === 'expired' &&
+                $subscription->expired_at <= $two_weeks_ago
+            ) {
+                $subscription_ids_to_delete[] = $subscription->id;
+            }
+
+            if (
+                $subscription->status !== 'expired' &&
+                $subscription->created_at <= $two_weeks_ago
+            ) {
+                $subscription_ids_to_delete[] = $subscription->id;
+            }
+        }
+        $subscription_dao->delete($subscription_ids_to_delete);
+
+        $db_contents = $content_dao->listBy([
+            'status' => 'delivered',
+        ]);
+        $content_ids_to_delete = array_column($db_contents, 'id');
+        $content_dao->delete($content_ids_to_delete);
+    }
 }

@@ -40,6 +40,7 @@ class Application
         // These are used to manipulate the system
         $router->addRoute('cli', '/system/init', 'System#init');
         $router->addRoute('cli', '/system/migrate', 'System#migrate');
+        $router->addRoute('cli', '/system/clean', 'System#clean');
 
         $this->engine = new \Minz\Engine($router);
         \Minz\Url::setRouter($router);
