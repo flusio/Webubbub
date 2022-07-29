@@ -33,6 +33,8 @@ class SystemTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->appRun('cli', '/system/clean');
 
+        $this->assertResponseCode($response, 200);
+        $this->assertResponseEquals($response, '3 subscriptions deleted, 1 contents deleted');
         $this->assertFalse($content_dao->exists($content_id));
         $this->assertFalse($subscription_dao->exists($old_new_subscription_id));
         $this->assertFalse($subscription_dao->exists($old_validated_subscription_id));
@@ -58,6 +60,8 @@ class SystemTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->appRun('cli', '/system/clean');
 
+        $this->assertResponseCode($response, 200);
+        $this->assertResponseEquals($response, '0 subscriptions deleted, 0 contents deleted');
         $this->assertTrue($subscription_dao->exists($old_new_subscription_id));
         $this->assertTrue($subscription_dao->exists($old_validated_subscription_id));
         $this->assertTrue($subscription_dao->exists($old_expired_subscription_id));
@@ -79,6 +83,8 @@ class SystemTest extends \PHPUnit\Framework\TestCase
 
         $response = $this->appRun('cli', '/system/clean');
 
+        $this->assertResponseCode($response, 200);
+        $this->assertResponseEquals($response, '0 subscriptions deleted, 0 contents deleted');
         $this->assertTrue($content_dao->exists($new_content_id));
         $this->assertTrue($content_dao->exists($fetched_content_id));
         $this->assertTrue($subscription_dao->exists($verified_subscription_id));

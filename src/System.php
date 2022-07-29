@@ -138,5 +138,12 @@ class System
         ]);
         $content_ids_to_delete = array_column($db_contents, 'id');
         $content_dao->delete($content_ids_to_delete);
+
+        $count_subscriptions_deleted = count($subscription_ids_to_delete);
+        $count_contents_deleted = count($content_ids_to_delete);
+        return Response::text(
+            200,
+            "{$count_subscriptions_deleted} subscriptions deleted, {$count_contents_deleted} contents deleted"
+        );
     }
 }
