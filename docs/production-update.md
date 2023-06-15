@@ -53,7 +53,7 @@ $ sudo chown -R www-data:www-data .
 And run the migrations:
 
 ```console
-$ php ./webubbub --request /system/migrate
+$ php cli --request /system/migrate
 ```
 
 Everything should be fine. If an error happens, please open a ticket so we can

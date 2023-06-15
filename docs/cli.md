@@ -7,7 +7,7 @@ file and search for the `cli` routes.
 A command is called with:
 
 ```console
-$ php webubbub --request /path
+$ php cli --request /path
 ```
 
 `/path` must be replaced by a registered route path (the second argument of the
@@ -15,7 +15,7 @@ $ php webubbub --request /path
 instance:
 
 ```console
-$ php webubbub --request /requests/publish -phub_url=https://a-website.com/topic
+$ php cli --request /requests/publish -phub_url=https://a-website.com/topic
 ```
 
 You can pass multiple arguments by repeating the `-p` flag.
@@ -37,7 +37,7 @@ behaviour, the dots (`.`) must be replaced by underscores (`_`).
 ### Subscribe
 
 ```console
-$ php webubbub --request /requests/subscribe \
+$ php cli --request /requests/subscribe \
                -phub_callback=https://a-website.com/callback \
                -phub_topic=https://a-website.com/topic
 ```
@@ -50,7 +50,7 @@ You can use a real feed URL for the `hub_topic` URL.
 ### Unsubscribe
 
 ```console
-$ php webubbub --request /requests/unsubscribe \
+$ php cli --request /requests/unsubscribe \
                -phub_callback=https://a-website.com/callback \
                -phub_topic=https://a-website.com/topic
 ```
@@ -60,7 +60,7 @@ The same comments than previously apply to this command.
 ### Publish
 
 ```console
-$ php webubbub --request /requests/publish \
+$ php cli --request /requests/publish \
                -phub_topic=https://a-website.com/topic
 ```
 
@@ -74,7 +74,7 @@ sends a `hub.topic` parameter. By consequence, Webubbub accepts both arguments.
 ### List
 
 ```console
-$ php webubbub --request /subscriptions
+$ php cli --request /subscriptions
 ```
 
 Return the list of known subscriptions with their current status. It can be
@@ -83,7 +83,7 @@ very useful to keep an eye on what’s going on on your server.
 ### Verify
 
 ```console
-$ php webubbub --request /subscriptions/verify
+$ php cli --request /subscriptions/verify
 ```
 
 Verify the intents of subscribers by sending them a challenge and checking the
@@ -95,7 +95,7 @@ have to call it directly instead during development.
 ### Expire
 
 ```console
-$ php webubbub --request /subscriptions/expire
+$ php cli --request /subscriptions/expire
 ```
 
 Mark subscriptions which `expired_at` attribute is outdated as `expired`. Such
@@ -109,7 +109,7 @@ have to call it directly instead during development.
 ### List
 
 ```console
-$ php webubbub --request /contents
+$ php cli --request /contents
 ```
 
 Return the list of known contents with their current status. It can be very
@@ -118,7 +118,7 @@ useful to keep an eye on what’s going on on your server.
 ### Fetch
 
 ```console
-$ php webubbub --request /contents/fetch
+$ php cli --request /contents/fetch
 ```
 
 Download the payload of published contents on the hub.
@@ -129,7 +129,7 @@ have to call it directly instead during development.
 ### Deliver
 
 ```console
-$ php webubbub --request /contents/deliver
+$ php cli --request /contents/deliver
 ```
 
 Deliver the downloaded content to the subscribers and mark the content as
@@ -147,7 +147,7 @@ installation of Webubbub, or during its update.
 ### Init
 
 ```console
-$ php webubbub --request /system/init
+$ php cli --request /system/init
 ```
 
 Create the database and set the current migration version to the last known
@@ -162,7 +162,7 @@ $ make init NODOCKER=true
 ### Migrate
 
 ```console
-$ php webubbub --request /system/migrate
+$ php cli --request /system/migrate
 ```
 
 Execute the remaining migrations. A migration automate structural changes that

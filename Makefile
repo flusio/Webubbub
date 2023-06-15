@@ -45,7 +45,7 @@ install: ## Install the dependencies
 
 .PHONY: init
 init: .env ## Initialize the application
-	$(PHP) ./webubbub --request /system/init
+	$(PHP) cli --request /system/init
 
 .PHONY: create-migration
 create-migration: ## Create a migration file
@@ -57,7 +57,7 @@ create-migration: ## Create a migration file
 
 .PHONY: migrate
 migrate: ## Apply pending migrations
-	$(PHP) ./webubbub --request /system/migrate
+	$(PHP) cli --request /system/migrate
 
 .PHONY: test
 test: ## Run the tests suite

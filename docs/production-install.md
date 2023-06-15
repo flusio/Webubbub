@@ -51,7 +51,7 @@ correctly.
 Then, you have to initialize the database:
 
 ```console
-$ php ./webubbub --request /system/init
+$ php cli --request /system/init
 ```
 
 You should find a database under `./data/db.sqlite`. Now, give correct

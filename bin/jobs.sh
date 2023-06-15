@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 
-php ./webubbub --request /subscriptions/validate
-php ./webubbub --request /subscriptions/verify
-php ./webubbub --request /subscriptions/expire
-php ./webubbub --request /contents/fetch
-php ./webubbub --request /contents/deliver
+php cli --request /subscriptions/validate
+php cli --request /subscriptions/verify
+php cli --request /subscriptions/expire
+php cli --request /contents/fetch
+php cli --request /contents/deliver
 
-[ $(( $RANDOM % 60 )) == 0 ] && php ./webubbub --request /system/clean
+[ $(( $RANDOM % 60 )) == 0 ] && php cli --request /system/clean
