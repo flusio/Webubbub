@@ -15,7 +15,7 @@ allow that, and you should not install Webubbub if you can’t. This is for
 security reasons, to don’t expose all the files on the Web, especially the
 `data` directory. If you can afford it, you can rent a small VPS for cheap.
 
-**Webubbub only supports SQLite database and PHP from 7.2 to 7.4 for now.**
+**Webubbub only supports SQLite database and PHP 8.0 for now.**
 
 That being said, here’s the instructions to install Webubbub. It’s expected you
 already have a server with a Web server and <abbr>PHP</abbr> installed. The
