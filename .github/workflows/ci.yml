@@ -32,6 +32,9 @@ jobs:
               coverage: xdebug
               extensions: pdo, pdo_pgsql
 
+        - name: Install the dependencies
+          run: make install
+
         - name: Run the linters
           run: make lint
 

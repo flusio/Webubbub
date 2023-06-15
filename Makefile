@@ -4,8 +4,10 @@ USER = $(shell id -u):$(shell id -g)
 
 ifdef NODOCKER
 	PHP = php
+	COMPOSER = composer
 else
 	PHP = ./docker/bin/php
+	COMPOSER = ./docker/bin/composer
 endif
 
 .PHONY: docker-start
@@ -20,6 +22,10 @@ docker-build: ## Rebuild the Docker containers
 .PHONY: docker-stop
 docker-stop: ## Clean the Docker stuff
 	docker-compose -p webubbub -f docker/docker-compose.yml down
+
+.PHONY: install
+install: ## Install the dependencies
+	$(COMPOSER) install
 
 .PHONY: init
 init: .env ## Initialize the application
@@ -38,16 +44,16 @@ migrate: ## Apply pending migrations
 	$(PHP) ./webubbub --request /system/migrate
 
 .PHONY: test
-test: bin/phpunit ## Run the tests suite
-	$(PHP) ./bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
+test: ## Run the tests suite
+	$(PHP) ./vendor/bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
 
 .PHONY: lint
-lint: bin/phpcs ## Run the linter on the PHP files
-	$(PHP) ./bin/phpcs --standard=PSR12 ./src ./tests
+lint: ## Run the linter on the PHP files
+	$(PHP) ./vendor/bin/phpcs --standard=PSR12 ./src ./tests
 
 .PHONY: lint-fix
-lint-fix: bin/phpcbf ## Fix the errors raised by the linter
-	$(PHP) ./bin/phpcbf --standard=PSR12 ./src ./tests
+lint-fix: ## Fix the errors raised by the linter
+	$(PHP) ./vendor/bin/phpcbf --standard=PSR12 ./src ./tests
 
 .PHONY: help
 help:
@@ -55,18 +61,3 @@ help:
 
 .env:
 	@cp env.sample .env
-
-bin/phpunit:
-	mkdir -p bin/
-	wget -O bin/phpunit https://phar.phpunit.de/phpunit-9.5.19.phar
-	echo '8941fa4d4183dc7e5b2582300c120da910135e6e4f1173fb4a9b4b658bd4ae43 bin/phpunit' | sha256sum -c - || rm bin/phpunit
-
-bin/phpcs:
-	mkdir -p bin/
-	wget -O bin/phpcs https://github.com/squizlabs/PHP_CodeSniffer/releases/download/3.6.2/phpcs.phar
-	echo 'c0832cdce3e419c337011640ddebd08b7daac32344250ac7cfbc799309506f77 bin/phpcs' | sha256sum -c - || rm bin/phpcs
-
-bin/phpcbf:
-	mkdir -p bin/
-	wget -O bin/phpcbf https://github.com/squizlabs/PHP_CodeSniffer/releases/download/3.6.2/phpcbf.phar
-	echo '28d74aaaa7ad251c4ed23481e7fa18b755450ee57872d22be0ecb8fe21f50dc8 bin/phpcbf' | sha256sum -c - || rm bin/phpcbf

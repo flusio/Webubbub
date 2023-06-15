@@ -19,7 +19,13 @@ with docker-compose:
 - [Instructions for Docker](https://docs.docker.com/engine/install/)
 - [Instructions for Docker Compose](https://docs.docker.com/compose/install/)
 
-You can start the application with this `make` command:
+First, install the development dependencies:
+
+```console
+$ make install
+```
+
+You can start the application with:
 
 ```console
 $ make docker-start
@@ -35,6 +41,12 @@ If you already have a Nginx server running on your computer with PHP, you can
 use it for development. Please note the server should run on port 8000. You
 should also verify it’s correctly configured. Go to [this URL](http://localhost:8000/dummy-subscriber?hub.challenge=foo)
 and check the string `foo` is displayed.
+
+To install the development dependencies, run:
+
+```console
+$ make install NODOCKER=true
+```
 
 If it doesn’t work, please compare your actual configuration [with the one used
 with Docker](../docker/nginx.conf).
@@ -52,4 +64,4 @@ $ # or if you don't use Docker
 $ make init NODOCKER=true
 ```
 
-And, you’re done! That was pretty easy :)
+And, you’re done!
