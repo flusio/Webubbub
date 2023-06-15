@@ -30,7 +30,7 @@ jobs:
           with:
               php-version: ${{ matrix.php-versions }}
               coverage: xdebug
-              extensions: pdo, pdo_pgsql
+              extensions: pdo
 
         - name: Install the dependencies
           run: make install
