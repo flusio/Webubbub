@@ -8,6 +8,7 @@ on:
 
 env:
     NODOCKER: true
+    COVERAGE: --coverage-text
 
 jobs:
     build:

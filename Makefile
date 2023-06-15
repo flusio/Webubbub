@@ -10,6 +10,22 @@ else
 	COMPOSER = ./docker/bin/composer
 endif
 
+ifndef COVERAGE
+	COVERAGE = --coverage-html ./coverage
+endif
+
+ifdef FILTER
+	PHPUNIT_FILTER = --filter=$(FILTER)
+else
+	PHPUNIT_FILTER =
+endif
+
+ifdef FILE
+	PHPUNIT_FILE = $(FILE)
+else
+	PHPUNIT_FILE = ./tests
+endif
+
 .PHONY: docker-start
 docker-start: ## Start a development server
 	@echo "Running webserver on http://localhost:8000"
@@ -45,7 +61,12 @@ migrate: ## Apply pending migrations
 
 .PHONY: test
 test: ## Run the tests suite
-	$(PHP) ./vendor/bin/phpunit --bootstrap ./tests/bootstrap.php ./tests
+	XDEBUG_MODE=coverage $(PHP) ./vendor/bin/phpunit \
+		$(COVERAGE) --whitelist ./src \
+		--bootstrap ./tests/bootstrap.php \
+		--testdox \
+		$(PHPUNIT_FILTER) \
+		$(PHPUNIT_FILE)
 
 .PHONY: lint
 lint: ## Run the linter on the PHP files
