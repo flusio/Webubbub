@@ -69,7 +69,8 @@ test: ## Run the tests suite
 		$(PHPUNIT_FILE)
 
 .PHONY: lint
-lint: ## Run the linter on the PHP files
+lint: ## Run the linters on the PHP files
+	$(PHP) ./vendor/bin/phpstan analyse --memory-limit 1G -c phpstan.neon
 	$(PHP) ./vendor/bin/phpcs --standard=PSR12 ./src ./tests
 
 .PHONY: lint-fix

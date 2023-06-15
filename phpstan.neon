@@ -1,0 +1,10 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - lib
+        - tests
+
+    excludePaths:
+        analyse:
+            - lib/Minz/*
