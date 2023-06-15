@@ -156,7 +156,7 @@ one.
 It is aliased by:
 
 ```console
-$ make init
+$ make init NODOCKER=true
 ```
 
 ### Migrate
@@ -171,5 +171,5 @@ would be done by the administrator otherwise (e.g. modifying the database struct
 It is aliased by:
 
 ```console
-$ make migrate
+$ make migrate NODOCKER=true
 ```

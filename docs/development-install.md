@@ -22,18 +22,12 @@ with docker-compose:
 You can start the application with this `make` command:
 
 ```console
-$ make start
+$ make docker-start
 ```
 
 It will download and start a `nginx` and a `php` containers. The Nginx server
 is listening on [localhost:8000](http://localhost:8000). The servers are not
 run in daemon mode so you can keep an eye on the received requests and logs.
-
-You can stop the server by hitting <kbd>ctrl+C</kbd> or with:
-
-```console
-$ make stop
-```
 
 ### Local Nginx
 
@@ -54,8 +48,8 @@ Then, you must initialize the database with:
 
 ```console
 $ make init
-$ # or if you use Docker
-$ DOCKER=true make init
+$ # or if you don't use Docker
+$ make init NODOCKER=true
 ```
 
 And, you’re done! That was pretty easy :)
