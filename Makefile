@@ -3,7 +3,7 @@
 USER = $(shell id -u):$(shell id -g)
 
 ifdef DOCKER
-	PHP = docker-compose -f docker/docker-compose.yml run --no-deps php php
+	PHP = ./docker/bin/php
 else
 	PHP = php
 endif
