@@ -1,0 +1,13 @@
+<?php foreach ($subscriptions as $subscription): ?>
+id=<?= $subscription->id ?>
+
+callback=<?= $subscription->callback ?>
+
+topic=<?= $subscription->topic ?>
+
+status=<?= $subscription->status ?>
+
+pending_request=<?= $subscription->pending_request ?>
+
+
+<?php endforeach; ?>

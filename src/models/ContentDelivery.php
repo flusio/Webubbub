@@ -2,71 +2,76 @@
 
 namespace Webubbub\models;
 
+use Minz\Database;
+
 /**
  * Represent the content to deliver to a specific subscriber.
  *
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
  */
-class ContentDelivery extends \Minz\Model
+#[Database\Table(name: 'content_deliveries')]
+class ContentDelivery
 {
+    use Database\Recordable;
+
     public const MAX_TRIES_COUNT = 7;
 
-    public const PROPERTIES = [
-        'id' => 'integer',
+    #[Database\Column]
+    public int $id;
 
-        'subscription_id' => [
-            'type' => 'integer',
-            'required' => true,
-        ],
+    #[Database\Column]
+    public int $subscription_id;
 
-        'content_id' => [
-            'type' => 'integer',
-            'required' => true,
-        ],
+    #[Database\Column]
+    public int $content_id;
 
-        'created_at' => [
-            'type' => 'datetime',
-            'format' => 'U',
-        ],
+    #[Database\Column(format: 'U')]
+    public \DateTimeImmutable $created_at;
 
-        'try_at' => [
-            'type' => 'datetime',
-            'format' => 'U',
-            'required' => true,
-        ],
+    #[Database\Column(format: 'U')]
+    public \DateTimeImmutable $try_at;
 
-        'tries_count' => [
-            'type' => 'integer',
-            'required' => true,
-        ],
-    ];
+    #[Database\Column]
+    public int $tries_count;
 
-    /**
-     * @param integer $subscription_id
-     * @param integer $content_id
-     *
-     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
-     *
-     * @return \Webubbub\models\ContentDelivery
-     */
-    public static function new($subscription_id, $content_id)
+    public function __construct(int $subscription_id, int $content_id)
     {
-        return new self([
-            'subscription_id' => $subscription_id,
-            'content_id' => $content_id,
-            'try_at' => \Minz\Time::now(),
-            'tries_count' => 0,
-        ]);
+        $this->subscription_id = $subscription_id;
+        $this->content_id = $content_id;
+        $this->try_at = \Minz\Time::now();
+        $this->tries_count = 0;
+    }
+
+    public function subscription(): Subscription
+    {
+        $subscription = Subscription::find($this->subscription_id);
+
+        if (!$subscription) {
+            throw new \Exception("Content delivery #{$this->id} subscription does not exist");
+        }
+
+        return $subscription;
+    }
+
+    public function content(): Content
+    {
+        $content = Content::find($this->content_id);
+
+        if (!$content) {
+            throw new \Exception("Content delivery #{$this->id} content does not exist");
+        }
+
+        return $content;
     }
 
     /**
      * Set the try_at property to a later time and increase the tries_count.
      *
-     * @throws \Webubbub\models\Errors\ContentDeliveryError if the maximum allowed
-     *                                                      tries count is reached
+     * @throws Errors\ContentDeliveryError
+     *     if the maximum allowed tries count is reached
      */
-    public function retryLater()
+    public function retryLater(): void
     {
         if ($this->tries_count >= self::MAX_TRIES_COUNT) {
             throw new Errors\ContentDeliveryError(
@@ -77,10 +82,8 @@ class ContentDelivery extends \Minz\Model
 
         $tries_count = $this->tries_count + 1;
         $interval_seconds = pow(5, $tries_count);
-        $try_at = \Minz\Time::now();
-        $try_at->modify("+{$interval_seconds} seconds");
 
-        $this->try_at = $try_at;
+        $this->try_at = \Minz\Time::fromNow($interval_seconds, 'seconds');
         $this->tries_count = $tries_count;
     }
 }

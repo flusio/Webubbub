@@ -1,9 +1,0 @@
-[Unit]
-Description=Execute Webubbub jobs
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=sh /var/www/Webubbub/bin/jobs.sh
-User=www-data
-Group=www-data

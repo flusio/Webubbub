@@ -1,12 +1,20 @@
 <?php
 
 spl_autoload_register(function ($class_name) {
+    $app_name = 'Webubbub';
+    $app_path = __DIR__;
+    $lib_path = $app_path . '/lib';
+    $tests_namespace = 'tests';
+
     if (strpos($class_name, 'Minz') === 0) {
-        $minz_autoload_path = __DIR__ . '/lib/Minz/autoload.php';
-        include($minz_autoload_path);
-    } elseif (strpos($class_name, 'Webubbub') === 0) {
-        $class_name = substr($class_name, 9);
+        include($lib_path . '/Minz/autoload.php');
+    } elseif (strpos($class_name, $app_name) === 0) {
+        $class_name = substr($class_name, strlen($app_name) + 1);
         $class_path = str_replace('\\', '/', $class_name) . '.php';
-        include(__DIR__ . '/src/' . $class_path);
+        include($app_path . '/src/' . $class_path);
+    } elseif (strpos($class_name, $tests_namespace) === 0) {
+        $class_name = substr($class_name, strlen($tests_namespace) + 1);
+        $class_path = str_replace('\\', '/', $class_name) . '.php';
+        include($app_path . '/tests/' . $class_path);
     }
 });

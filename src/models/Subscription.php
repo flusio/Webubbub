@@ -2,6 +2,9 @@
 
 namespace Webubbub\models;
 
+use Minz\Database;
+use Minz\Validable;
+
 /**
  * Represent the subscription of a subscriber (callback) to a topic.
  *
@@ -41,8 +44,12 @@ namespace Webubbub\models;
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
  */
-class Subscription extends \Minz\Model
+#[Database\Table(name: 'subscriptions')]
+class Subscription
 {
+    use Database\Recordable;
+    use Validable;
+
     public const MIN_LEASE_SECONDS = 86400; // Equivalent to 1 day
 
     public const DEFAULT_LEASE_SECONDS = 864000; // Equivalent to 10 days
@@ -55,100 +62,93 @@ class Subscription extends \Minz\Model
 
     public const VALID_REQUESTS = ['subscribe', 'unsubscribe'];
 
-    public const PROPERTIES = [
-        'id' => 'integer',
+    #[Database\Column]
+    public int $id;
 
-        'created_at' => [
-            'type' => 'datetime',
-            'format' => 'U',
-        ],
+    #[Database\Column(format: 'U')]
+    public \DateTimeImmutable $created_at;
 
-        'expired_at' => [
-            'type' => 'datetime',
-            'format' => 'U',
-        ],
+    #[Database\Column(format: 'U')]
+    public ?\DateTimeImmutable $expired_at = null;
 
-        'status' => [
-            'type' => 'string',
-            'required' => true,
-            'validator' => '\Webubbub\models\Subscription::validateStatus',
-        ],
+    #[Database\Column]
+    #[Validable\Inclusion(in: self::VALID_STATUSES, message: 'status "{value}" is invalid')]
+    public string $status;
 
-        'callback' => [
-            'type' => 'string',
-            'required' => true,
-            'validator' => '\Webubbub\models\Subscription::validateUrl',
-        ],
+    #[Database\Column]
+    #[Validable\Presence(message: 'callback "{value}" is invalid URL')]
+    #[Validable\Url(message: 'callback "{value}" is invalid URL')]
+    public string $callback;
 
-        'topic' => [
-            'type' => 'string',
-            'required' => true,
-            'validator' => '\Webubbub\models\Subscription::validateUrl',
-        ],
+    #[Database\Column]
+    #[Validable\Presence(message: 'topic "{value}" is invalid URL')]
+    #[Validable\Url(message: 'topic "{value}" is invalid URL')]
+    public string $topic;
 
-        'lease_seconds' => [
-            'type' => 'integer',
-            'required' => true,
-            'validator' => '\Webubbub\models\Subscription::validateLeaseSeconds',
-        ],
+    #[Database\Column]
+    #[Validable\Comparison(
+        greater_or_equal: self::MIN_LEASE_SECONDS,
+        less_or_equal: self::MAX_LEASE_SECONDS,
+        message: 'lease_seconds must be between {greater_or_equal} and {less_or_equal}'
+    )]
+    public int $lease_seconds;
 
-        'secret' => [
-            'type' => 'string',
-            'validator' => '\Webubbub\models\Subscription::validateSecret',
-        ],
+    #[Database\Column]
+    #[Validable\Length(
+        max: self::MAX_SECRET_LENGTH,
+        message: 'secret must be less or equal than 200 bytes in length'
+    )]
+    public ?string $secret = null;
 
-        'pending_request' => [
-            'type' => 'string',
-            'validator' => '\Webubbub\models\Subscription::validateRequest',
-        ],
+    #[Database\Column]
+    #[Validable\Inclusion(in: self::VALID_REQUESTS, message: '{value} is not a valid status.')]
+    public ?string $pending_request = null;
 
-        'pending_lease_seconds' => [
-            'type' => 'integer',
-            'validator' => '\Webubbub\models\Subscription::validateLeaseSeconds',
-        ],
+    #[Database\Column]
+    #[Validable\Comparison(
+        greater_or_equal: self::MIN_LEASE_SECONDS,
+        less_or_equal: self::MAX_LEASE_SECONDS,
+        message: 'lease_seconds must be between {greater_or_equal} and {less_or_equal}'
+    )]
+    public ?int $pending_lease_seconds = null;
 
-        'pending_secret' => [
-            'type' => 'string',
-            'validator' => '\Webubbub\models\Subscription::validateSecret',
-        ],
-    ];
+    #[Database\Column]
+    #[Validable\Length(
+        max: self::MAX_SECRET_LENGTH,
+        message: 'secret must be less or equal than 200 bytes in length'
+    )]
+    public ?string $pending_secret = null;
 
-    /**
-     * @param string $callback
-     * @param string $topic
-     * @param integer $lease_seconds
-     * @param string|null $secret
-     *
-     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
-     *
-     * @return \Webubbub\models\Subscription
-     */
-    public static function new($callback, $topic, $lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
-    {
-        return new Subscription([
-            'callback' => $callback,
-            'topic' => $topic,
-            'lease_seconds' => self::boundLeaseSeconds($lease_seconds),
-            'secret' => $secret,
-            'status' => 'new',
-            'pending_request' => 'subscribe',
-        ]);
+    public function __construct(
+        string $callback,
+        string $topic,
+        int $lease_seconds = self::DEFAULT_LEASE_SECONDS,
+        ?string $secret = null
+    ) {
+        $this->callback = $callback;
+        $this->topic = $topic;
+        $this->lease_seconds = self::boundLeaseSeconds($lease_seconds);
+        $this->secret = $secret;
+        $this->status = 'new';
+        $this->pending_request = 'subscribe';
     }
 
     /**
      * Return wheter a subscription is allowed on the hub or not.
-     *
-     * @return boolean
      */
-    public function isAllowed()
+    public function isAllowed(): bool
     {
-        $allowed_topic_origins = explode(',', \Minz\Configuration::$application['allowed_topic_origins']);
-        if (!$allowed_topic_origins) {
+        $allowed_origins = \Minz\Configuration::$application['allowed_topic_origins'];
+        assert(is_string($allowed_origins));
+
+        if ($allowed_origins === '') {
             // Empty value means open hub
             return true;
         }
 
-        foreach ($allowed_topic_origins as $allowed_origin) {
+        $allowed_origins = explode(',', $allowed_origins);
+
+        foreach ($allowed_origins as $allowed_origin) {
             $allowed_origin = trim($allowed_origin);
 
             $origin_length = strlen($allowed_origin);
@@ -156,6 +156,7 @@ class Subscription extends \Minz\Model
                 return true;
             }
         }
+
         return false;
     }
 
@@ -164,12 +165,12 @@ class Subscription extends \Minz\Model
      *
      * @param string $challenge The challenge string to be verified with the subscriber
      *
-     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
-     * @throws \Webubbub\models\Errors\SubscriptionError if the challenge is empty
+     * @throws Errors\SubscriptionError if pending request is null
+     * @throws Errors\SubscriptionError if the challenge is empty
      *
      * @return string The callback with additional parameters appended
      */
-    public function intentCallback($challenge)
+    public function intentCallback(string $challenge): string
     {
         if ($this->pending_request === null) {
             throw new Errors\SubscriptionError(
@@ -203,12 +204,8 @@ class Subscription extends \Minz\Model
 
     /**
      * Return the callback to use to deny subscriber.
-     *
-     * @return string The reason of the deny
-     *
-     * @return string The callback with additional parameters appended
      */
-    public function denyCallback($reason)
+    public function denyCallback(string $reason): string
     {
         if (strpos($this->callback, "?")) {
             $query_char = '&';
@@ -232,9 +229,9 @@ class Subscription extends \Minz\Model
     /**
      * Set the subscription as verified
      *
-     * @throws \Webubbub\models\Errors\SubscriptionError if pending request is null
+     * @throws Errors\SubscriptionError if pending request is null
      */
-    public function verify()
+    public function verify(): void
     {
         if ($this->pending_request === null) {
             throw new Errors\SubscriptionError(
@@ -252,6 +249,7 @@ class Subscription extends \Minz\Model
             $this->lease_seconds = $this->pending_lease_seconds;
             $this->pending_lease_seconds = null;
         }
+
         if ($this->pending_secret) {
             $this->secret = $this->pending_secret;
             $this->pending_secret = null;
@@ -261,23 +259,15 @@ class Subscription extends \Minz\Model
     /**
      * Renew a subscription by setting (pending) lease seconds and secret. It
      * also sets the pending request to "subscribe".
-     *
-     * @param integer $lease_seconds
-     * @param string|null $secret
-     *
-     * @throws \Minz\Error\ModelPropertyError if one of the value is invalid
      */
-    public function renew($lease_seconds = self::DEFAULT_LEASE_SECONDS, $secret = null)
+    public function renew(int $lease_seconds = self::DEFAULT_LEASE_SECONDS, ?string $secret = null): void
     {
         $this->pending_lease_seconds = self::boundLeaseSeconds($lease_seconds);
         $this->pending_secret = $secret;
         $this->pending_request = 'subscribe';
     }
 
-    /**
-     * @return boolean True if the subscription should expire, false otherwise
-     */
-    public function shouldExpire()
+    public function shouldExpire(): bool
     {
         if ($this->expired_at) {
             return $this->expired_at <= \Minz\Time::now();
@@ -289,10 +279,10 @@ class Subscription extends \Minz\Model
     /**
      * Set the status to expired
      *
-     * @throws \Webubbub\models\Errors\SubscriptionError if status is not verified
-     * @throws \Webubbub\models\Errors\SubscriptionError if expired_at is not over
+     * @throws Errors\SubscriptionError if status is not verified
+     * @throws Errors\SubscriptionError if expired_at is not over
      */
-    public function expire()
+    public function expire(): void
     {
         if ($this->status !== 'verified') {
             throw new Errors\SubscriptionError(
@@ -312,7 +302,7 @@ class Subscription extends \Minz\Model
     /**
      * Set the pending request to "unsubscribe"
      */
-    public function requestUnsubscription()
+    public function requestUnsubscription(): void
     {
         $this->pending_request = 'unsubscribe';
     }
@@ -320,19 +310,14 @@ class Subscription extends \Minz\Model
     /**
      * Set the pending request to null
      */
-    public function cancelRequest()
+    public function cancelRequest(): void
     {
         $this->pending_request = null;
         $this->pending_lease_seconds = null;
         $this->pending_secret = null;
     }
 
-    /**
-     * @param integer $lease_seconds
-     *
-     * @return integer
-     */
-    private static function boundLeaseSeconds($lease_seconds)
+    private static function boundLeaseSeconds(int $lease_seconds): int
     {
         return max(
             min($lease_seconds, self::MAX_LEASE_SECONDS),
@@ -341,91 +326,21 @@ class Subscription extends \Minz\Model
     }
 
     /**
-     * Check that an URL is valid.
+     * Return Subscriptions where pending_request is not null and status is
+     * not new.
      *
-     * @param string $url
-     *
-     * @return boolean Return true if the URL is valid, false otherwise
+     * @return Subscription[]
      */
-    public static function validateUrl($url)
+    public static function listWherePendingRequests(): array
     {
-        $url_components = parse_url($url);
-        if (!$url_components || !isset($url_components['scheme'])) {
-            return false;
-        }
+        $sql = <<<SQL
+            SELECT * FROM subscriptions
+            WHERE pending_request IS NOT NULL
+            AND status != 'new'
+        SQL;
 
-        $url_scheme = $url_components['scheme'];
-        return $url_scheme === 'http' || $url_scheme === 'https';
-    }
-
-    /**
-     * Check the given status is valid.
-     *
-     * @param string $status
-     *
-     * @return boolean|string It returns true if the status is valid, or a string
-     *                        explaining the error otherwise.
-     */
-    public static function validateStatus($status)
-    {
-        if (!in_array($status, self::VALID_STATUSES)) {
-            $statuses_as_string = implode(', ', self::VALID_STATUSES);
-            return "valid values are {$statuses_as_string}";
-        }
-
-        return true;
-    }
-
-    /**
-     * Check the given request is valid.
-     *
-     * @param string $request
-     *
-     * @return boolean|string It returns true if the request is valid, or a string
-     *                        explaining the error otherwise
-     */
-    public static function validateRequest($request)
-    {
-        if (!in_array($request, self::VALID_REQUESTS)) {
-            $requests_as_string = implode(', ', self::VALID_REQUESTS);
-            return "valid values are {$requests_as_string}";
-        }
-
-        return true;
-    }
-
-    /**
-     * Check the given lease is between MIN_LEASE_SECONDS and MAX_LEASE_SECONDS.
-     *
-     * The lease seconds should always be bound with the static `boundLeaseSeconds`
-     * method.
-     *
-     * @param integer $lease_seconds
-     *
-     * @return boolean It returns true if the lease value is valid, false otherwise
-     */
-    public static function validateLeaseSeconds($lease_seconds)
-    {
-        return (
-            $lease_seconds >= self::MIN_LEASE_SECONDS &&
-            $lease_seconds <= self::MAX_LEASE_SECONDS
-        );
-    }
-
-    /**
-     * Check the given secret is valid.
-     *
-     * @param string $secret
-     *
-     * @return boolean|string It returns true if the secret is valid, or a string
-     *                        explaining the error otherwise
-     */
-    public static function validateSecret($secret)
-    {
-        if (strlen($secret) > self::MAX_SECRET_LENGTH) {
-            return 'must be equal or less than 200 bytes in length';
-        }
-
-        return true;
+        $database = \Minz\Database::get();
+        $statement = $database->query($sql);
+        return self::fromDatabaseRows($statement->fetchAll());
     }
 }

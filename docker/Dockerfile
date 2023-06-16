@@ -1,11 +1,11 @@
-FROM php:8.0-fpm
+FROM php:8.2-fpm
 
 ENV COMPOSER_HOME /tmp
 
 RUN apt-get update \
     && apt-get install -y git libzip-dev unzip \
-    && pecl install xdebug-3.1.6 \
-    && docker-php-ext-install -j$(nproc) zip \
+    && pecl install xdebug \
+    && docker-php-ext-install -j$(nproc) pcntl zip \
     && docker-php-ext-enable xdebug \
     && echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 

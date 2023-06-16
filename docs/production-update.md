@@ -53,7 +53,13 @@ $ sudo chown -R www-data:www-data .
 And run the migrations:
 
 ```console
-$ php cli --request /system/migrate
+$ php cli migrations setup --seed
+```
+
+Finally, restart the jobs worker:
+
+```console
+$ sudo systemctl restart webubbub.service
 ```
 
 Everything should be fine. If an error happens, please open a ticket so we can

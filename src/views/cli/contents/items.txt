@@ -1,0 +1,9 @@
+<?php foreach ($contents as $content): ?>
+id=<?= $content->id ?>
+
+url=<?= $content->url ?>
+
+status=<?= $content->status ?>
+
+
+<?php endforeach; ?>

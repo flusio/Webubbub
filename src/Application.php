@@ -2,55 +2,63 @@
 
 namespace Webubbub;
 
+use Minz\Request;
+
+/**
+ * @phpstan-import-type ResponseReturnable from \Minz\Response
+ *
+ * @author Marien Fressinaud <dev@marienfressinaud.fr>
+ * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
+ */
 class Application
 {
-    /** @var \Minz\Engine **/
-    private $engine;
-
-    public function __construct()
+    /**
+     * @return ResponseReturnable
+     */
+    public function run(Request $request): mixed
     {
-        $router = new \Minz\Router();
-        $router->addRoute('get', '/', 'Home#index');
+        if ($request->method() === 'CLI') {
+            $this->initCli($request);
+        } else {
+            $this->initApp($request);
+        }
 
-        // This is the main route that subscribers and publishers must use
-        $router->addRoute('post', '/', 'Requests#handle');
-        $router->addRoute('cli', '/', 'Requests#handle');
-
-        // These are the same but don't require the `mode` parameter (only CLI)
-        $router->addRoute('cli', '/requests/subscribe', 'Requests#subscribe');
-        $router->addRoute('cli', '/requests/unsubscribe', 'Requests#unsubscribe');
-        $router->addRoute('cli', '/requests/publish', 'Requests#publish');
-
-        // This route just simulate a subscriber, just for testing
-        $router->addRoute('get', '/dummy-subscriber', 'Home#dummySubscriber');
-        $router->addRoute('post', '/dummy-subscriber', 'Home#dummySubscriber');
-
-        // These ones are intended to be called regularly on the server (e.g.
-        // via a cron task and later via a job queue).
-        $router->addRoute('cli', '/subscriptions/validate', 'Subscriptions#validate');
-        $router->addRoute('cli', '/subscriptions/verify', 'Subscriptions#verify');
-        $router->addRoute('cli', '/subscriptions/expire', 'Subscriptions#expire');
-        $router->addRoute('cli', '/contents/fetch', 'Contents#fetch');
-        $router->addRoute('cli', '/contents/deliver', 'Contents#deliver');
-
-        // These routes list what is in database, to help to debug
-        $router->addRoute('cli', '/subscriptions', 'Subscriptions#items');
-        $router->addRoute('cli', '/contents', 'Contents#items');
-
-        // These are used to manipulate the system
-        $router->addRoute('cli', '/system/init', 'System#init');
-        $router->addRoute('cli', '/system/migrate', 'System#migrate');
-        $router->addRoute('cli', '/system/clean', 'System#clean');
-
-        $this->engine = new \Minz\Engine($router);
-        \Minz\Url::setRouter($router);
+        return \Minz\Engine::run($request);
     }
 
-    public function run($request)
+    private function initApp(Request $request): void
     {
-        return $this->engine->run($request, [
+        $router = Router::loadApp();
+
+        \Minz\Engine::init($router, [
+            'start_session' => false,
             'not_found_view_pointer' => 'not_found.phtml',
             'internal_server_error_view_pointer' => 'internal_server_error.phtml',
+            'controller_namespace' => '\\Webubbub\\controllers',
+        ]);
+    }
+
+    private function initCli(Request $request): void
+    {
+        $router = Router::loadCli();
+
+        $bin = $request->param('bin');
+        $bin = $bin === 'cli' ? 'php cli' : $bin;
+
+        $current_command = $request->path();
+        $current_command = trim(str_replace('/', ' ', $current_command));
+
+        \Minz\Engine::init($router, [
+            'start_session' => false,
+            'not_found_view_pointer' => 'cli/not_found.txt',
+            'internal_server_error_view_pointer' => 'cli/internal_server_error.txt',
+            'controller_namespace' => '\\Webubbub\\cli',
+        ]);
+
+        \Minz\Output\View::declareDefaultVariables([
+            'error' => null,
+            'bin' => $bin,
+            'current_command' => $current_command,
         ]);
     }
 }

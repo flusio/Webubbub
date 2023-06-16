@@ -59,9 +59,9 @@ documentation!
 Then, you must initialize the database with:
 
 ```console
-$ make init
+$ make setup
 $ # or if you don't use Docker
-$ make init NODOCKER=true
+$ make setup NODOCKER=true
 ```
 
 And, you’re done!

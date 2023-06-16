@@ -43,21 +43,9 @@ docker-stop: ## Clean the Docker stuff
 install: ## Install the dependencies
 	$(COMPOSER) install
 
-.PHONY: init
-init: .env ## Initialize the application
-	$(PHP) cli --request /system/init
-
-.PHONY: create-migration
-create-migration: ## Create a migration file
-	MIGRATION_NAME=$(shell date +%Y%m%d_%H%M%S)_$(NAME) ;\
-	MIGRATION_FILE=src/migrations/$${MIGRATION_NAME}.php ;\
-	cp docs/migration.template.php $${MIGRATION_FILE} ;\
-	sed -i s/{NAMESPACE}/$${MIGRATION_NAME}/ $${MIGRATION_FILE} ;\
-	$(EDITOR) $${MIGRATION_FILE}
-
-.PHONY: migrate
-migrate: ## Apply pending migrations
-	$(PHP) cli --request /system/migrate
+.PHONY: setup
+setup: .env ## Initialize the application
+	$(PHP) cli migrations setup --seed
 
 .PHONY: test
 test: ## Run the tests suite

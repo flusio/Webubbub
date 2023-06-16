@@ -8,126 +8,10 @@ class SubscriptionTest extends TestCase
 {
     use \Minz\Tests\TimeHelper;
 
-    public function testNew()
+    public function testVerify(): void
     {
-        $callback = 'https://subscriber.com/callback';
-        $topic = 'https://some.site.fr/feed.xml';
-
-        $subscription = Subscription::new($callback, $topic);
-
-        $this->assertSame($callback, $subscription->callback);
-        $this->assertSame($topic, $subscription->topic);
-        $this->assertSame(
-            Subscription::DEFAULT_LEASE_SECONDS,
-            $subscription->lease_seconds
-        );
-        $this->assertSame('new', $subscription->status);
-        $this->assertSame('subscribe', $subscription->pending_request);
-    }
-
-    public function testNewWithLeaseSeconds()
-    {
-        $lease_seconds = Subscription::DEFAULT_LEASE_SECONDS / 2;
-
-        $subscription = Subscription::new(
-            'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
-            $lease_seconds
-        );
-
-        $this->assertSame($lease_seconds, $subscription->lease_seconds);
-    }
-
-    public function testNewForcesMinLeaseSeconds()
-    {
-        $lease_seconds = Subscription::MIN_LEASE_SECONDS - 42;
-
-        $subscription = Subscription::new(
-            'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
-            $lease_seconds
-        );
-
-        $this->assertSame(
-            Subscription::MIN_LEASE_SECONDS,
-            $subscription->lease_seconds
-        );
-    }
-
-    public function testNewForcesMaxLeaseSeconds()
-    {
-        $lease_seconds = Subscription::MAX_LEASE_SECONDS + 42;
-
-        $subscription = Subscription::new(
-            'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
-            $lease_seconds
-        );
-
-        $this->assertSame(
-            Subscription::MAX_LEASE_SECONDS,
-            $subscription->lease_seconds
-        );
-    }
-
-    public function testNewWithSecret()
-    {
-        $secret = 'a cryptographically random unique secret string';
-
-        $subscription = Subscription::new(
-            'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
-            0,
-            $secret
-        );
-
-        $this->assertSame($secret, $subscription->secret);
-    }
-
-    /**
-     * @dataProvider invalidUrlProvider
-     */
-    public function testNewFailsIfCallbackIsInvalid($invalid_url)
-    {
-        $subscription = Subscription::new($invalid_url, 'https://some.site.fr/feed.xml');
-
-        $errors = $subscription->validate();
-
-        $this->assertArrayHasKey('callback', $errors);
-    }
-
-    /**
-     * @dataProvider invalidUrlProvider
-     */
-    public function testNewFailsIfTopicIsInvalid($invalid_url)
-    {
-        $subscription = Subscription::new('https://subscriber.com/callback', $invalid_url);
-
-        $errors = $subscription->validate();
-
-        $this->assertArrayHasKey('topic', $errors);
-    }
-
-    public function testNewFailsIfSecretIsMoreThan200Bytes()
-    {
-        $secret = str_repeat('a', 201);
-
-        $subscription = Subscription::new(
-            'https://subscriber.com/callback',
-            'https://some.site.fr/feed.xml',
-            0,
-            $secret
-        );
-
-        $errors = $subscription->validate();
-
-        $this->assertArrayHasKey('secret', $errors);
-    }
-
-    public function testVerify()
-    {
-        $this->freeze(1000);
-        $subscription = Subscription::new(
+        $this->freeze();
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
             Subscription::MIN_LEASE_SECONDS
@@ -139,23 +23,24 @@ class SubscriptionTest extends TestCase
 
         $subscription->verify();
 
-        $expected_expired_at = 1000 + Subscription::MIN_LEASE_SECONDS;
+        $expected_expired_at = \Minz\Time::fromNow(Subscription::MIN_LEASE_SECONDS, 'seconds');
         $this->assertSame('verified', $subscription->status);
         $this->assertNull($subscription->pending_request);
+        $this->assertNotNull($subscription->expired_at);
         $this->assertSame(
-            $expected_expired_at,
+            $expected_expired_at->getTimestamp(),
             $subscription->expired_at->getTimestamp()
         );
     }
 
-    public function testVerifyTwiceFailsBecausePendingRequestIsNull()
+    public function testVerifyTwiceFailsBecausePendingRequestIsNull(): void
     {
         $this->expectException(Errors\SubscriptionError::class);
         $this->expectExceptionMessage(
             'Subscription cannot be verified because it has no pending requests.'
         );
 
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -164,10 +49,10 @@ class SubscriptionTest extends TestCase
         $subscription->verify();
     }
 
-    public function testVerifyAfterRenewAndDifferentLeaseSecondsAndSecret()
+    public function testVerifyAfterRenewAndDifferentLeaseSecondsAndSecret(): void
     {
-        $this->freeze(1000);
-        $subscription = Subscription::new(
+        $this->freeze();
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS,
@@ -189,9 +74,9 @@ class SubscriptionTest extends TestCase
         $this->assertNull($subscription->pending_secret);
     }
 
-    public function testRenew()
+    public function testRenew(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
             Subscription::MIN_LEASE_SECONDS,
@@ -219,9 +104,9 @@ class SubscriptionTest extends TestCase
         $this->assertSame('another secret', $subscription->pending_secret);
     }
 
-    public function testRenewForcesLeaseSeconds()
+    public function testRenewForcesLeaseSeconds(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -235,9 +120,9 @@ class SubscriptionTest extends TestCase
         );
     }
 
-    public function testRenewFailsIfInvalidSecret()
+    public function testRenewFailsIfInvalidSecret(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -249,18 +134,18 @@ class SubscriptionTest extends TestCase
         $this->assertArrayHasKey('pending_secret', $errors);
     }
 
-    public function testExpire()
+    public function testExpire(): void
     {
-        $this->freeze(1000);
-        $subscription = Subscription::new(
+        $this->freeze();
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
-        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
+        $expected_expired_at = \Minz\Time::fromNow(Subscription::DEFAULT_LEASE_SECONDS, 'seconds');
         $this->assertSame('verified', $subscription->status);
-        $this->assertSame($expected_expired_at, $subscription->expired_at->getTimestamp());
+        $this->assertEquals($expected_expired_at, $subscription->expired_at);
 
         $this->freeze($expected_expired_at);
 
@@ -269,12 +154,12 @@ class SubscriptionTest extends TestCase
         $this->assertSame('expired', $subscription->status);
     }
 
-    public function testExpireIfStatusIsNotVerified()
+    public function testExpireIfStatusIsNotVerified(): void
     {
         $this->expectException(Errors\SubscriptionError::class);
         $this->expectExceptionMessage('Subscription cannot expire with new status.');
 
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -285,37 +170,37 @@ class SubscriptionTest extends TestCase
         $subscription->expire();
     }
 
-    public function testExpireIfExpiredAtIsNotOver()
+    public function testExpireIfExpiredAtIsNotOver(): void
     {
         $this->expectException(Errors\SubscriptionError::class);
         $this->expectExceptionMessage('Subscription expiration date is not over yet.');
 
-        $this->freeze(1000);
-        $subscription = Subscription::new(
+        $this->freeze();
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
-        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
-        $this->assertSame($expected_expired_at, $subscription->expired_at->getTimestamp());
+        $expected_expired_at = \Minz\Time::fromNow(Subscription::DEFAULT_LEASE_SECONDS, 'seconds');
+        $this->assertEquals($expected_expired_at, $subscription->expired_at);
 
-        $this->freeze($expected_expired_at - 1);
+        $this->freeze($expected_expired_at->modify('-1 second'));
 
         $subscription->expire();
     }
 
-    public function testShouldExpire()
+    public function testShouldExpire(): void
     {
-        $this->freeze(1000);
-        $subscription = Subscription::new(
+        $this->freeze();
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
-        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
-        $this->assertSame($expected_expired_at, $subscription->expired_at->getTimestamp());
+        $expected_expired_at = \Minz\Time::fromNow(Subscription::DEFAULT_LEASE_SECONDS, 'seconds');
+        $this->assertEquals($expected_expired_at, $subscription->expired_at);
 
         $this->freeze($expected_expired_at);
 
@@ -324,28 +209,28 @@ class SubscriptionTest extends TestCase
         $this->assertTrue($should_expire);
     }
 
-    public function testShouldExpireIfExpiredAtIsNotOver()
+    public function testShouldExpireIfExpiredAtIsNotOver(): void
     {
-        $this->freeze(1000);
-        $subscription = Subscription::new(
+        $this->freeze();
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
         $subscription->verify();
 
-        $expected_expired_at = 1000 + Subscription::DEFAULT_LEASE_SECONDS;
-        $this->assertSame($expected_expired_at, $subscription->expired_at->getTimestamp());
+        $expected_expired_at = \Minz\Time::fromNow(Subscription::DEFAULT_LEASE_SECONDS, 'seconds');
+        $this->assertEquals($expected_expired_at, $subscription->expired_at);
 
-        $this->freeze($expected_expired_at - 1);
+        $this->freeze($expected_expired_at->modify('-1 second'));
 
         $should_expire = $subscription->shouldExpire();
 
         $this->assertFalse($should_expire);
     }
 
-    public function testShouldExpireWithNoExpiredAt()
+    public function testShouldExpireWithNoExpiredAt(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -357,9 +242,9 @@ class SubscriptionTest extends TestCase
         $this->assertFalse($should_expire);
     }
 
-    public function testRequestUnsubscription()
+    public function testRequestUnsubscription(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -371,9 +256,9 @@ class SubscriptionTest extends TestCase
         $this->assertSame('unsubscribe', $subscription->pending_request);
     }
 
-    public function testCancelRequestWithSubscribe()
+    public function testCancelRequestWithSubscribe(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -385,9 +270,9 @@ class SubscriptionTest extends TestCase
         $this->assertNull($subscription->pending_request);
     }
 
-    public function testCancelRequestWithUnsubscribe()
+    public function testCancelRequestWithUnsubscribe(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml'
         );
@@ -400,9 +285,9 @@ class SubscriptionTest extends TestCase
         $this->assertNull($subscription->pending_request);
     }
 
-    public function testCancelRequestWithPendingSecretAndLease()
+    public function testCancelRequestWithPendingSecretAndLease(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS,
@@ -432,9 +317,9 @@ class SubscriptionTest extends TestCase
         $this->assertNull($subscription->pending_secret);
     }
 
-    public function testIntentCallback()
+    public function testIntentCallback(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS
@@ -450,9 +335,9 @@ class SubscriptionTest extends TestCase
         $this->assertSame($expected_callback, $intent_callback);
     }
 
-    public function testIntentCallbackWithExistingParams()
+    public function testIntentCallbackWithExistingParams(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback?baz=qux',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS
@@ -469,9 +354,9 @@ class SubscriptionTest extends TestCase
         $this->assertSame($expected_callback, $intent_callback);
     }
 
-    public function testIntentCallbackWithUnsubscribe()
+    public function testIntentCallbackWithUnsubscribe(): void
     {
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS
@@ -487,14 +372,14 @@ class SubscriptionTest extends TestCase
         $this->assertSame($expected_callback, $intent_callback);
     }
 
-    public function testIntentCallbackFailsIfPendingRequestIsNull()
+    public function testIntentCallbackFailsIfPendingRequestIsNull(): void
     {
         $this->expectException(Errors\SubscriptionError::class);
         $this->expectExceptionMessage(
             'intentCallback cannot be called when pending request is null.'
         );
 
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback?baz=qux',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS
@@ -504,112 +389,19 @@ class SubscriptionTest extends TestCase
         $subscription->intentCallback('foobar');
     }
 
-    public function testIntentCallbackFailsIfChallengeIsEmpty()
+    public function testIntentCallbackFailsIfChallengeIsEmpty(): void
     {
         $this->expectException(Errors\SubscriptionError::class);
         $this->expectExceptionMessage(
             'intentCallback cannot be called with an empty challenge.'
         );
 
-        $subscription = Subscription::new(
+        $subscription = new Subscription(
             'https://subscriber.com/callback?baz=qux',
             'https://some.site.fr/feed.xml',
             Subscription::DEFAULT_LEASE_SECONDS
         );
 
         $subscription->intentCallback('');
-    }
-
-    public function testConstructor()
-    {
-        $subscription = new Subscription([
-            'id' => '1',
-            'created_at' => '10000',
-            'status' => 'new',
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
-        ]);
-
-        $this->assertSame(1, $subscription->id);
-        $this->assertSame(10000, $subscription->created_at->getTimestamp());
-        $this->assertSame('new', $subscription->status);
-        $this->assertSame('https://subscriber.com/callback', $subscription->callback);
-        $this->assertSame('https://some.site.fr/feed.xml', $subscription->topic);
-        $this->assertSame(Subscription::DEFAULT_LEASE_SECONDS, $subscription->lease_seconds);
-    }
-
-    /**
-     * @dataProvider missingValuesProvider
-     */
-    public function testConstuctorFailsIfRequiredValueIsMissing($values, $missing_value_name)
-    {
-        $subscription = new Subscription($values);
-
-        $errors = $subscription->validate();
-
-        $this->assertArrayHasKey($missing_value_name, $errors);
-    }
-
-    public function testConstuctorFailsIfStatusIsInvalid()
-    {
-        $subscription = new Subscription([
-            'id' => '1',
-            'created_at' => '10000',
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
-            'status' => 'invalid',
-        ]);
-
-        $errors = $subscription->validate();
-
-        $this->assertArrayHasKey('status', $errors);
-    }
-
-    public function testConstuctorFailsIfPendingRequestIsInvalid()
-    {
-        $subscription = new Subscription([
-            'id' => '1',
-            'created_at' => '10000',
-            'status' => 'new',
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
-            'pending_request' => 'invalid',
-        ]);
-
-        $errors = $subscription->validate();
-
-        $this->assertArrayHasKey('pending_request', $errors);
-    }
-
-    public function invalidUrlProvider()
-    {
-        return [
-            [''],
-            ['some/string'],
-            ['ftp://some.site.fr'],
-            ['http://'],
-        ];
-    }
-
-    public function missingValuesProvider()
-    {
-        $default_values = [
-            'status' => 'new',
-            'callback' => 'https://subscriber.com/callback',
-            'topic' => 'https://some.site.fr/feed.xml',
-            'lease_seconds' => strval(Subscription::DEFAULT_LEASE_SECONDS),
-        ];
-
-        $dataset = [];
-        foreach (array_keys($default_values) as $missing_value_name) {
-            $values = $default_values;
-            unset($values[$missing_value_name]);
-            $dataset[] = [$values, $missing_value_name];
-        }
-
-        return $dataset;
     }
 }

@@ -2,17 +2,31 @@
 
 namespace Webubbub\services;
 
+/**
+ * @author Marien Fressinaud <dev@marienfressinaud.fr>
+ * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
+ */
 class Curl
 {
-    private static $mock;
+    /** @var self|callable|null */
+    private static mixed $mock = null;
 
-    public static function get($url, $options = [])
+    /**
+     * @param array<int, mixed> $options
+     */
+    public static function get(string $url, array $options = []): self
     {
         if (self::$mock) {
-            if (isset($options[CURLOPT_HTTPHEADER])) {
-                self::$mock->setReceivedHeaders($options[CURLOPT_HTTPHEADER]);
+            $mock = self::$mock;
+            if (is_callable($mock)) {
+                $mock = $mock($url, $options);
             }
-            return self::$mock;
+
+            if (isset($options[CURLOPT_HTTPHEADER]) && is_array($options[CURLOPT_HTTPHEADER])) {
+                $mock->setReceivedHeaders($options[CURLOPT_HTTPHEADER]);
+            }
+
+            return $mock;
         }
 
         $curl_session = curl_init();
@@ -58,47 +72,67 @@ class Curl
 
         curl_close($curl_session);
 
+        if ($result === true) {
+            $result = '';
+        }
+
         return new self($result, $http_code, $headers);
     }
 
-    public static function post($url, $post_fields, $options = [])
+    /**
+     * @param string|array<string, mixed> $post_fields
+     * @param array<int, mixed> $options
+     */
+    public static function post(string $url, mixed $post_fields, array $options = []): self
     {
         $options[CURLOPT_POST] = true;
         $options[CURLOPT_POSTFIELDS] = $post_fields;
         return self::get($url, $options);
     }
 
-    public static function mock($content = '', $http_code = 200, $headers = [])
+    /**
+     * @param array<string, string[]> $headers
+     */
+    public static function mock(string $content = '', int $http_code = 200, array $headers = []): self
     {
         self::$mock = new self($content, $http_code, $headers);
         return self::$mock;
     }
 
-    public static function resetMock()
+    public static function mockCallback(callable $mock): void
+    {
+        self::$mock = $mock;
+    }
+
+    public static function resetMock(): void
     {
         self::$mock = null;
     }
 
-    /** @var integer */
-    public $http_code;
+    public int $http_code;
 
-    /** @var string */
-    public $content;
+    public string $content;
 
-    /** @var array */
-    public $headers;
+    /** @var array<string, string[]> */
+    public array $headers;
 
-    /** @var array (only useful during tests) */
-    public $received_headers;
+    /** @var array<string, string> */
+    public array $received_headers;
 
-    public function __construct($content, $http_code, $headers)
+    /**
+     * @param array<string, string[]> $headers
+     */
+    public function __construct(string $content, int $http_code, array $headers)
     {
         $this->content = $content;
         $this->http_code = $http_code;
         $this->headers = $headers;
     }
 
-    public function setReceivedHeaders($headers)
+    /**
+     * @param string[] $headers
+     */
+    public function setReceivedHeaders(array $headers): void
     {
         foreach ($headers as $header) {
             $header_exploded = explode(':', $header, 2);

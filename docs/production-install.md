@@ -15,12 +15,13 @@ allow that, and you should not install Webubbub if you can’t. This is for
 security reasons, to don’t expose all the files on the Web, especially the
 `data` directory. If you can afford it, you can rent a small VPS for cheap.
 
-**Webubbub only supports SQLite database and PHP 8.0 for now.**
+**Webubbub only supports SQLite database and PHP from 8.0 to 8.2.**
+You’ll also need the PHP extension [`pcntl`](https://www.php.net/manual/book.pcntl.php).
 
 That being said, here’s the instructions to install Webubbub. It’s expected you
 already have a server with a Web server and <abbr>PHP</abbr> installed. The
 instructions are documented for Nginx but feel free [to open a
-ticket](https://github.com/flusio/Webubbub/issues/new) to give us instructions
+ticket](https://github.com/flusio/Webubbub/issues/new) to add the instructions
 to configure another kind of server.
 
 ---
@@ -51,7 +52,7 @@ correctly.
 Then, you have to initialize the database:
 
 ```console
-$ php cli --request /system/init
+$ php cli migrations setup
 ```
 
 You should find a database under `./data/db.sqlite`. Now, give correct
@@ -87,24 +88,39 @@ $ sudo systemctl reload nginx
 
 **You should be able to access your Webubbub instance URL now!**
 
-The last step is to configure the asynchronous jobs. You can configure a Cron
-task every minute with `crontab -u www-data -e`:
+The last step is to configure the asynchronous jobs.
 
-```cron
-* * * * * sh /var/www/Webubbub/bin/jobs.sh
+If you have root access on your server, you can configure a Systemd service.
+First, create a `webubbub.service` file under `/etc/systemd/system/`:
+
+```systemd
+[Unit]
+Description=A job worker for Webubbub
+
+[Service]
+ExecStart=php /var/www/Webubbub/cli jobs watch
+User=www-data
+Group=www-data
+
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-This will verify subscriptions and deliver new content. You can configure a
-smaller frequence by creating a Systemd timer instead of a Cron task. First,
-create a `webubbub.service` file under `/etc/systemd/system/` ([example](./systemd/webubbub.service)).
-Then, a `webubbub.timer` under the same folder ([example](./systemd/webubbub.timer)).
-**It is important both files have the same basename!** You can enable and start
-the timer with:
+Then, enable and start the service with:
 
 ```console
-$ sudo systemctl enable webubbub.timer
-$ sudo systemctl start webubbub.timer
+$ sudo systemctl enable webubbub.service
+$ sudo systemctl start webubbub.service
 ```
 
-This will execute the jobs every 10 seconds (or any other frequency you might
-have set). A better jobs system will be designed later.
+This will start a Jobs Worker in background wich will verify subscriptions and deliver new contents.
+
+If you prefer, you can configure a Cron task instead.
+For instance, with `crontab -u www-data -e`:
+
+```cron
+* * * * * php /var/www/Webubbub/cli jobs watch --stop-after=5 >>/var/log/webubbub-jobs.txt 2>&1
+```

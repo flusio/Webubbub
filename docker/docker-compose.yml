@@ -2,10 +2,20 @@ version: '3'
 
 services:
   php:
+    image: webubbub:dev
     build: .
     restart: unless-stopped
     ports:
       - "9000:9000"
+    volumes:
+      - ..:/var/www/html:z
+    user: $USER
+
+  job_worker:
+    image: webubbub:dev
+    build: .
+    restart: unless-stopped
+    command: php cli jobs watch
     volumes:
       - ..:/var/www/html:z
     user: $USER

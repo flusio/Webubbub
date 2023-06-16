@@ -2,6 +2,9 @@
 
 namespace Webubbub\models;
 
+use Minz\Database;
+use Minz\Validable;
+
 /**
  * Represent a content created by publishers, it is delivered to subscribers.
  *
@@ -13,63 +16,51 @@ namespace Webubbub\models;
  * @author Marien Fressinaud <dev@marienfressinaud.fr>
  * @license http://www.gnu.org/licenses/agpl-3.0.en.html AGPL
  */
-class Content extends \Minz\Model
+#[Database\Table(name: 'contents')]
+class Content
 {
+    use Database\Recordable;
+    use Validable;
+
     public const VALID_STATUSES = ['new', 'fetched', 'delivered'];
 
-    public const PROPERTIES = [
-        'id' => 'integer',
+    #[Database\Column]
+    public int $id;
 
-        'created_at' => [
-            'type' => 'datetime',
-            'format' => 'U',
-        ],
+    #[Database\Column(format: 'U')]
+    public \DateTimeImmutable $created_at;
 
-        'fetched_at' => [
-            'type' => 'datetime',
-            'format' => 'U',
-        ],
+    #[Database\Column(format: 'U')]
+    public ?\DateTimeImmutable $fetched_at = null;
 
-        'status' => [
-            'type' => 'string',
-            'required' => true,
-            'validator' => '\Webubbub\models\Content::validateStatus',
-        ],
+    #[Database\Column]
+    #[Validable\Inclusion(in: self::VALID_STATUSES, message: 'status "{value}" is invalid')]
+    public string $status;
 
-        'url' => [
-            'type' => 'string',
-            'required' => true,
-            'validator' => '\Webubbub\models\Content::validateUrl',
-        ],
+    #[Database\Column]
+    #[Validable\Presence(message: 'url "{value}" is invalid URL')]
+    #[Validable\Url(message: 'url "{value}" is invalid URL')]
+    public string $url;
 
-        'links' => 'string',
+    #[Database\Column]
+    public ?string $links = null;
 
-        'type' => 'string',
+    #[Database\Column]
+    public ?string $type = null;
 
-        'content' => 'string',
-    ];
+    #[Database\Column]
+    public ?string $content = null;
 
-    /**
-     * @param string $url
-     *
-     * @throws \Minz\Errors\ModelPropertyError if url is invalid
-     */
-    public static function new($url)
+    public function __construct(string $url)
     {
-        return new self([
-            'url' => urldecode($url),
-            'status' => 'new',
-        ]);
+        $this->url = urldecode($url);
+        $this->status = 'new';
     }
 
     /**
      * Mark a content as fetched, setting the given values
-     *
-     * @param string $content
-     * @param string $type
-     * @param string $links
      */
-    public function fetch($content, $type, $links)
+    public function fetch(string $content, string $type, string $links): void
     {
         $this->content = $content;
         $this->type = $type;
@@ -83,7 +74,7 @@ class Content extends \Minz\Model
     /**
      * Mark a content as delivered
      */
-    public function deliver()
+    public function deliver(): void
     {
         if ($this->status !== 'fetched') {
             throw new Errors\ContentError(
@@ -92,41 +83,5 @@ class Content extends \Minz\Model
         }
 
         $this->status = 'delivered';
-    }
-
-    /**
-     * Check that an URL is valid.
-     *
-     * @param string $url
-     *
-     * @return boolean Return true if the URL is valid, false otherwise
-     */
-    public static function validateUrl($url)
-    {
-        $url_components = parse_url($url);
-        if (!$url_components || !isset($url_components['scheme'])) {
-            return false;
-        }
-
-        $url_scheme = $url_components['scheme'];
-        return $url_scheme === 'http' || $url_scheme === 'https';
-    }
-
-    /**
-     * Check the given status is valid.
-     *
-     * @param string $status
-     *
-     * @return boolean|string It returns true if the status is valid, or a string
-     *                        explaining the error otherwise.
-     */
-    public static function validateStatus($status)
-    {
-        if (!in_array($status, self::VALID_STATUSES)) {
-            $statuses_as_string = implode(', ', self::VALID_STATUSES);
-            return "valid values are {$statuses_as_string}";
-        }
-
-        return true;
     }
 }

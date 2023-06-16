@@ -1,7 +1,18 @@
 {
+    "require": {
+        "php": "^8.0",
+        "ext-pcntl": "*"
+    },
+
     "require-dev": {
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.5",
         "squizlabs/php_codesniffer": "^3.6"
+    },
+
+    "config": {
+        "platform": {
+            "php": "8.0"
+        }
     }
 }
