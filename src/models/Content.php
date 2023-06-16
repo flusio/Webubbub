@@ -84,4 +84,27 @@ class Content
 
         $this->status = 'delivered';
     }
+
+    /**
+     * Delete the Contents that can be deleted and return the number of
+     * deletions.
+     */
+    public static function deleteOldContents(): int
+    {
+        $sql = <<<'SQL'
+            DELETE FROM contents
+            WHERE status = 'delivered'
+            OR created_at < :older_than
+        SQL;
+
+        $older_than = \Minz\Time::ago(1, 'week');
+
+        $database = \Minz\Database::get();
+        $statement = $database->prepare($sql);
+        $statement->execute([
+            ':older_than' => $older_than->format('U'),
+        ]);
+
+        return $statement->rowCount();
+    }
 }

@@ -31,47 +31,10 @@ class Cleaner extends Job
      */
     public function perform(): void
     {
-        $two_weeks_ago = \Minz\Time::ago(2, 'weeks');
+        $count = models\Subscription::deleteOldSubscriptions();
+        \Minz\Log::notice("{$count} subscriptions deleted.");
 
-        $subscriptions = models\Subscription::listBy([
-            'status' => ['new', 'validated', 'expired'],
-        ]);
-
-        $subscription_ids_to_delete = [];
-        foreach ($subscriptions as $subscription) {
-            if (
-                $subscription->status === 'expired' &&
-                $subscription->expired_at <= $two_weeks_ago
-            ) {
-                $subscription_ids_to_delete[] = $subscription->id;
-            }
-
-            if (
-                $subscription->status !== 'expired' &&
-                $subscription->created_at <= $two_weeks_ago
-            ) {
-                $subscription_ids_to_delete[] = $subscription->id;
-            }
-        }
-
-        models\Subscription::deleteBy([
-            'id' => $subscription_ids_to_delete,
-        ]);
-
-        $count_subscriptions_deleted = count($subscription_ids_to_delete);
-        \Minz\Log::notice("{$count_subscriptions_deleted} subscriptions deleted.");
-
-        $contents = models\Content::listBy([
-            'status' => 'delivered',
-        ]);
-
-        $content_ids_to_delete = array_column($contents, 'id');
-
-        models\Content::deleteBy([
-            'id' => $content_ids_to_delete,
-        ]);
-
-        $count_contents_deleted = count($content_ids_to_delete);
-        \Minz\Log::notice("{$count_contents_deleted} contents deleted.");
+        $count = models\Content::deleteOldContents();
+        \Minz\Log::notice("{$count} contents deleted.");
     }
 }
