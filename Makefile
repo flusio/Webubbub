@@ -32,11 +32,11 @@ docker-start: ## Start a development server
 	docker-compose -p webubbub -f docker/docker-compose.yml up
 
 .PHONY: docker-build
-docker-build: ## Rebuild the Docker containers
+docker-build: ## Rebuild the Docker image
 	docker-compose -p webubbub -f docker/docker-compose.yml build
 
-.PHONY: docker-stop
-docker-stop: ## Clean the Docker stuff
+.PHONY: docker-clean
+docker-clean: ## Clean the Docker stuff
 	docker-compose -p webubbub -f docker/docker-compose.yml down
 
 .PHONY: install
