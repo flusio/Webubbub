@@ -52,7 +52,7 @@ correctly.
 Then, you have to initialize the database:
 
 ```console
-$ php cli migrations setup
+$ php cli migrations setup --seed
 ```
 
 You should find a database under `./data/db.sqlite`. Now, give correct
