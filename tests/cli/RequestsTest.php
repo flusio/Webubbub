@@ -73,7 +73,6 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $this->assertResponseCode($response, 202);
         $this->assertSame(1, models\Subscription::count());
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame(432000, $subscription->lease_seconds);
         $this->assertNull($subscription->secret);
         $this->assertSame(543000, $subscription->pending_lease_seconds);
@@ -180,7 +179,6 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertResponseCode($response, 202);
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('new', $subscription->status);
         $this->assertSame('unsubscribe', $subscription->pending_request);
     }

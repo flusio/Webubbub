@@ -32,7 +32,6 @@ class Requests
         // reasons, PHP replaces those dots by underscores. Meh!
         // See https://www.php.net/variables.external#language.variables.external.dot-in-names
 
-        /** @var string */
         $mode = $request->param('hub_mode', '');
 
         if ($mode === 'subscribe') {
@@ -64,19 +63,12 @@ class Requests
      */
     public function subscribe(Request $request): Response
     {
-        /** @var string */
         $callback = $request->param('hub_callback', '');
-
-        /** @var string */
         $topic = $request->param('hub_topic', '');
-
-        /** @var int */
         $lease_seconds = $request->paramInteger(
             'hub_lease_seconds',
             models\Subscription::DEFAULT_LEASE_SECONDS
         );
-
-        /** @var ?string */
         $secret = $request->param('hub_secret');
 
         if ($secret === '') {
@@ -137,10 +129,7 @@ class Requests
      */
     public function unsubscribe(Request $request): Response
     {
-        /** @var string */
         $callback = $request->param('hub_callback', '');
-
-        /** @var string */
         $topic = $request->param('hub_topic', '');
 
         $subscription = models\Subscription::findBy([
@@ -180,11 +169,9 @@ class Requests
      */
     public function publish(Request $request): Response
     {
-        /** @var string */
         $url = $request->param('hub_url', '');
 
         if ($url === '') {
-            /** @var string */
             $url = $request->param('hub_topic', '');
         }
 

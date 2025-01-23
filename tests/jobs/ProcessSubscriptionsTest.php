@@ -40,7 +40,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('verified', $subscription->status);
     }
 
@@ -57,7 +56,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('verified', $subscription->status);
 
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
@@ -98,7 +96,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('new', $subscription->status);
 
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
@@ -137,7 +134,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('verified', $subscription->status);
     }
 
@@ -165,7 +161,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('validated', $subscription->status);
     }
 
@@ -184,7 +179,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame(
             models\Subscription::MIN_LEASE_SECONDS,
             intval($subscription->lease_seconds)
@@ -207,7 +201,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('validated', $subscription->status);
         $this->assertNull($subscription->pending_request);
     }
@@ -225,7 +218,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('validated', $subscription->status);
         $this->assertNull($subscription->pending_request);
     }
@@ -248,7 +240,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         self::$expected_code = 200;
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('validated', $subscription->status);
         $this->assertNull($subscription->pending_request);
     }
@@ -271,7 +262,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         self::$expected_code = 200;
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('validated', $subscription->status);
         $this->assertNull($subscription->pending_request);
     }
@@ -287,7 +277,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('expired', $subscription->status);
     }
 
@@ -302,7 +291,6 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $subscription = $subscription->reload();
-        $this->assertNotNull($subscription);
         $this->assertSame('verified', $subscription->status);
     }
 

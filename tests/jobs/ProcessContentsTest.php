@@ -48,7 +48,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $expected_links = '<https://my-hub.com>; rel="hub", '
                         . '<https://some.site.fr/feed.xml>; rel="self"';
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('delivered', $content->status);
         $this->assertSame('<some>xml</some>', $content->content);
         $this->assertSame('application/rss+xml', $content->type);
@@ -73,7 +72,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('delivered', $content->status);
         $this->assertSame(0, models\ContentDelivery::count());
         $this->assertTrue(models\Subscription::exists($subscription->id));
@@ -96,7 +94,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('delivered', $content->status);
         $this->assertSame(0, models\ContentDelivery::count());
         $this->assertTrue(models\Subscription::exists($subscription->id));
@@ -121,7 +118,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $expected_links = '<http://localhost/>; rel="hub", '
                         . '<https://some.site.fr/feed>; rel="self"';
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame($expected_links, $content->links);
     }
 
@@ -149,7 +145,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $expected_links = '<https://my-hub.com>; rel="hub", '
                         . '<https://some.site.fr/feed>; rel="self"';
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame($expected_links, $content->links);
     }
 
@@ -177,7 +172,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $expected_links = '<https://some.site.fr/feed.xml>; rel="self", '
                         . '<http://localhost/>; rel="hub"';
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame($expected_links, $content->links);
     }
 
@@ -202,7 +196,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('application/octet-stream', $content->type);
     }
 
@@ -222,7 +215,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('new', $content->status);
         $this->assertNull($content->content);
         $this->assertNull($content->type);
@@ -246,7 +238,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->perform();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('fetched', $content->status);
         $this->assertTrue(models\ContentDelivery::exists($content_delivery->id));
     }
@@ -281,7 +272,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
             $subscription_secret
         );
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('delivered', $content->status);
         $this->assertSame($expected_signature, $mock->received_headers['X-Hub-Signature']);
     }
@@ -304,10 +294,8 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->performDeliver();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('fetched', $content->status);
         $content_delivery = $content_delivery->reload();
-        $this->assertNotNull($content_delivery);
         $expected_try_at = \Minz\Time::fromNow(5, 'seconds');
         $this->assertSame(
             $expected_try_at->getTimestamp(),
@@ -334,7 +322,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->performDeliver();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('delivered', $content->status);
         $this->assertFalse(models\ContentDelivery::exists($content_delivery->id));
     }
@@ -358,7 +345,6 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor->performDeliver();
 
         $content = $content->reload();
-        $this->assertNotNull($content);
         $this->assertSame('delivered', $content->status);
         $this->assertFalse(models\Subscription::exists($subscription->id));
         $this->assertFalse(models\ContentDelivery::exists($content_delivery->id));

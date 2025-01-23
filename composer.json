@@ -1,6 +1,6 @@
 {
     "require": {
-        "php": "^8.0",
+        "php": "^8.2",
         "ext-pcntl": "*"
     },
 
@@ -12,7 +12,7 @@
 
     "config": {
         "platform": {
-            "php": "8.0"
+            "php": "8.2"
         }
     }
 }

@@ -1,5 +1,11 @@
 # Webubbub changelog
 
+## unreleased
+
+### Migration notes
+
+Webubbub now requires PHP 8.2 or 8.3.
+
 ## 2023-06-16 - 1.0.0-alpha-2
 
 ### Migration notes
