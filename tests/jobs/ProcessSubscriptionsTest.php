@@ -78,9 +78,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
     }
 
-    /**
-     * @dataProvider failingHttpCodeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('failingHttpCodeProvider')]
     public function testPerformWithNotAllowedTopicAndRecentSubscriptionAndFailingResponse(int $http_code): void
     {
         \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
@@ -101,9 +99,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         \Minz\Configuration::$application['allowed_topic_origins'] = '';
     }
 
-    /**
-     * @dataProvider failingHttpCodeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('failingHttpCodeProvider')]
     public function testPerformWithNotAllowedTopicAndOldSubscriptionAndFailingResponse(int $http_code): void
     {
         \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
@@ -222,9 +218,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($subscription->pending_request);
     }
 
-    /**
-     * @dataProvider failingHttpCodeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('failingHttpCodeProvider')]
     public function testPerformWithSubscribeAndNonSuccessHttpCode(int $http_code): void
     {
         $subscription = SubscriptionFactory::create([
@@ -244,9 +238,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($subscription->pending_request);
     }
 
-    /**
-     * @dataProvider failingHttpCodeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('failingHttpCodeProvider')]
     public function testPerformWithUnsubscribeAndNonSuccessHttpCode(int $http_code): void
     {
         $subscription = SubscriptionFactory::create([
@@ -297,7 +289,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<array{int}>
      */
-    public function failingHttpCodeProvider(): array
+    public static function failingHttpCodeProvider(): array
     {
         return [
             [301], [302], [307], [308],

@@ -12,9 +12,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
     use \Minz\Tests\ApplicationHelper;
     use \Minz\Tests\ResponseAsserts;
 
-    /**
-     * @dataProvider invalidModeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidModeProvider')]
     public function testHandleFailsIfModeIsInvalid(string $invalid_mode): void
     {
         $response = $this->appRun('POST', '/', [
@@ -104,9 +102,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('new', $subscription->status);
     }
 
-    /**
-     * @dataProvider invalidUrlProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidUrlProvider')]
     public function testSubscribeFailsIfCallbackIsInvalid(string $invalid_url): void
     {
         $response = $this->appRun('CLI', '/requests/subscribe', [
@@ -119,9 +115,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
     }
 
-    /**
-     * @dataProvider invalidUrlProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidUrlProvider')]
     public function testSubscribeFailsIfTopicIsInvalid(string $invalid_url): void
     {
         $response = $this->appRun('CLI', '/requests/subscribe', [
@@ -257,9 +251,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(2, models\Content::count());
     }
 
-    /**
-     * @dataProvider invalidUrlProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidUrlProvider')]
     public function testPublishFailsIfUrlIsInvalid(string $invalid_url): void
     {
         $response = $this->appRun('CLI', '/requests/publish', [
@@ -275,7 +267,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<array{string}>
      */
-    public function invalidUrlProvider(): array
+    public static function invalidUrlProvider(): array
     {
         return [
             [''],
@@ -288,7 +280,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<array{string}>
      */
-    public function invalidModeProvider(): array
+    public static function invalidModeProvider(): array
     {
         return [
             [''],

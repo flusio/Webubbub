@@ -8,9 +8,7 @@ class ContentDeliveryTest extends TestCase
 {
     use \Minz\Tests\TimeHelper;
 
-    /**
-     * @dataProvider triesToDelayProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('triesToDelayProvider')]
     public function testRetryLater(int $initial_tries, int $delay): void
     {
         $this->freeze();
@@ -45,7 +43,7 @@ class ContentDeliveryTest extends TestCase
     /**
      * @return array<array{int, int}>
      */
-    public function triesToDelayProvider(): array
+    public static function triesToDelayProvider(): array
     {
         return [
             [0, 5], // when initial number of tries is 0, try_at will be incremented
