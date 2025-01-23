@@ -49,7 +49,7 @@ $ make install NODOCKER=true
 ```
 
 If it doesn’t work, please compare your actual configuration [with the one used
-with Docker](../docker/nginx.conf).
+with Docker](../docker/development/nginx.conf).
 
 You’re very welcome if you want to help us to complete this section of
 documentation!

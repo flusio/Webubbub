@@ -2,6 +2,8 @@
 
 USER = $(shell id -u):$(shell id -g)
 
+DOCKER_COMPOSE = docker compose -f docker/development/docker-compose.yml
+
 ifdef NODOCKER
 	PHP = php
 	COMPOSER = composer
@@ -29,15 +31,15 @@ endif
 .PHONY: docker-start
 docker-start: ## Start a development server
 	@echo "Running webserver on http://localhost:8000"
-	docker-compose -p webubbub -f docker/docker-compose.yml up
+	$(DOCKER_COMPOSE) up
 
 .PHONY: docker-build
 docker-build: ## Rebuild the Docker image
-	docker-compose -p webubbub -f docker/docker-compose.yml build
+	$(DOCKER_COMPOSE) build
 
 .PHONY: docker-clean
 docker-clean: ## Clean the Docker stuff
-	docker-compose -p webubbub -f docker/docker-compose.yml down
+	$(DOCKER_COMPOSE) down
 
 .PHONY: install
 install: ## Install the dependencies
