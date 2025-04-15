@@ -13,8 +13,8 @@ else
 endif
 
 .PHONY: docker-start
-docker-start: ## Start a development server
-	@echo "Running webserver on http://localhost:8000"
+docker-start: ## Start a development server (can take a PORT argument)
+	@echo "Running webserver on http://localhost:$(PORT)"
 	$(DOCKER_COMPOSE) up
 
 .PHONY: docker-build

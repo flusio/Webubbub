@@ -31,9 +31,13 @@ You can start the application with:
 $ make docker-start
 ```
 
-It will download and start a `nginx` and a `php` containers. The Nginx server
-is listening on [localhost:8000](http://localhost:8000). The servers are not
-run in daemon mode so you can keep an eye on the received requests and logs.
+You can now open [localhost:8000](http://localhost:8000).
+
+You can change the port of the application by passing the `PORT` parameter:
+
+```console
+$ make docker-start PORT=9000
+```
 
 ### Local Nginx
 
