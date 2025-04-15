@@ -1,4 +1,11 @@
 {
+    "name": "flus/webubbub",
+    "description": "A WebSub hub to bring instant distribution of content between Web actors.",
+    "type": "project",
+    "license": "AGPL-3.0",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+
     "require": {
         "php": "^8.2",
         "ext-pcntl": "*"
@@ -9,11 +16,5 @@
         "phpunit/phpunit": "^11.0",
         "squizlabs/php_codesniffer": "^3.6",
         "rector/rector": "^1.2"
-    },
-
-    "config": {
-        "platform": {
-            "php": "8.2"
-        }
     }
 }
