@@ -1,12 +1,37 @@
 # Webubbub changelog
 
-## unreleased
+## 2025-04-15 - 1.0.0
 
 ### Migration notes
 
 Webubbub now requires PHP 8.2+ and uses Composer to manage its dependencies in production.
 You must make sure your server matches the new requirements and that you have Composer installed on it.
 Then, follow the standard procedure to update Webubbub.
+
+### Technical
+
+- Add support for PHP 8.4 ([231682e](https://github.com/flusio/Webubbub/commit/231682e))
+- Configure Webubbub with Composer ([b5eecf8](https://github.com/flusio/Webubbub/commit/b5eecf8))
+- Update the Composer dependencies ([b40fc10](https://github.com/flusio/Webubbub/commit/b40fc10))
+- Fix small issues in the Makefile ([7a0bb8f](https://github.com/flusio/Webubbub/commit/7a0bb8f))
+
+### Documentation
+
+- Improve paragraph about contributing ([3e1d3db](https://github.com/flusio/Webubbub/commit/3e1d3db))
+- Document the seed argument in the installation guide ([9c3d322](https://github.com/flusio/Webubbub/commit/9c3d322))
+
+### Developers
+
+- Add a make release command ([46a5c3f](https://github.com/flusio/Webubbub/commit/46a5c3f))
+- Update to PHPStan and Rector ^2.0 ([c68d3dd](https://github.com/flusio/Webubbub/commit/c68d3dd))
+- Allow to change the port of Nginx in development ([7b65596](https://github.com/flusio/Webubbub/commit/7b65596))
+- Improve the pull request template ([94a00b3](https://github.com/flusio/Webubbub/commit/94a00b3))
+- Configure Rector ([b6c4165](https://github.com/flusio/Webubbub/commit/b6c4165))
+- Allow to pass a LINTER argument to make lint command ([b3fc254](https://github.com/flusio/Webubbub/commit/b3fc254))
+- Configure PHPCS with a file ([6c01590](https://github.com/flusio/Webubbub/commit/6c01590))
+- Rename phpstan.neon to .phpstan.neon ([4d9eede](https://github.com/flusio/Webubbub/commit/4d9eede))
+- Upgrade to PHPUnit 11 ([52251a8](https://github.com/flusio/Webubbub/commit/52251a8))
+- Update the Docker Compose configuration ([12696f2](https://github.com/flusio/Webubbub/commit/12696f2))
 
 ## 2023-06-16 - 1.0.0-alpha-2
 
