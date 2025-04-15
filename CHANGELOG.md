@@ -4,7 +4,9 @@
 
 ### Migration notes
 
-Webubbub now requires PHP 8.2 or 8.3.
+Webubbub now requires PHP 8.2 or 8.3 and uses Composer to manage its dependencies in production.
+You must make sure your server matches the new requirements and that you have Composer installed on it.
+Then, follow the standard procedure to update Webubbub.
 
 ## 2023-06-16 - 1.0.0-alpha-2
 

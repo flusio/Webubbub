@@ -1,10 +1,6 @@
 parameters:
     level: 9
     paths:
+        - public/index.php
         - src
-        - lib
         - tests
-
-    excludePaths:
-        analyse:
-            - lib/Minz/*

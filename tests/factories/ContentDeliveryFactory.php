@@ -26,11 +26,11 @@ class ContentDeliveryFactory extends Database\Factory
                 return ContentFactory::create()->id;
             },
 
-            'created_at' => function () {
+            'created_at' => function (): \DateTimeImmutable {
                 return \Minz\Time::now();
             },
 
-            'try_at' => function () {
+            'try_at' => function (): \DateTimeImmutable {
                 return \Minz\Time::now();
             },
 

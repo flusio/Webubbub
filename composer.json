@@ -6,9 +6,24 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
 
+    "autoload": {
+        "psr-4": {
+            "Webubbub\\": "src/"
+        }
+    },
+
+    "autoload-dev": {
+        "psr-4": {
+            "tests\\": "tests/"
+        }
+    },
+
     "require": {
         "php": "^8.2",
-        "ext-pcntl": "*"
+        "ext-pcntl": "*",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*",
+        "flus/minz": "^1.0"
     },
 
     "require-dev": {

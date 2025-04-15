@@ -16,7 +16,6 @@ Once you know what are the additional steps, you can proceed to the update.
 First, fetch the new code with Git:
 
 ```console
-$ git fetch --recurse-submodules
 $ git fetch --tags
 ```
 
@@ -42,6 +41,12 @@ with:
 
 ```console
 $ git checkout <latest version tag>
+```
+
+Then, install the dependencies:
+
+```console
+$ composer install --no-dev --optimize-autoloader
 ```
 
 Make sure files ownership is still correct:

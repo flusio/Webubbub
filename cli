@@ -12,7 +12,7 @@ if (php_sapi_name() !== 'cli') {
 
 $app_path = __DIR__;
 
-include $app_path . '/autoload.php';
+include $app_path . '/vendor/autoload.php';
 
 \Minz\Configuration::load('dotenv', $app_path);
 

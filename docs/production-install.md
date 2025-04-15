@@ -30,7 +30,7 @@ First, download [the latest version](https://github.com/flusio/Webubbub/releases
 of the code with Git:
 
 ```console
-$ git clone --recurse-submodules https://github.com/flusio/Webubbub.git
+$ git clone https://github.com/flusio/Webubbub.git
 $ cd Webubbub
 $ git checkout <latest version tag>
 ```
@@ -38,6 +38,12 @@ $ git checkout <latest version tag>
 It’s best to use Git since it’ll allow easy update later (mainly a `git pull`).
 It also allows you to keep track of the changes you made on your server
 (**which you never should do!**)
+
+Install the Composer dependencies with:
+
+```console
+$ composer install --no-dev --optimize-autoloader
+```
 
 Then, you must create a `.env` file:
 

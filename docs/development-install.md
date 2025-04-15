@@ -3,7 +3,7 @@
 First, download Webubbub:
 
 ```console
-$ git clone --recurse-submodules https://github.com/flusio/Webubbub.git
+$ git clone https://github.com/flusio/Webubbub.git
 $ cd Webubbub
 ```
 
