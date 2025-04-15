@@ -52,7 +52,6 @@ I’m looking forward for a better community space and to improve contributing d
 
 There are not too many open hubs on the web at the moment:
 
-- [websub.flus.io](https://websub.flus.io/) by [myself](https://flus.fr);
 - [switchboard.p3k.io](https://switchboard.p3k.io/) by [Aaron Parecki](https://aaronparecki.com/);
 - [websub.superfeedr.com](https://websub.superfeedr.com/) by [Superfeedr](https://superfeedr.com/) (closed-source);
 - [websub.appspot.com](https://websub.appspot.com/) by Google (closed-source).
