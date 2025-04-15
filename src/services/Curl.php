@@ -12,6 +12,7 @@ class Curl
     private static mixed $mock = null;
 
     /**
+     * @param non-empty-string $url
      * @param array<int, mixed> $options
      */
     public static function get(string $url, array $options = []): self
@@ -80,6 +81,7 @@ class Curl
     }
 
     /**
+     * @param non-empty-string $url
      * @param string|array<string, mixed> $post_fields
      * @param array<int, mixed> $options
      */

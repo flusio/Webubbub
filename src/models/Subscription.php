@@ -168,7 +168,7 @@ class Subscription
      * @throws Errors\SubscriptionError if pending request is null
      * @throws Errors\SubscriptionError if the challenge is empty
      *
-     * @return string The callback with additional parameters appended
+     * @return non-empty-string The callback with additional parameters appended
      */
     public function intentCallback(string $challenge): string
     {
@@ -204,6 +204,8 @@ class Subscription
 
     /**
      * Return the callback to use to deny subscriber.
+     *
+     * @return non-empty-string
      */
     public function denyCallback(string $reason): string
     {

@@ -13,10 +13,24 @@ include $app_path . '/vendor/autoload.php';
 
 \Minz\Configuration::load('dotenv', $app_path);
 
-$request = \Minz\Request::initFromGlobals();
+try {
+    $application = new \Webubbub\Application();
 
-$application = new \Webubbub\Application();
-$response = $application->run($request);
+    $request = \Minz\Request::initFromGlobals();
 
-$is_head = strtoupper($_SERVER['REQUEST_METHOD']) === 'HEAD';
+    $response = $application->run($request);
+} catch (\Minz\Errors\RequestError $e) {
+    $response = \Minz\Response::notFound('not_found.phtml', [
+        'error' => $e,
+    ]);
+} catch (\Exception $e) {
+    $response = \Minz\Response::internalServerError('internal_server_error.phtml', [
+        'error' => $e,
+    ]);
+}
+
+/** @var string */
+$request_method = $_SERVER['REQUEST_METHOD'];
+$is_head = strtoupper($request_method) === 'HEAD';
+
 \Minz\Response::sendByHttp($response, echo_output: !$is_head);

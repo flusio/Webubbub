@@ -41,6 +41,8 @@ class ProcessContents extends Job
         $contents = models\Content::listBy(['status' => 'new']);
 
         foreach ($contents as $content) {
+            assert(!empty($content->url));
+
             \Minz\Log::notice("content #{$content->id}: to be fetched");
 
             // Fetch the content
@@ -131,6 +133,8 @@ class ProcessContents extends Job
                 }
 
                 $subscription = $content_delivery->subscription();
+
+                assert(!empty($subscription->callback));
 
                 \Minz\Log::notice("content #{$content->id}: delivery to {$subscription->callback}");
 
