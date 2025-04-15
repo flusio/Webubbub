@@ -28,14 +28,11 @@ ask [in the <abbr>FAQ</abbr>](docs/faq.md).
 ## Contributing
 
 At the moment, Webubbub is a personal project of [Marien Fressinaud](https://marienfressinaud.fr/).
-It was built to learn WebSub protocol and improve my PHP level. Its direction
-is not clear yet and so the code or the architecture might largely evolve in
-few days. By consequence, I would not recommend to open pull requests.
+It was built to learn WebSub protocol and improve my PHP level.
+I continue to maintain the project by updating the dependencies and applying security patches (if any), but I don't actively add new features for now.
 
-However, if you have any question or suggestion, feel free [to open a
-ticket](https://github.com/flusio/Webubbub/issues/new) so we can discuss. I’m
-looking forward for a better community space and to improve contributing
-documentation. More to come later!
+If you have any question or suggestion, feel free [to open a ticket](https://github.com/flusio/Webubbub/issues/new) so we can discuss.
+I’m looking forward for a better community space and to improve contributing documentation.
 
 ## Guides and ressources
 
