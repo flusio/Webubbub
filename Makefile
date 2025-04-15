@@ -43,13 +43,20 @@ test: ## Run the test suite (can take FILE, FILTER and COVERAGE arguments)
 	$(PHP) ./vendor/bin/phpunit -c .phpunit.xml $(COVERAGE) $(FILTER) $(FILE)
 
 .PHONY: lint
-lint: ## Run the linters on the PHP files
+lint: LINTER ?= all
+lint: ## Run the linters on the PHP files (can take a LINTER argument)
+ifeq ($(LINTER), $(filter $(LINTER), all phpstan))
 	$(PHP) ./vendor/bin/phpstan analyse --memory-limit 1G -c .phpstan.neon
+endif
+ifeq ($(LINTER), $(filter $(LINTER), all phpcs))
 	$(PHP) ./vendor/bin/phpcs
+endif
 
 .PHONY: lint-fix
-lint-fix: ## Fix the errors raised by the linter
+lint-fix: ## Fix the errors raised by the linter (can take a LINTER argument)
+ifeq ($(LINTER), $(filter $(LINTER), all phpcs))
 	$(PHP) ./vendor/bin/phpcbf
+endif
 
 .PHONY: help
 help:
