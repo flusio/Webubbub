@@ -8,10 +8,7 @@ namespace Webubbub\migrations;
  */
 class Migration201912230001CompleteContentModel
 {
-    /**
-     * @return boolean true if the migration was successful, false otherwise
-     */
-    public function migrate()
+    public function migrate(): bool
     {
         $database = \Minz\Database::get();
         $columns = [

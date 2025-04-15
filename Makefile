@@ -48,12 +48,18 @@ lint: ## Run the linters on the PHP files (can take a LINTER argument)
 ifeq ($(LINTER), $(filter $(LINTER), all phpstan))
 	$(PHP) ./vendor/bin/phpstan analyse --memory-limit 1G -c .phpstan.neon
 endif
+ifeq ($(LINTER), $(filter $(LINTER), all rector))
+	$(PHP) ./vendor/bin/rector process --dry-run --config .rector.php
+endif
 ifeq ($(LINTER), $(filter $(LINTER), all phpcs))
 	$(PHP) ./vendor/bin/phpcs
 endif
 
 .PHONY: lint-fix
 lint-fix: ## Fix the errors raised by the linter (can take a LINTER argument)
+ifeq ($(LINTER), $(filter $(LINTER), all rector))
+	$(PHP) ./vendor/bin/rector process --config .rector.php
+endif
 ifeq ($(LINTER), $(filter $(LINTER), all phpcs))
 	$(PHP) ./vendor/bin/phpcbf
 endif

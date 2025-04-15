@@ -43,7 +43,7 @@ class Curl
         curl_setopt(
             $curl_session,
             CURLOPT_HEADERFUNCTION,
-            function ($curl, $header) use (&$headers) {
+            function ($curl, $header) use (&$headers): int {
                 $len = strlen($header);
                 $header_exploded = explode(':', $header, 2);
                 if (count($header_exploded) < 2) {

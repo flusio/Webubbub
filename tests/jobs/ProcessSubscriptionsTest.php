@@ -14,7 +14,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
 
     public function setUp(): void
     {
-        services\Curl::mockCallback(function ($url, $options) {
+        services\Curl::mockCallback(function (string $url, array $options): services\Curl {
             $url = parse_url($url);
             parse_str($url['query'] ?? '', $params);
             /** @var string */
