@@ -45,11 +45,11 @@ test: ## Run the test suite (can take FILE, FILTER and COVERAGE arguments)
 .PHONY: lint
 lint: ## Run the linters on the PHP files
 	$(PHP) ./vendor/bin/phpstan analyse --memory-limit 1G -c .phpstan.neon
-	$(PHP) ./vendor/bin/phpcs --standard=PSR12 ./src ./tests
+	$(PHP) ./vendor/bin/phpcs
 
 .PHONY: lint-fix
 lint-fix: ## Fix the errors raised by the linter
-	$(PHP) ./vendor/bin/phpcbf --standard=PSR12 ./src ./tests
+	$(PHP) ./vendor/bin/phpcbf
 
 .PHONY: help
 help:
