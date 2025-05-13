@@ -251,6 +251,22 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(2, models\Content::count());
     }
 
+    public function testPublishFailsIfUrlIsNotAuthorized(): void
+    {
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+
+        $response = $this->appRun('CLI', '/requests/publish', [
+            'hub_url' => 'https://not.allowed.com',
+        ]);
+
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = '';
+
+        $this->assertResponseCode($response, 400);
+        $this->assertResponseContains($response, 'url "https://not.allowed.com" is not authorized');
+        $this->assertResponseHeaders($response, ['Content-Type' => 'text/plain']);
+        $this->assertSame(0, models\Content::count());
+    }
+
     #[\PHPUnit\Framework\Attributes\DataProvider('invalidUrlProvider')]
     public function testPublishFailsIfUrlIsInvalid(string $invalid_url): void
     {

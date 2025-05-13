@@ -4,6 +4,7 @@ namespace Webubbub\models;
 
 use Minz\Database;
 use Minz\Validable;
+use Webubbub\utils;
 
 /**
  * Represent a content created by publishers, it is delivered to subscribers.
@@ -83,6 +84,14 @@ class Content
         }
 
         $this->status = 'delivered';
+    }
+
+    /**
+     * Return wheter a content is allowed on the hub or not.
+     */
+    public function isAllowed(): bool
+    {
+        return utils\AllowedOriginHelper::isOriginAllowed($this->url);
     }
 
     /**

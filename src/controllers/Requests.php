@@ -187,6 +187,12 @@ class Requests
 
         $content = new models\Content($url);
 
+        if (!$content->isAllowed()) {
+            return Response::badRequest('requests/error.txt', [
+                'errors' => ["url \"{$url}\" is not authorized"],
+            ]);
+        }
+
         $errors = $content->validate();
         if ($errors) {
             return Response::badRequest('requests/error.txt', [
