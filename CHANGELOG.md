@@ -1,5 +1,27 @@
 # Webubbub changelog
 
+## 2025-05-13 - 1.0.1
+
+### Security
+
+- Reject contents from invalid origins ([5075169](https://github.com/flusio/Webubbub/commit/5075169))
+
+### Improvements
+
+- Delete Content if fetching fails ([f81262c](https://github.com/flusio/Webubbub/commit/f81262c))
+
+### Technical
+
+- Update the dependencies ([c51a14c](https://github.com/flusio/Webubbub/commit/c51a14c))
+
+### Documentation
+
+- Remove websub.flus.io from the open hubs ([4d3ba22](https://github.com/flusio/Webubbub/commit/4d3ba22))
+
+### Developers
+
+- Refactor checking allowed topic origins ([09a94df](https://github.com/flusio/Webubbub/commit/09a94df))
+
 ## 2025-04-15 - 1.0.0
 
 ### Migration notes
