@@ -55,6 +55,9 @@ class ProcessContents extends Job
                 \Minz\Log::warning(
                     "content #{$content->id}: {$http_code} HTTP code is not successful"
                 );
+
+                $content->remove();
+
                 continue;
             }
 

@@ -214,11 +214,7 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $processor = new ProcessContents();
         $processor->perform();
 
-        $content = $content->reload();
-        $this->assertSame('new', $content->status);
-        $this->assertNull($content->content);
-        $this->assertNull($content->type);
-        $this->assertNull($content->links);
+        $this->assertFalse(models\Content::exists($content->id));
     }
 
     public function testPerformWithDeliveryTryAtInFuture(): void
