@@ -4,6 +4,7 @@ namespace Webubbub\models;
 
 use Minz\Database;
 use Minz\Validable;
+use Webubbub\utils;
 
 /**
  * Represent the subscription of a subscriber (callback) to a topic.
@@ -138,26 +139,7 @@ class Subscription
      */
     public function isAllowed(): bool
     {
-        $allowed_origins = \Minz\Configuration::$application['allowed_topic_origins'];
-        assert(is_string($allowed_origins));
-
-        if ($allowed_origins === '') {
-            // Empty value means open hub
-            return true;
-        }
-
-        $allowed_origins = explode(',', $allowed_origins);
-
-        foreach ($allowed_origins as $allowed_origin) {
-            $allowed_origin = trim($allowed_origin);
-
-            $origin_length = strlen($allowed_origin);
-            if (substr($this->topic, 0, $origin_length) === $allowed_origin) {
-                return true;
-            }
-        }
-
-        return false;
+        return utils\AllowedOriginHelper::isOriginAllowed($this->topic);
     }
 
     /**

@@ -11,7 +11,7 @@ assert($app_path !== false);
 
 include $app_path . '/vendor/autoload.php';
 
-\Minz\Configuration::load('dotenv', $app_path);
+\Webubbub\Configuration::load('dotenv', $app_path);
 
 try {
     $application = new \Webubbub\Application();

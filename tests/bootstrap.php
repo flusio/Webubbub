@@ -6,4 +6,4 @@ assert($app_path !== false);
 
 include $app_path . '/vendor/autoload.php';
 
-\Minz\Configuration::load('test', $app_path);
+\Webubbub\Configuration::load('test', $app_path);

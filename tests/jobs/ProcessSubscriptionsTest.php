@@ -45,7 +45,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
 
     public function testPerformWithAllowedTopic(): void
     {
-        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
         $subscription = SubscriptionFactory::create([
             'status' => 'new',
             'pending_request' => 'subscribe',
@@ -58,12 +58,12 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $subscription = $subscription->reload();
         $this->assertSame('verified', $subscription->status);
 
-        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = '';
     }
 
     public function testPerformWithNotAllowedTopic(): void
     {
-        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
         $subscription = SubscriptionFactory::create([
             'status' => 'new',
             'pending_request' => 'subscribe',
@@ -75,13 +75,13 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse(models\Subscription::exists($subscription->id));
 
-        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = '';
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('failingHttpCodeProvider')]
     public function testPerformWithNotAllowedTopicAndRecentSubscriptionAndFailingResponse(int $http_code): void
     {
-        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
         $subscription = SubscriptionFactory::create([
             'status' => 'new',
             'pending_request' => 'subscribe',
@@ -96,13 +96,13 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
         $subscription = $subscription->reload();
         $this->assertSame('new', $subscription->status);
 
-        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = '';
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('failingHttpCodeProvider')]
     public function testPerformWithNotAllowedTopicAndOldSubscriptionAndFailingResponse(int $http_code): void
     {
-        \Minz\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = 'https://allowed.1.com,https://allowed.2.com';
         $subscription = SubscriptionFactory::create([
             'status' => 'new',
             'pending_request' => 'subscribe',
@@ -116,7 +116,7 @@ class ProcessSubscriptionsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse(models\Subscription::exists($subscription->id));
 
-        \Minz\Configuration::$application['allowed_topic_origins'] = '';
+        \Webubbub\Configuration::$application['allowed_topic_origins'] = '';
     }
 
     public function testPerformWithSubscribePendingRequest(): void
