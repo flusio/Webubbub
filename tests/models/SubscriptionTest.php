@@ -129,8 +129,10 @@ class SubscriptionTest extends TestCase
         $secret = str_repeat('a', 201);
 
         $subscription->renew(Subscription::DEFAULT_LEASE_SECONDS, $secret);
-        $errors = $subscription->validate();
 
+        $is_valid = $subscription->validate();
+        $this->assertFalse($is_valid);
+        $errors = $subscription->errors();
         $this->assertArrayHasKey('pending_secret', $errors);
     }
 

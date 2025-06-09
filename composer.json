@@ -23,7 +23,7 @@
         "ext-pcntl": "*",
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*",
-        "flus/minz": "^1.0"
+        "flus/minz": "^2.0"
     },
 
     "require-dev": {

@@ -32,7 +32,7 @@ class Requests
         // reasons, PHP replaces those dots by underscores. Meh!
         // See https://www.php.net/variables.external#language.variables.external.dot-in-names
 
-        $mode = $request->param('hub_mode', '');
+        $mode = $request->parameters->getString('hub_mode', '');
 
         if ($mode === 'subscribe') {
             return $this->subscribe($request);
@@ -63,13 +63,13 @@ class Requests
      */
     public function subscribe(Request $request): Response
     {
-        $callback = $request->param('hub_callback', '');
-        $topic = $request->param('hub_topic', '');
-        $lease_seconds = $request->paramInteger(
+        $callback = $request->parameters->getString('hub_callback', '');
+        $topic = $request->parameters->getString('hub_topic', '');
+        $lease_seconds = $request->parameters->getInteger(
             'hub_lease_seconds',
             models\Subscription::DEFAULT_LEASE_SECONDS
         );
-        $secret = $request->param('hub_secret');
+        $secret = $request->parameters->getString('hub_secret');
 
         if ($secret === '') {
             return Response::badRequest('requests/error.txt', [
@@ -91,10 +91,9 @@ class Requests
                 $secret
             );
 
-            $errors = $subscription->validate();
-            if ($errors) {
+            if (!$subscription->validate()) {
                 return Response::badRequest('requests/error.txt', [
-                    'errors' => $errors,
+                    'errors' => $subscription->errors(),
                 ]);
             }
 
@@ -103,10 +102,9 @@ class Requests
             // Subscription renewal
             $subscription->renew($lease_seconds, $secret);
 
-            $errors = $subscription->validate();
-            if ($errors) {
+            if (!$subscription->validate()) {
                 return Response::badRequest('requests/error.txt', [
-                    'errors' => $errors,
+                    'errors' => $subscription->errors(),
                 ]);
             }
 
@@ -129,8 +127,8 @@ class Requests
      */
     public function unsubscribe(Request $request): Response
     {
-        $callback = $request->param('hub_callback', '');
-        $topic = $request->param('hub_topic', '');
+        $callback = $request->parameters->getString('hub_callback', '');
+        $topic = $request->parameters->getString('hub_topic', '');
 
         $subscription = models\Subscription::findBy([
             'callback' => $callback,
@@ -169,10 +167,10 @@ class Requests
      */
     public function publish(Request $request): Response
     {
-        $url = $request->param('hub_url', '');
+        $url = $request->parameters->getString('hub_url', '');
 
         if ($url === '') {
-            $url = $request->param('hub_topic', '');
+            $url = $request->parameters->getString('hub_topic', '');
         }
 
         $content = models\Content::findBy([
@@ -187,16 +185,9 @@ class Requests
 
         $content = new models\Content($url);
 
-        if (!$content->isAllowed()) {
+        if (!$content->validate()) {
             return Response::badRequest('requests/error.txt', [
-                'errors' => ["url \"{$url}\" is not authorized"],
-            ]);
-        }
-
-        $errors = $content->validate();
-        if ($errors) {
-            return Response::badRequest('requests/error.txt', [
-                'errors' => $errors,
+                'errors' => $content->errors(),
             ]);
         }
 

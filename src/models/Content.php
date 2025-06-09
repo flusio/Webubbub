@@ -89,9 +89,13 @@ class Content
     /**
      * Return wheter a content is allowed on the hub or not.
      */
-    public function isAllowed(): bool
+    #[Validable\Check]
+    public function checkIsAllowed(): void
     {
-        return utils\AllowedOriginHelper::isOriginAllowed($this->url);
+        $is_valid = utils\AllowedOriginHelper::isOriginAllowed($this->url);
+        if (!$is_valid) {
+            $this->addError('url', 'url_not_allowed', "url \"{$this->url}\" is not authorized");
+        }
     }
 
     /**

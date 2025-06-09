@@ -42,7 +42,7 @@ class Application
     {
         $router = Router::loadCli();
 
-        $bin = $request->param('bin');
+        $bin = $request->parameters->getString('bin', '');
         $bin = $bin === 'cli' ? 'php cli' : $bin;
 
         $current_command = $request->path();
@@ -55,7 +55,7 @@ class Application
             'controller_namespace' => '\\Webubbub\\cli',
         ]);
 
-        \Minz\Output\View::declareDefaultVariables([
+        \Minz\Template\Simple::addGlobals([
             'error' => null,
             'bin' => $bin,
             'current_command' => $current_command,

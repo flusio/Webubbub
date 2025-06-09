@@ -28,7 +28,7 @@ class Home
      */
     public function dummySubscriber(Request $request): Response
     {
-        $challenge = $request->param('hub_challenge', '');
+        $challenge = $request->parameters->getString('hub_challenge', '');
         return Response::ok('home/dummySubscriber.txt', [
             'challenge' => $challenge,
         ]);
