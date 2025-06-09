@@ -32,8 +32,8 @@ class Application
 
         \Minz\Engine::init($router, [
             'start_session' => false,
-            'not_found_view_pointer' => 'not_found.phtml',
-            'internal_server_error_view_pointer' => 'internal_server_error.phtml',
+            'not_found_template' => 'not_found.phtml',
+            'internal_server_error_template' => 'internal_server_error.phtml',
             'controller_namespace' => '\\Webubbub\\controllers',
         ]);
     }
@@ -50,8 +50,8 @@ class Application
 
         \Minz\Engine::init($router, [
             'start_session' => false,
-            'not_found_view_pointer' => 'cli/not_found.txt',
-            'internal_server_error_view_pointer' => 'cli/internal_server_error.txt',
+            'not_found_template' => 'cli/not_found.txt',
+            'internal_server_error_template' => 'cli/internal_server_error.txt',
             'controller_namespace' => '\\Webubbub\\cli',
         ]);
 
