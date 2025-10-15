@@ -18,7 +18,6 @@
   -->
 
 - [ ] Code is manually tested
-- [ ] Translations are synchronized
 - [ ] Tests are up to date
 - [ ] Copyright notices are up to date
 - [ ] Documentation is up to date
