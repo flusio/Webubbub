@@ -66,9 +66,7 @@ class Curl
         $http_code = curl_getinfo($curl_session, CURLINFO_RESPONSE_CODE);
 
         if ($result === false) {
-            $result = '';
-            $error = curl_error($curl_session);
-            \Minz\Log::error("Curl error: {$error}.");
+            $result = curl_error($curl_session);
         }
 
         curl_close($curl_session);
