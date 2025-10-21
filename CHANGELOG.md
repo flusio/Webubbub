@@ -1,5 +1,17 @@
 # Webubbub changelog
 
+## 2025-10-21 - 1.0.2
+
+### Technical
+
+- Return Curl errors instead of logging them ([27d6aa1](https://github.com/flusio/Webubbub/commit/27d6aa1))
+- Upgrade to Minz 2.0 ([3cd2c7b](https://github.com/flusio/Webubbub/commit/3cd2c7b))
+- Update the dependencies ([8c108f8](https://github.com/flusio/Webubbub/commit/8c108f8), [1c92462](https://github.com/flusio/Webubbub/commit/1c92462), [a99be92](https://github.com/flusio/Webubbub/commit/a99be92), [e191d6e](https://github.com/flusio/Webubbub/commit/e191d6e))
+
+### Developers
+
+- Remove translation check from PR template ([659731b](https://github.com/flusio/Webubbub/commit/659731b))
+
 ## 2025-05-13 - 1.0.1
 
 ### Security
