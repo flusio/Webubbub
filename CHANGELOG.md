@@ -1,5 +1,12 @@
 # Webubbub changelog
 
+## 2026-04-01 - 1.0.3
+
+### Maintenance
+
+- Update the dependencies ([58c675a](https://github.com/flusio/Webubbub/commit/58c675a), [49a5a43](https://github.com/flusio/Webubbub/commit/49a5a43), [6e44bcc](https://github.com/flusio/Webubbub/commit/6e44bcc))
+- Update Docker image to PHP 8.4 ([276510d](https://github.com/flusio/Webubbub/commit/276510d))
+
 ## 2025-10-21 - 1.0.2
 
 ### Technical
