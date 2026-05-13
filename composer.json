@@ -18,6 +18,12 @@
         }
     },
 
+    "config": {
+        "platform": {
+          "php": "8.2"
+        }
+    },
+
     "require": {
         "php": "^8.2",
         "ext-pcntl": "*",
