@@ -1,10 +1,17 @@
-SCRIPT_PATH=$(dirname $(realpath -s $0))
-export COMPOSE_PROJECT_NAME=webubbub
-export COMPOSE_FILE=$SCRIPT_PATH/../development/docker-compose.yml
-export USER=$(id -u):$(id -g)
+#!/bin/bash
 
-if [ -z `docker compose ps -q php` ] || [ -z `docker ps -q --no-trunc | grep $(docker compose ps -q php)` ]; then
-    docker compose run -T --rm php php "$@"
+SCRIPT_PATH=$(dirname "$(realpath -s "$0")")
+export COMPOSE_FILE="$SCRIPT_PATH/../development/docker-compose.yml"
+export USER="$(id -u):$(id -g)"
+
+if [ -t 0 ]; then
+    TTY_OPTION=""
 else
-    docker compose exec -T php php "$@"
+    TTY_OPTION="-T"
+fi
+
+if [ -z "$(docker compose ps --status running -q php)" ]; then
+    docker compose run --rm $TTY_OPTION php php "$@"
+else
+    docker compose exec $TTY_OPTION php php "$@"
 fi

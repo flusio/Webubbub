@@ -7,9 +7,11 @@ DOCKER_COMPOSE = docker compose -f docker/development/docker-compose.yml
 ifdef NODOCKER
 	PHP = php
 	COMPOSER = composer
+	CLI = php cli
 else
 	PHP = ./docker/bin/php
 	COMPOSER = ./docker/bin/composer
+	CLI = ./docker/bin/cli
 endif
 
 .PHONY: docker-start
@@ -31,7 +33,7 @@ install: ## Install the dependencies
 
 .PHONY: setup
 setup: .env ## Initialize the application
-	$(PHP) cli migrations setup --seed
+	$(CLI) migrations setup --seed
 
 .PHONY: test
 test: FILE ?= ./tests
