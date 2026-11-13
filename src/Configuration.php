@@ -27,6 +27,6 @@ class Configuration extends \Minz\Configuration
      */
     public static function allowedTopicOrigins(): array
     {
-        return array_map('trim', explode(',', self::$application['allowed_topic_origins']));
+        return array_map(trim(...), explode(',', self::$application['allowed_topic_origins']));
     }
 }

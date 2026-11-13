@@ -73,11 +73,11 @@ class ProcessContents extends Job
                 $links = $default_hub_link . ', ' . $default_self_link;
             }
 
-            if (strpos($links, 'rel="self"') === false) {
+            if (!str_contains($links, 'rel="self"')) {
                 $links .= ', ' . $default_self_link;
             }
 
-            if (strpos($links, 'rel="hub"') === false) {
+            if (!str_contains($links, 'rel="hub"')) {
                 $links .= ', ' . $default_hub_link;
             }
 
@@ -185,7 +185,7 @@ class ProcessContents extends Job
                             "content #{$content->id}: delivery to {$subscription->callback} "
                             . "marked for later"
                         );
-                    } catch (models\Errors\ContentDeliveryError $e) {
+                    } catch (models\Errors\ContentDeliveryError) {
                         $content_delivery->remove();
                         $count_deleted += 1;
 

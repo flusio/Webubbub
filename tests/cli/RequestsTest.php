@@ -132,7 +132,7 @@ class RequestsTest extends \PHPUnit\Framework\TestCase
     {
         $callback = 'https://subscriber.com/callback';
         $topic = 'https://some.site.fr/feed.xml';
-        $subscription = SubscriptionFactory::create([
+        SubscriptionFactory::create([
             'callback' => $callback,
             'topic' => $topic,
             'secret' => null,

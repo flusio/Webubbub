@@ -250,7 +250,7 @@ class ProcessContentsTest extends \PHPUnit\Framework\TestCase
         $subscription = SubscriptionFactory::create([
             'secret' => $subscription_secret,
         ]);
-        $content_delivery = ContentDeliveryFactory::create([
+        ContentDeliveryFactory::create([
             'content_id' => $content->id,
             'subscription_id' => $subscription->id,
             'try_at' => \Minz\Time::ago(1000, 'seconds'),

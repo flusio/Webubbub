@@ -20,16 +20,15 @@ class Application
         if ($request->method() === 'CLI') {
             $this->initCli($request);
         } else {
-            $this->initApp($request);
+            $this->initApp();
         }
 
         return \Minz\Engine::run($request);
     }
 
-    private function initApp(Request $request): void
+    private function initApp(): void
     {
         $router = Router::loadApp();
-
         \Minz\Engine::init($router, [
             'start_session' => false,
             'not_found_template' => 'not_found.phtml',

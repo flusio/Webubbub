@@ -18,21 +18,13 @@ class ContentDeliveryFactory extends Database\Factory
     public static function values(): array
     {
         return [
-            'subscription_id' => function () {
-                return SubscriptionFactory::create()->id;
-            },
+            'subscription_id' => fn() => SubscriptionFactory::create()->id,
 
-            'content_id' => function () {
-                return ContentFactory::create()->id;
-            },
+            'content_id' => fn() => ContentFactory::create()->id,
 
-            'created_at' => function (): \DateTimeImmutable {
-                return \Minz\Time::now();
-            },
+            'created_at' => \Minz\Time::now(...),
 
-            'try_at' => function (): \DateTimeImmutable {
-                return \Minz\Time::now();
-            },
+            'try_at' => \Minz\Time::now(...),
 
             'tries_count' => 0,
         ];

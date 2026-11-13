@@ -12,7 +12,7 @@ class SubscriptionsTest extends \PHPUnit\Framework\TestCase
 
     public function testItems(): void
     {
-        $subscription = SubscriptionFactory::create([
+        SubscriptionFactory::create([
             'callback' => 'https://subscriber.com/callback',
             'topic' => 'https://some.site.fr/feed.xml',
         ]);

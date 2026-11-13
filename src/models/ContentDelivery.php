@@ -81,7 +81,7 @@ class ContentDelivery
         }
 
         $tries_count = $this->tries_count + 1;
-        $interval_seconds = pow(5, $tries_count);
+        $interval_seconds = 5 ** $tries_count;
 
         $this->try_at = \Minz\Time::fromNow($interval_seconds, 'seconds');
         $this->tries_count = $tries_count;

@@ -202,12 +202,11 @@ class Subscription
         }
 
         $reason = urlencode($reason);
-        $deny_callback = $this->callback . $query_char
+
+        return $this->callback . $query_char
                        . "hub.mode=denied"
                        . "&hub.topic={$this->topic}"
                        . "&hub.reason={$reason}";
-
-        return $deny_callback;
     }
 
     /**

@@ -53,9 +53,7 @@ class Curl
 
                 $header_key = strtolower(trim($header_exploded[0]));
                 $header_value = trim($header_exploded[1]);
-                if (!isset($headers[$header_key])) {
-                    $headers[$header_key] = [];
-                }
+                $headers[$header_key] ??= [];
                 $headers[$header_key][] = $header_value;
 
                 return $len;
